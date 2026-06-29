@@ -1,22 +1,34 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TravelOS – Multi-tenant Travel ERP SaaS API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: master
+  - name: companies
+  - name: users
+  - name: bookings
+  - name: fleet
+  - name: drivers
+  - name: vendors
+  - name: crm
+  - name: customers
+  - name: tours
+  - name: finance
+  - name: dashboard
+  - name: public
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +36,2616 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── AUTH ──────────────────────────────────────────────────────────────────
+  /v1/auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          description: Invalid credentials
+
+  /v1/auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "204":
+          description: Logged out
+
+  /v1/auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # ── MASTER ADMIN ──────────────────────────────────────────────────────────
+  /v1/master/dashboard:
+    get:
+      operationId: getMasterDashboard
+      tags: [master]
+      summary: Master admin dashboard KPIs
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MasterDashboardStats"
+
+  /v1/master/companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List all companies
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Companies list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyListResult"
+    post:
+      operationId: createCompany
+      tags: [companies]
+      summary: Create a company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+
+  /v1/master/companies/{id}:
+    get:
+      operationId: getCompany
+      tags: [companies]
+      summary: Get company by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Company
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+    patch:
+      operationId: updateCompany
+      tags: [companies]
+      summary: Update company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+    delete:
+      operationId: deleteCompany
+      tags: [companies]
+      summary: Delete company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /v1/master/companies/{id}/suspend:
+    post:
+      operationId: suspendCompany
+      tags: [companies]
+      summary: Suspend company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suspended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+
+  /v1/master/plans:
+    get:
+      operationId: listPlans
+      tags: [master]
+      summary: List subscription plans
+      responses:
+        "200":
+          description: Plans list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionPlan"
+    post:
+      operationId: createPlan
+      tags: [master]
+      summary: Create subscription plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionPlanInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionPlan"
+
+  /v1/master/plans/{id}:
+    patch:
+      operationId: updatePlan
+      tags: [master]
+      summary: Update plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionPlanUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionPlan"
+    delete:
+      operationId: deletePlan
+      tags: [master]
+      summary: Delete plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ── USERS ─────────────────────────────────────────────────────────────────
+  /v1/users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users in company
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /v1/users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ── COMPANY DASHBOARD ─────────────────────────────────────────────────────
+  /v1/dashboard:
+    get:
+      operationId: getCompanyDashboard
+      tags: [dashboard]
+      summary: Company admin dashboard stats
+      responses:
+        "200":
+          description: Dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyDashboardStats"
+
+  /v1/dashboard/revenue-trend:
+    get:
+      operationId: getRevenueTrend
+      tags: [dashboard]
+      summary: Monthly revenue trend
+      parameters:
+        - name: months
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Revenue trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevenueTrendPoint"
+
+  /v1/dashboard/recent-bookings:
+    get:
+      operationId: getRecentBookings
+      tags: [dashboard]
+      summary: Recent 10 bookings
+      responses:
+        "200":
+          description: Recent bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+  # ── BOOKINGS ──────────────────────────────────────────────────────────────
+  /v1/bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: List bookings
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Bookings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingListResult"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /v1/bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    patch:
+      operationId: updateBooking
+      tags: [bookings]
+      summary: Update booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    delete:
+      operationId: deleteBooking
+      tags: [bookings]
+      summary: Delete booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /v1/bookings/{id}/assign:
+    post:
+      operationId: assignBooking
+      tags: [bookings]
+      summary: Assign driver and vehicle to booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingAssignment"
+      responses:
+        "200":
+          description: Assigned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /v1/bookings/{id}/cancel:
+    post:
+      operationId: cancelBooking
+      tags: [bookings]
+      summary: Cancel booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  # ── FLEET ─────────────────────────────────────────────────────────────────
+  /v1/fleet/vehicles:
+    get:
+      operationId: listVehicles
+      tags: [fleet]
+      summary: List vehicles
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vehicle"
+    post:
+      operationId: createVehicle
+      tags: [fleet]
+      summary: Create vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+
+  /v1/fleet/vehicles/{id}:
+    get:
+      operationId: getVehicle
+      tags: [fleet]
+      summary: Get vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vehicle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+    patch:
+      operationId: updateVehicle
+      tags: [fleet]
+      summary: Update vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+    delete:
+      operationId: deleteVehicle
+      tags: [fleet]
+      summary: Delete vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /v1/fleet/categories:
+    get:
+      operationId: listVehicleCategories
+      tags: [fleet]
+      summary: List vehicle categories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VehicleCategory"
+    post:
+      operationId: createVehicleCategory
+      tags: [fleet]
+      summary: Create vehicle category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleCategoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleCategory"
+
+  /v1/fleet/stats:
+    get:
+      operationId: getFleetStats
+      tags: [fleet]
+      summary: Fleet utilisation stats
+      responses:
+        "200":
+          description: Fleet stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetStats"
+
+  # ── DRIVERS ───────────────────────────────────────────────────────────────
+  /v1/drivers:
+    get:
+      operationId: listDrivers
+      tags: [drivers]
+      summary: List drivers
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Drivers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Driver"
+    post:
+      operationId: createDriver
+      tags: [drivers]
+      summary: Create driver
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+
+  /v1/drivers/{id}:
+    get:
+      operationId: getDriver
+      tags: [drivers]
+      summary: Get driver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+    patch:
+      operationId: updateDriver
+      tags: [drivers]
+      summary: Update driver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+    delete:
+      operationId: deleteDriver
+      tags: [drivers]
+      summary: Delete driver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /v1/drivers/availability:
+    get:
+      operationId: getDriverAvailability
+      tags: [drivers]
+      summary: Get driver availability board
+      responses:
+        "200":
+          description: Availability
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DriverAvailability"
+
+  # ── VENDORS ───────────────────────────────────────────────────────────────
+  /v1/vendors:
+    get:
+      operationId: listVendors
+      tags: [vendors]
+      summary: List vendors
+      responses:
+        "200":
+          description: Vendors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vendor"
+    post:
+      operationId: createVendor
+      tags: [vendors]
+      summary: Create vendor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VendorInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vendor"
+
+  /v1/vendors/{id}:
+    get:
+      operationId: getVendor
+      tags: [vendors]
+      summary: Get vendor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vendor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vendor"
+    patch:
+      operationId: updateVendor
+      tags: [vendors]
+      summary: Update vendor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VendorUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vendor"
+    delete:
+      operationId: deleteVendor
+      tags: [vendors]
+      summary: Delete vendor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ── CRM ───────────────────────────────────────────────────────────────────
+  /v1/crm/leads:
+    get:
+      operationId: listLeads
+      tags: [crm]
+      summary: List leads
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: assignedTo
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Leads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lead"
+    post:
+      operationId: createLead
+      tags: [crm]
+      summary: Create lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+
+  /v1/crm/leads/{id}:
+    get:
+      operationId: getLead
+      tags: [crm]
+      summary: Get lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+    patch:
+      operationId: updateLead
+      tags: [crm]
+      summary: Update lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+    delete:
+      operationId: deleteLead
+      tags: [crm]
+      summary: Delete lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /v1/crm/pipeline:
+    get:
+      operationId: getLeadPipeline
+      tags: [crm]
+      summary: Lead pipeline counts by stage
+      responses:
+        "200":
+          description: Pipeline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadPipeline"
+
+  /v1/crm/quotations:
+    get:
+      operationId: listQuotations
+      tags: [crm]
+      summary: List quotations
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quotations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quotation"
+    post:
+      operationId: createQuotation
+      tags: [crm]
+      summary: Create quotation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuotationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quotation"
+
+  /v1/crm/quotations/{id}:
+    get:
+      operationId: getQuotation
+      tags: [crm]
+      summary: Get quotation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quotation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quotation"
+    patch:
+      operationId: updateQuotation
+      tags: [crm]
+      summary: Update quotation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuotationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quotation"
+    delete:
+      operationId: deleteQuotation
+      tags: [crm]
+      summary: Delete quotation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /v1/crm/quotations/{id}/convert:
+    post:
+      operationId: convertQuotationToBooking
+      tags: [crm]
+      summary: Convert approved quotation to booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  # ── CUSTOMERS ─────────────────────────────────────────────────────────────
+  /v1/customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List customers
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /v1/customers/{id}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: Get customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+    patch:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: Update customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+    delete:
+      operationId: deleteCustomer
+      tags: [customers]
+      summary: Delete customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ── TOURS ─────────────────────────────────────────────────────────────────
+  /v1/tours/destinations:
+    get:
+      operationId: listDestinations
+      tags: [tours]
+      summary: List destinations
+      responses:
+        "200":
+          description: Destinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Destination"
+    post:
+      operationId: createDestination
+      tags: [tours]
+      summary: Create destination
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Destination"
+
+  /v1/tours/packages:
+    get:
+      operationId: listTourPackages
+      tags: [tours]
+      summary: List tour packages
+      parameters:
+        - name: destinationId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tour packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TourPackage"
+    post:
+      operationId: createTourPackage
+      tags: [tours]
+      summary: Create tour package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TourPackageInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TourPackage"
+
+  /v1/tours/packages/{id}:
+    get:
+      operationId: getTourPackage
+      tags: [tours]
+      summary: Get tour package
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tour package
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TourPackage"
+    patch:
+      operationId: updateTourPackage
+      tags: [tours]
+      summary: Update tour package
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TourPackageUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TourPackage"
+    delete:
+      operationId: deleteTourPackage
+      tags: [tours]
+      summary: Delete tour package
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ── FINANCE ───────────────────────────────────────────────────────────────
+  /v1/finance/invoices:
+    get:
+      operationId: listInvoices
+      tags: [finance]
+      summary: List invoices
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+    post:
+      operationId: createInvoice
+      tags: [finance]
+      summary: Create invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+
+  /v1/finance/invoices/{id}:
+    get:
+      operationId: getInvoice
+      tags: [finance]
+      summary: Get invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+    patch:
+      operationId: updateInvoice
+      tags: [finance]
+      summary: Update invoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+
+  /v1/finance/expenses:
+    get:
+      operationId: listExpenses
+      tags: [finance]
+      summary: List expenses
+      responses:
+        "200":
+          description: Expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [finance]
+      summary: Create expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+
+  /v1/finance/summary:
+    get:
+      operationId: getFinanceSummary
+      tags: [finance]
+      summary: Finance P&L summary
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Finance summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceSummary"
+
+  # ── PUBLIC WEBSITE ────────────────────────────────────────────────────────
+  /v1/public/packages:
+    get:
+      operationId: getPublicPackages
+      tags: [public]
+      summary: Get public tour packages for customer website
+      responses:
+        "200":
+          description: Public packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TourPackage"
+
+  /v1/public/enquiry:
+    post:
+      operationId: submitEnquiry
+      tags: [public]
+      summary: Submit booking enquiry from website
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnquiryInput"
+      responses:
+        "201":
+          description: Enquiry submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # ── Auth ──────────────────────────────────────────────────────────────
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        role:
+          type: string
+          enum: [master_admin, company_admin, company_staff, driver, customer]
+
+    AuthResult:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, email, name, role]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        companyId:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        avatar:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    UserInput:
+      type: object
+      required: [email, name, role, password]
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        phone:
+          type: string
+        isActive:
+          type: boolean
+
+    # ── Master Dashboard ───────────────────────────────────────────────────
+    MasterDashboardStats:
+      type: object
+      required: [totalCompanies, activeCompanies, expiredPlans, totalRevenue, monthlyRevenue, totalBookings, totalUsers]
+      properties:
+        totalCompanies:
+          type: integer
+        activeCompanies:
+          type: integer
+        expiredPlans:
+          type: integer
+        totalRevenue:
+          type: number
+        monthlyRevenue:
+          type: number
+        totalBookings:
+          type: integer
+        totalUsers:
+          type: integer
+        activeDrivers:
+          type: integer
+
+    # ── Company ────────────────────────────────────────────────────────────
+    Company:
+      type: object
+      required: [id, name, email, status, plan]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, suspended, trial, expired]
+        plan:
+          type: string
+        domain:
+          type: ["string", "null"]
+        logo:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        gstNumber:
+          type: ["string", "null"]
+        totalBookings:
+          type: integer
+        totalUsers:
+          type: integer
+        createdAt:
+          type: string
+        trialEndsAt:
+          type: ["string", "null"]
+        planExpiresAt:
+          type: ["string", "null"]
+
+    CompanyInput:
+      type: object
+      required: [name, email, plan]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        plan:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        domain:
+          type: string
+
+    CompanyUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        plan:
+          type: string
+        status:
+          type: string
+        domain:
+          type: string
+        city:
+          type: string
+
+    CompanyListResult:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Company"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ── Subscription Plan ──────────────────────────────────────────────────
+    SubscriptionPlan:
+      type: object
+      required: [id, name, price, duration, maxUsers, maxVehicles]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        duration:
+          type: integer
+        maxUsers:
+          type: integer
+        maxVehicles:
+          type: integer
+        maxBookingsPerMonth:
+          type: integer
+        features:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    SubscriptionPlanInput:
+      type: object
+      required: [name, price, duration, maxUsers, maxVehicles]
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        duration:
+          type: integer
+        maxUsers:
+          type: integer
+        maxVehicles:
+          type: integer
+        maxBookingsPerMonth:
+          type: integer
+        features:
+          type: array
+          items:
+            type: string
+
+    SubscriptionPlanUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        isActive:
+          type: boolean
+        maxUsers:
+          type: integer
+        maxVehicles:
+          type: integer
+
+    # ── Company Dashboard ──────────────────────────────────────────────────
+    CompanyDashboardStats:
+      type: object
+      required: [todayBookings, todayRevenue, monthlyRevenue, activeTrips, availableDrivers, totalVehicles]
+      properties:
+        todayBookings:
+          type: integer
+        todayRevenue:
+          type: number
+        monthlyRevenue:
+          type: number
+        activeTrips:
+          type: integer
+        availableDrivers:
+          type: integer
+        totalVehicles:
+          type: integer
+        pendingLeads:
+          type: integer
+        pendingQuotations:
+          type: integer
+        overdueInvoices:
+          type: integer
+
+    RevenueTrendPoint:
+      type: object
+      required: [month, revenue, bookings]
+      properties:
+        month:
+          type: string
+        revenue:
+          type: number
+        bookings:
+          type: integer
+
+    # ── Booking ────────────────────────────────────────────────────────────
+    Booking:
+      type: object
+      required: [id, bookingNumber, type, status, pickupDate, pickupLocation, dropLocation, customerName, amount]
+      properties:
+        id:
+          type: string
+        bookingNumber:
+          type: string
+        type:
+          type: string
+          enum: [local_cab, airport_transfer, outstation, tour, corporate, wedding, hourly]
+        status:
+          type: string
+          enum: [enquiry, confirmed, assigned, in_progress, completed, cancelled]
+        pickupDate:
+          type: string
+        pickupLocation:
+          type: string
+        dropLocation:
+          type: string
+        customerName:
+          type: string
+        customerPhone:
+          type: ["string", "null"]
+        amount:
+          type: number
+        advancePaid:
+          type: number
+        driverName:
+          type: ["string", "null"]
+        vehicleNumber:
+          type: ["string", "null"]
+        vehicleCategory:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    BookingInput:
+      type: object
+      required: [type, pickupDate, pickupLocation, dropLocation, customerName, amount]
+      properties:
+        type:
+          type: string
+        pickupDate:
+          type: string
+        pickupLocation:
+          type: string
+        dropLocation:
+          type: string
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        amount:
+          type: number
+        advancePaid:
+          type: number
+        customerId:
+          type: string
+        vehicleCategoryId:
+          type: string
+        notes:
+          type: string
+
+    BookingUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        pickupDate:
+          type: string
+        amount:
+          type: number
+        notes:
+          type: string
+
+    BookingAssignment:
+      type: object
+      required: [driverId, vehicleId]
+      properties:
+        driverId:
+          type: string
+        vehicleId:
+          type: string
+
+    BookingListResult:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    # ── Vehicle ────────────────────────────────────────────────────────────
+    Vehicle:
+      type: object
+      required: [id, registrationNumber, make, model, year, category, status]
+      properties:
+        id:
+          type: string
+        registrationNumber:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        color:
+          type: ["string", "null"]
+        category:
+          type: string
+        status:
+          type: string
+          enum: [available, on_trip, maintenance, off_road]
+        driverName:
+          type: ["string", "null"]
+        fuelType:
+          type: ["string", "null"]
+        seatingCapacity:
+          type: ["integer", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        lastService:
+          type: ["string", "null"]
+        insuranceExpiry:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    VehicleInput:
+      type: object
+      required: [registrationNumber, make, model, year, categoryId]
+      properties:
+        registrationNumber:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        color:
+          type: string
+        categoryId:
+          type: string
+        fuelType:
+          type: string
+        seatingCapacity:
+          type: integer
+        insuranceExpiry:
+          type: string
+
+    VehicleUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        color:
+          type: string
+        fuelType:
+          type: string
+        lastService:
+          type: string
+        insuranceExpiry:
+          type: string
+
+    VehicleCategory:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        baseRate:
+          type: ["number", "null"]
+        perKmRate:
+          type: ["number", "null"]
+        imageUrl:
+          type: ["string", "null"]
+
+    VehicleCategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        baseRate:
+          type: number
+        perKmRate:
+          type: number
+
+    FleetStats:
+      type: object
+      required: [totalVehicles, available, onTrip, maintenance, offRoad]
+      properties:
+        totalVehicles:
+          type: integer
+        available:
+          type: integer
+        onTrip:
+          type: integer
+        maintenance:
+          type: integer
+        offRoad:
+          type: integer
+        utilizationRate:
+          type: number
+
+    # ── Driver ─────────────────────────────────────────────────────────────
+    Driver:
+      type: object
+      required: [id, name, phone, status, licenseNumber]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [available, on_trip, off_duty, inactive]
+        licenseNumber:
+          type: string
+        licenseExpiry:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+        totalTrips:
+          type: integer
+        photoUrl:
+          type: ["string", "null"]
+        vehicleAssigned:
+          type: ["string", "null"]
+        joiningDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    DriverInput:
+      type: object
+      required: [name, phone, licenseNumber]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        licenseNumber:
+          type: string
+        licenseExpiry:
+          type: string
+        joiningDate:
+          type: string
+        vehicleId:
+          type: string
+
+    DriverUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        licenseExpiry:
+          type: string
+        vehicleId:
+          type: string
+
+    DriverAvailability:
+      type: object
+      required: [id, name, status]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        phone:
+          type: string
+        currentTrip:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+
+    # ── Vendor ─────────────────────────────────────────────────────────────
+    Vendor:
+      type: object
+      required: [id, name, contactName, phone, status]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, inactive]
+        gstNumber:
+          type: ["string", "null"]
+        commissionPercent:
+          type: ["number", "null"]
+        totalTrips:
+          type: integer
+        pendingSettlement:
+          type: number
+        createdAt:
+          type: string
+
+    VendorInput:
+      type: object
+      required: [name, contactName, phone]
+      properties:
+        name:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        gstNumber:
+          type: string
+        commissionPercent:
+          type: number
+
+    VendorUpdate:
+      type: object
+      properties:
+        contactName:
+          type: string
+        phone:
+          type: string
+        status:
+          type: string
+        commissionPercent:
+          type: number
+
+    # ── Lead / CRM ─────────────────────────────────────────────────────────
+    Lead:
+      type: object
+      required: [id, name, phone, source, status]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        source:
+          type: string
+          enum: [website, whatsapp, phone, email, walk_in, referral]
+        status:
+          type: string
+          enum: [new, contacted, qualified, quotation_sent, won, lost]
+        assignedTo:
+          type: ["string", "null"]
+        travelDate:
+          type: ["string", "null"]
+        destination:
+          type: ["string", "null"]
+        pax:
+          type: ["integer", "null"]
+        budget:
+          type: ["number", "null"]
+        notes:
+          type: ["string", "null"]
+        followUpDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    LeadInput:
+      type: object
+      required: [name, phone, source]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        source:
+          type: string
+        destination:
+          type: string
+        travelDate:
+          type: string
+        pax:
+          type: integer
+        budget:
+          type: number
+        notes:
+          type: string
+
+    LeadUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        assignedTo:
+          type: string
+        followUpDate:
+          type: string
+        notes:
+          type: string
+
+    LeadPipeline:
+      type: object
+      required: [new, contacted, qualified, quotationSent, won, lost]
+      properties:
+        new:
+          type: integer
+        contacted:
+          type: integer
+        qualified:
+          type: integer
+        quotationSent:
+          type: integer
+        won:
+          type: integer
+        lost:
+          type: integer
+
+    # ── Quotation ──────────────────────────────────────────────────────────
+    Quotation:
+      type: object
+      required: [id, quotationNumber, leadId, customerName, status, totalAmount, validUntil]
+      properties:
+        id:
+          type: string
+        quotationNumber:
+          type: string
+        leadId:
+          type: string
+        customerName:
+          type: string
+        customerEmail:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, sent, approved, rejected, expired, converted]
+        totalAmount:
+          type: number
+        taxAmount:
+          type: number
+        validUntil:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuotationItem"
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    QuotationItem:
+      type: object
+      required: [description, quantity, unitPrice, total]
+      properties:
+        description:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        total:
+          type: number
+
+    QuotationInput:
+      type: object
+      required: [leadId, customerName, validUntil, items]
+      properties:
+        leadId:
+          type: string
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        validUntil:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuotationItem"
+        notes:
+          type: string
+
+    QuotationUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        validUntil:
+          type: string
+        notes:
+          type: string
+
+    # ── Customer ───────────────────────────────────────────────────────────
+    Customer:
+      type: object
+      required: [id, name, phone]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        totalBookings:
+          type: integer
+        totalSpent:
+          type: number
+        loyaltyPoints:
+          type: integer
+        lastBookingDate:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    CustomerInput:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+
+    CustomerUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+
+    # ── Destination ────────────────────────────────────────────────────────
+    Destination:
+      type: object
+      required: [id, name, country]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        state:
+          type: ["string", "null"]
+        country:
+          type: string
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+        totalPackages:
+          type: integer
+
+    DestinationInput:
+      type: object
+      required: [name, country]
+      properties:
+        name:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    # ── Tour Package ───────────────────────────────────────────────────────
+    TourPackage:
+      type: object
+      required: [id, title, duration, price, destinationId]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        duration:
+          type: integer
+        price:
+          type: number
+        originalPrice:
+          type: ["number", "null"]
+        destinationId:
+          type: string
+        destinationName:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        rating:
+          type: ["number", "null"]
+        totalBookings:
+          type: integer
+        isActive:
+          type: boolean
+        packageType:
+          type: string
+          enum: [adventure, pilgrimage, luxury, corporate, honeymoon, family, group]
+
+    TourPackageInput:
+      type: object
+      required: [title, duration, price, destinationId, packageType]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        duration:
+          type: integer
+        price:
+          type: number
+        originalPrice:
+          type: number
+        destinationId:
+          type: string
+        packageType:
+          type: string
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+        highlights:
+          type: array
+          items:
+            type: string
+
+    TourPackageUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        price:
+          type: number
+        isActive:
+          type: boolean
+        description:
+          type: string
+
+    # ── Finance ────────────────────────────────────────────────────────────
+    Invoice:
+      type: object
+      required: [id, invoiceNumber, customerName, amount, status, dueDate]
+      properties:
+        id:
+          type: string
+        invoiceNumber:
+          type: string
+        customerName:
+          type: string
+        bookingId:
+          type: ["string", "null"]
+        amount:
+          type: number
+        taxAmount:
+          type: number
+        status:
+          type: string
+          enum: [draft, sent, paid, overdue, cancelled]
+        dueDate:
+          type: string
+        paidAt:
+          type: ["string", "null"]
+        paymentMode:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    InvoiceInput:
+      type: object
+      required: [customerName, amount, dueDate]
+      properties:
+        customerName:
+          type: string
+        bookingId:
+          type: string
+        amount:
+          type: number
+        taxAmount:
+          type: number
+        dueDate:
+          type: string
+
+    InvoiceUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        paymentMode:
+          type: string
+        paidAt:
+          type: string
+
+    Expense:
+      type: object
+      required: [id, category, amount, date, description]
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+          enum: [fuel, maintenance, salary, toll, insurance, misc]
+        amount:
+          type: number
+        date:
+          type: string
+        description:
+          type: string
+        vendorName:
+          type: ["string", "null"]
+        receiptUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ExpenseInput:
+      type: object
+      required: [category, amount, date, description]
+      properties:
+        category:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+        description:
+          type: string
+        vendorName:
+          type: string
+
+    FinanceSummary:
+      type: object
+      required: [totalRevenue, totalExpenses, netProfit, pendingInvoices, overdueAmount]
+      properties:
+        totalRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        netProfit:
+          type: number
+        pendingInvoices:
+          type: integer
+        overdueAmount:
+          type: number
+        paidInvoices:
+          type: integer
+        grossMargin:
+          type: number
+
+    # ── Public Enquiry ─────────────────────────────────────────────────────
+    EnquiryInput:
+      type: object
+      required: [name, phone, destination, travelDate]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        destination:
+          type: string
+        travelDate:
+          type: string
+        pax:
+          type: integer
+        budget:
+          type: number
+        message:
+          type: string
