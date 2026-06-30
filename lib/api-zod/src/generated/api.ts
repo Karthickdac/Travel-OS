@@ -2025,10 +2025,23 @@ export const UpdateCmsSettingsResponse = zod.object({
 
 
 /**
+ * @summary Save custom domain for the company website
+ */
+export const UpdateCompanyDomainBody = zod.object({
+  "domain": zod.string()
+})
+
+export const UpdateCompanyDomainResponse = zod.object({
+  "domain": zod.string()
+})
+
+
+/**
  * @summary Get public website settings (no auth required)
  */
 export const GetPublicCmsSettingsQueryParams = zod.object({
-  "companyId": zod.coerce.string().optional()
+  "companyId": zod.coerce.string().optional(),
+  "domain": zod.coerce.string().optional()
 })
 
 export const GetPublicCmsSettingsResponse = zod.object({
@@ -2078,6 +2091,11 @@ export const GetPublicCmsSettingsResponse = zod.object({
 /**
  * @summary Get public tour packages for customer website
  */
+export const GetPublicPackagesQueryParams = zod.object({
+  "domain": zod.coerce.string().optional(),
+  "companyId": zod.coerce.string().optional()
+})
+
 export const GetPublicPackagesResponseItem = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -2110,7 +2128,8 @@ export const SubmitEnquiryBody = zod.object({
   "travelDate": zod.string(),
   "pax": zod.number().optional(),
   "budget": zod.number().optional(),
-  "message": zod.string().optional()
+  "message": zod.string().optional(),
+  "companyId": zod.string().optional()
 })
 
 export const SubmitEnquiryResponse = zod.object({

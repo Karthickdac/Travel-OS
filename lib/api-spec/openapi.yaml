@@ -1555,6 +1555,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/WebsiteSettings"
 
+  /v1/company/domain:
+    put:
+      operationId: updateCompanyDomain
+      tags: [cms]
+      summary: Save custom domain for the company website
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DomainUpdate"
+      responses:
+        "200":
+          description: Updated domain
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DomainUpdate"
+
   /v1/public/cms:
     get:
       operationId: getPublicCmsSettings
@@ -1562,6 +1581,11 @@ paths:
       summary: Get public website settings (no auth required)
       parameters:
         - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: domain
           in: query
           required: false
           schema:
@@ -1580,6 +1604,17 @@ paths:
       operationId: getPublicPackages
       tags: [public]
       summary: Get public tour packages for customer website
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: Public packages
@@ -2892,6 +2927,14 @@ components:
         metaDescription:
           type: string
 
+    # ── Domain ─────────────────────────────────────────────────────────────
+    DomainUpdate:
+      type: object
+      required: [domain]
+      properties:
+        domain:
+          type: string
+
     # ── Public Enquiry ─────────────────────────────────────────────────────
     EnquiryInput:
       type: object
@@ -2912,4 +2955,6 @@ components:
         budget:
           type: number
         message:
+          type: string
+        companyId:
           type: string

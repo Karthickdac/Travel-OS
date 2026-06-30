@@ -15,4 +15,5 @@ export interface EnquiryInput {
   pax?: number;
   budget?: number;
   message?: string;
+  companyId?: string;
 }

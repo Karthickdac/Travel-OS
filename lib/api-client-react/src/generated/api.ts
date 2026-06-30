@@ -36,6 +36,7 @@ import type {
   CustomerUpdate,
   Destination,
   DestinationInput,
+  DomainUpdate,
   Driver,
   DriverAvailability,
   DriverInput,
@@ -48,6 +49,7 @@ import type {
   FleetStats,
   GetFinanceSummaryParams,
   GetPublicCmsSettingsParams,
+  GetPublicPackagesParams,
   GetRevenueTrendParams,
   HealthStatus,
   Invoice,
@@ -6358,6 +6360,76 @@ export const useUpdateCmsSettings = <TError = ErrorType<unknown>,
       return useMutation(getUpdateCmsSettingsMutationOptions(options));
     }
 
+export const getUpdateCompanyDomainUrl = () => {
+
+
+
+
+  return `/api/v1/company/domain`
+}
+
+/**
+ * @summary Save custom domain for the company website
+ */
+export const updateCompanyDomain = async (domainUpdate: DomainUpdate, options?: RequestInit): Promise<DomainUpdate> => {
+
+  return customFetch<DomainUpdate>(getUpdateCompanyDomainUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(domainUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateCompanyDomainMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompanyDomain>>, TError,{data: BodyType<DomainUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCompanyDomain>>, TError,{data: BodyType<DomainUpdate>}, TContext> => {
+
+const mutationKey = ['updateCompanyDomain'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCompanyDomain>>, {data: BodyType<DomainUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateCompanyDomain(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCompanyDomainMutationResult = NonNullable<Awaited<ReturnType<typeof updateCompanyDomain>>>
+    export type UpdateCompanyDomainMutationBody = BodyType<DomainUpdate>
+    export type UpdateCompanyDomainMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Save custom domain for the company website
+ */
+export const useUpdateCompanyDomain = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompanyDomain>>, TError,{data: BodyType<DomainUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCompanyDomain>>,
+        TError,
+        {data: BodyType<DomainUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateCompanyDomainMutationOptions(options));
+    }
+
 export const getGetPublicCmsSettingsUrl = (params?: GetPublicCmsSettingsParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -6442,20 +6514,27 @@ export function useGetPublicCmsSettings<TData = Awaited<ReturnType<typeof getPub
 
 
 
-export const getGetPublicPackagesUrl = () => {
+export const getGetPublicPackagesUrl = (params?: GetPublicPackagesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/v1/public/packages`
+  return stringifiedParams.length > 0 ? `/api/v1/public/packages?${stringifiedParams}` : `/api/v1/public/packages`
 }
 
 /**
  * @summary Get public tour packages for customer website
  */
-export const getPublicPackages = async ( options?: RequestInit): Promise<TourPackage[]> => {
+export const getPublicPackages = async (params?: GetPublicPackagesParams, options?: RequestInit): Promise<TourPackage[]> => {
 
-  return customFetch<TourPackage[]>(getGetPublicPackagesUrl(),
+  return customFetch<TourPackage[]>(getGetPublicPackagesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -6468,23 +6547,23 @@ export const getPublicPackages = async ( options?: RequestInit): Promise<TourPac
 
 
 
-export const getGetPublicPackagesQueryKey = () => {
+export const getGetPublicPackagesQueryKey = (params?: GetPublicPackagesParams,) => {
     return [
-    `/api/v1/public/packages`
+    `/api/v1/public/packages`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetPublicPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getPublicPackages>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPackages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetPublicPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getPublicPackages>>, TError = ErrorType<unknown>>(params?: GetPublicPackagesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPackages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPublicPackagesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicPackagesQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicPackages>>> = ({ signal }) => getPublicPackages({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicPackages>>> = ({ signal }) => getPublicPackages(params, { signal, ...requestOptions });
 
 
 
@@ -6502,11 +6581,11 @@ export type GetPublicPackagesQueryError = ErrorType<unknown>
  */
 
 export function useGetPublicPackages<TData = Awaited<ReturnType<typeof getPublicPackages>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPackages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: GetPublicPackagesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPackages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetPublicPackagesQueryOptions(options)
+  const queryOptions = getGetPublicPackagesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

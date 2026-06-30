@@ -18,7 +18,7 @@ const fadeUp: Variants = {
 const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 
 export default function PublicPackages() {
-  const { data: packages, isLoading } = useGetPublicPackages();
+  const { data: packages, isLoading } = useGetPublicPackages({ domain: window.location.hostname });
   const { t } = useLang();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");

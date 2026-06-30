@@ -1,3 +1,1 @@
-- [TravelOS orval hook naming](travelos-orval-hooks.md) — Orval generates useList* for collections, not useGet*; singular lookups are useGet<Entity>
-- [TravelOS lib rebuild rule](travelos-lib-rebuild.md) — must run typecheck:libs before api-server typecheck after any lib/db schema change
-- [TravelOS auth token injection](travelos-auth-token.md) — setAuthTokenGetter called in AuthProvider useEffect; token stored in localStorage
+- [Domain routing pattern](domain-routing.md) — custom domain lookup skips localhost/.replit.dev/.replit.app hostnames; stored as bare hostname in companies.domain

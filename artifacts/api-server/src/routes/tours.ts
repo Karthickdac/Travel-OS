@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, destinationsTable, tourPackagesTable, leadsTable } from "@workspace/db";
+import { eq, and } from "drizzle-orm";
+import { db, destinationsTable, tourPackagesTable, leadsTable, companiesTable } from "@workspace/db";
 import {
   ListDestinationsResponse,
   CreateDestinationBody,
@@ -23,6 +23,24 @@ import {
 const router: IRouter = Router();
 
 let leadCounter = 500;
+
+function normalizeHost(h: string): string {
+  return h.replace(/^https?:\/\//, "").replace(/\/$/, "").replace(/:\d+$/, "").toLowerCase();
+}
+
+async function resolveCompanyIdByDomain(domain: string): Promise<string | null> {
+  const normalized = normalizeHost(domain);
+  if (!normalized || normalized === "localhost" || normalized.endsWith(".replit.dev") || normalized.endsWith(".replit.app")) {
+    return null;
+  }
+  const companies = await db.select({ id: companiesTable.id, domain: companiesTable.domain }).from(companiesTable);
+  const match = companies.find(c => {
+    if (!c.domain) return false;
+    const stored = normalizeHost(c.domain);
+    return stored === normalized || stored === `www.${normalized}` || `www.${stored}` === normalized;
+  });
+  return match?.id ?? null;
+}
 
 function mapDestination(d: typeof destinationsTable.$inferSelect) {
   return {
@@ -176,8 +194,17 @@ router.delete("/v1/tours/packages/:id", async (req, res): Promise<void> => {
 });
 
 // Public endpoints
-router.get("/v1/public/packages", async (_req, res): Promise<void> => {
-  const packages = await db.select().from(tourPackagesTable).where(eq(tourPackagesTable.isActive, true));
+router.get("/v1/public/packages", async (req, res): Promise<void> => {
+  const companyId = req.query.companyId as string | undefined;
+  const domain = req.query.domain as string | undefined;
+  let resolvedCompanyId = companyId;
+  if (!resolvedCompanyId && domain) {
+    resolvedCompanyId = (await resolveCompanyIdByDomain(domain)) ?? undefined;
+  }
+  const whereClause = resolvedCompanyId
+    ? and(eq(tourPackagesTable.isActive, true), eq(tourPackagesTable.companyId, resolvedCompanyId))
+    : eq(tourPackagesTable.isActive, true);
+  const packages = await db.select().from(tourPackagesTable).where(whereClause);
   res.json(GetPublicPackagesResponse.parse(packages.map(mapPackage)));
 });
 
@@ -188,10 +215,17 @@ router.post("/v1/public/enquiry", async (req, res): Promise<void> => {
     return;
   }
 
+  let resolvedCompanyId = parsed.data.companyId;
+  if (!resolvedCompanyId) {
+    const [firstCompany] = await db.select({ id: companiesTable.id }).from(companiesTable).limit(1);
+    resolvedCompanyId = firstCompany?.id;
+  }
+
   leadCounter++;
   const [lead] = await db
     .insert(leadsTable)
     .values({
+      companyId: resolvedCompanyId ?? null,
       name: parsed.data.name,
       phone: parsed.data.phone,
       email: parsed.data.email,

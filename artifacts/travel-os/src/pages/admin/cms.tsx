@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useGetCmsSettings, useUpdateCmsSettings } from "@workspace/api-client-react";
+import { useGetCmsSettings, useUpdateCmsSettings, useUpdateCompanyDomain, useGetCompany } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth-context";
 import {
   Globe, Palette, Layout, Phone, Share2, BarChart2, Type,
   Save, Eye, RefreshCw, Image, Search, Megaphone, Info, Star,
+  CheckCircle2, Copy, ExternalLink, Link2,
 } from "lucide-react";
 
 type CmsForm = {
@@ -95,12 +97,21 @@ function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: s
 }
 
 export default function AdminCms() {
+  const { user } = useAuth();
   const { data: settings, isLoading } = useGetCmsSettings();
+  const { data: companyData } = useGetCompany(user?.companyId ?? "", { query: { enabled: !!user?.companyId } as any });
   const updateCms = useUpdateCmsSettings();
+  const updateDomain = useUpdateCompanyDomain();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [form, setForm] = useState<CmsForm>(EMPTY);
   const [dirty, setDirty] = useState(false);
+  const [customDomain, setCustomDomain] = useState("");
+  const [domainSaving, setDomainSaving] = useState(false);
+
+  useEffect(() => {
+    if (companyData?.domain) setCustomDomain(companyData.domain);
+  }, [companyData]);
 
   useEffect(() => {
     if (!settings) return;
@@ -164,6 +175,19 @@ export default function AdminCms() {
       setDirty(false);
     } catch {
       toast({ title: "Failed to save settings", variant: "destructive" });
+    }
+  };
+
+  const handleDomainSave = async () => {
+    setDomainSaving(true);
+    try {
+      await updateDomain.mutateAsync({ data: { domain: customDomain } });
+      toast({ title: "Custom domain saved", description: customDomain ? `Domain set to ${customDomain}` : "Domain cleared." });
+      qc.invalidateQueries({ queryKey: [`/v1/company/${user?.companyId}`] });
+    } catch {
+      toast({ title: "Failed to save domain", variant: "destructive" });
+    } finally {
+      setDomainSaving(false);
     }
   };
 
@@ -263,6 +287,7 @@ export default function AdminCms() {
           <TabsTrigger value="content" className="gap-1.5"><Type className="h-3.5 w-3.5" />Content</TabsTrigger>
           <TabsTrigger value="features" className="gap-1.5"><Layout className="h-3.5 w-3.5" />Sections</TabsTrigger>
           <TabsTrigger value="seo" className="gap-1.5"><Search className="h-3.5 w-3.5" />SEO</TabsTrigger>
+          <TabsTrigger value="domain" className="gap-1.5"><Globe className="h-3.5 w-3.5" />Domain</TabsTrigger>
         </TabsList>
 
         {/* ── Hero ── */}
@@ -456,6 +481,116 @@ export default function AdminCms() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ── Custom Domain ── */}
+        <TabsContent value="domain" className="mt-4">
+          <div className="space-y-4">
+            {/* Domain input */}
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><Link2 className="h-4 w-4 text-primary" />Custom Domain</CardTitle>
+                <CardDescription>Point your own domain name (e.g. www.maduraismt.com) to this TravelOS website.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Your Domain</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={customDomain}
+                      onChange={e => setCustomDomain(e.target.value)}
+                      placeholder="www.maduraismt.com"
+                      className="font-mono flex-1"
+                    />
+                    <Button onClick={handleDomainSave} disabled={domainSaving} className="gap-2 shrink-0">
+                      {domainSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Save
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Enter only the hostname, e.g. <code className="bg-muted px-1 rounded">www.maduraismt.com</code> — no <code className="bg-muted px-1 rounded">https://</code></p>
+                </div>
+
+                {companyData?.domain && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+                    <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                    <span>Domain saved: <strong>{companyData.domain}</strong></span>
+                    <a href={`https://${companyData.domain}`} target="_blank" rel="noopener noreferrer" className="ml-auto hover:underline flex items-center gap-1">
+                      <ExternalLink className="h-3.5 w-3.5" />Visit
+                    </a>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* DNS setup */}
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">DNS Setup Instructions</CardTitle>
+                <CardDescription>Add these records in your domain registrar (GoDaddy, Namecheap, Google Domains, etc.)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold">Step 1 — Add a CNAME record</p>
+                  <div className="rounded-lg border border-border overflow-hidden text-sm">
+                    <div className="grid grid-cols-3 bg-muted/50 px-4 py-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider border-b border-border">
+                      <span>Type</span><span>Name / Host</span><span>Value / Points to</span>
+                    </div>
+                    <div className="grid grid-cols-3 px-4 py-3 font-mono text-sm items-center">
+                      <span className="text-blue-600 font-bold">CNAME</span>
+                      <span>www</span>
+                      <div className="flex items-center gap-2">
+                        <span className="truncate">{window.location.hostname}</span>
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(window.location.hostname); }}
+                          className="p-1 rounded hover:bg-muted transition-colors"
+                          title="Copy"
+                        >
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">For a root domain (e.g. <code className="bg-muted px-1 rounded">maduraismt.com</code> without www), use an <strong>A record</strong> or <strong>ALIAS</strong> record pointing to the same value — check your registrar's support docs for root-level CNAME support.</p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold">Step 2 — Wait for DNS propagation</p>
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm">
+                    <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span>DNS changes can take <strong>5 minutes to 48 hours</strong> to propagate worldwide. Once propagated, visitors to your domain will see your TravelOS customer website.</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold">Step 3 — How it works</p>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    {[
+                      "Your customer types www.maduraismt.com in their browser",
+                      "DNS resolves to TravelOS via the CNAME record",
+                      "TravelOS serves your company's CMS-configured website",
+                      "Your branding, packages, and content appear automatically",
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold flex-shrink-0 mt-0.5">{i+1}</div>
+                        <span>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Deploy reminder */}
+            <Card className="shadow-sm border-amber-200 bg-amber-50">
+              <CardContent className="p-4 flex items-start gap-3">
+                <Info className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-semibold mb-1">Deploy your app first</p>
+                  <p>Custom domains only work on a <strong>published/deployed</strong> version of TravelOS. Click the <strong>Publish</strong> button in the top-right of the Replit workspace to deploy your app and get a stable public URL.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

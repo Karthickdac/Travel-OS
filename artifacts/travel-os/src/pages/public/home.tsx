@@ -82,9 +82,11 @@ function AnimatedNumber({ target }: { target: string }) {
   return <div ref={ref}>{display}</div>;
 }
 
+const SITE_DOMAIN = window.location.hostname;
+
 export default function PublicHome() {
-  const { data: packages, isLoading } = useGetPublicPackages();
-  const { data: cms } = useGetPublicCmsSettings({});
+  const { data: packages, isLoading } = useGetPublicPackages({ domain: SITE_DOMAIN });
+  const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
   const { t } = useLang();
 
   const heroTitle = cms?.heroTitle || "Madurai SMT Travels";

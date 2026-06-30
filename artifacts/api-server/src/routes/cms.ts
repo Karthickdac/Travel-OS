@@ -65,6 +65,26 @@ async function upsertDefaults(companyId: string) {
   return created;
 }
 
+function normalizeHost(h: string): string {
+  return h.replace(/^https?:\/\//, "").replace(/\/$/, "").replace(/:\d+$/, "").toLowerCase();
+}
+
+async function resolveCompanyIdByDomain(domain: string): Promise<string | null> {
+  const normalized = normalizeHost(domain);
+  if (!normalized || normalized === "localhost" || normalized.endsWith(".replit.dev") || normalized.endsWith(".replit.app")) {
+    return null;
+  }
+  const companies = await db.select({ id: companiesTable.id, domain: companiesTable.domain }).from(companiesTable);
+  const match = companies.find(c => {
+    if (!c.domain) return false;
+    const stored = normalizeHost(c.domain);
+    return stored === normalized
+      || stored === `www.${normalized}`
+      || `www.${stored}` === normalized;
+  });
+  return match?.id ?? null;
+}
+
 router.get("/v1/cms/settings", async (req, res): Promise<void> => {
   const companyId = (req as any).user?.companyId;
   if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
@@ -93,11 +113,27 @@ router.put("/v1/cms/settings", async (req, res): Promise<void> => {
   res.json(mapSettings(updated));
 });
 
+router.put("/v1/company/domain", async (req, res): Promise<void> => {
+  const companyId = (req as any).user?.companyId;
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { domain } = req.body as { domain?: string };
+  if (domain === undefined) { res.status(400).json({ error: "domain is required" }); return; }
+  await db.update(companiesTable).set({ domain: domain || null }).where(eq(companiesTable.id, companyId));
+  res.json({ domain: domain || null });
+});
+
 router.get("/v1/public/cms", async (req, res): Promise<void> => {
   const companyId = req.query.companyId as string | undefined;
+  const domain = req.query.domain as string | undefined;
+
+  let resolvedCompanyId = companyId;
+  if (!resolvedCompanyId && domain) {
+    resolvedCompanyId = (await resolveCompanyIdByDomain(domain)) ?? undefined;
+  }
+
   let settings: typeof websiteSettingsTable.$inferSelect | undefined;
-  if (companyId) {
-    [settings] = await db.select().from(websiteSettingsTable).where(eq(websiteSettingsTable.companyId, companyId));
+  if (resolvedCompanyId) {
+    [settings] = await db.select().from(websiteSettingsTable).where(eq(websiteSettingsTable.companyId, resolvedCompanyId));
   } else {
     [settings] = await db.select().from(websiteSettingsTable).limit(1);
   }

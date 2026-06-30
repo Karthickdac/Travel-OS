@@ -894,6 +894,10 @@ export interface WebsiteSettingsUpdate {
   metaDescription?: string;
 }
 
+export interface DomainUpdate {
+  domain: string;
+}
+
 export interface EnquiryInput {
   name: string;
   phone: string;
@@ -903,6 +907,7 @@ export interface EnquiryInput {
   pax?: number;
   budget?: number;
   message?: string;
+  companyId?: string;
 }
 
 export type ListCompaniesParams = {
@@ -963,6 +968,12 @@ period?: string;
 };
 
 export type GetPublicCmsSettingsParams = {
+companyId?: string;
+domain?: string;
+};
+
+export type GetPublicPackagesParams = {
+domain?: string;
 companyId?: string;
 };
 

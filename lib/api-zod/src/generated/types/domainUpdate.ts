@@ -6,7 +6,6 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GetPublicCmsSettingsParams = {
-companyId?: string;
-domain?: string;
-};
+export interface DomainUpdate {
+  domain: string;
+}
