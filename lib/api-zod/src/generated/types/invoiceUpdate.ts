@@ -10,4 +10,5 @@ export interface InvoiceUpdate {
   status?: string;
   paymentMode?: string;
   paidAt?: string;
+  notes?: string;
 }

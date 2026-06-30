@@ -12,9 +12,30 @@ export interface Invoice {
   invoiceNumber: string;
   customerName: string;
   /** @nullable */
+  customerPhone?: string | null;
+  /** @nullable */
+  customerAddress?: string | null;
+  /** @nullable */
   bookingId?: string | null;
+  /** @nullable */
+  vehicleNumber?: string | null;
+  /** @nullable */
+  driverName?: string | null;
+  /** @nullable */
+  tripFrom?: string | null;
+  /** @nullable */
+  tripTo?: string | null;
+  /** @nullable */
+  kmsTraveled?: number | null;
+  /** @nullable */
+  serviceDate?: string | null;
+  /** @nullable */
+  description?: string | null;
+  taxRate?: number;
   amount: number;
   taxAmount?: number;
+  /** @nullable */
+  notes?: string | null;
   status: InvoiceStatus;
   dueDate: string;
   /** @nullable */

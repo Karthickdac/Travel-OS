@@ -705,9 +705,30 @@ export interface Invoice {
   invoiceNumber: string;
   customerName: string;
   /** @nullable */
+  customerPhone?: string | null;
+  /** @nullable */
+  customerAddress?: string | null;
+  /** @nullable */
   bookingId?: string | null;
+  /** @nullable */
+  vehicleNumber?: string | null;
+  /** @nullable */
+  driverName?: string | null;
+  /** @nullable */
+  tripFrom?: string | null;
+  /** @nullable */
+  tripTo?: string | null;
+  /** @nullable */
+  kmsTraveled?: number | null;
+  /** @nullable */
+  serviceDate?: string | null;
+  /** @nullable */
+  description?: string | null;
+  taxRate?: number;
   amount: number;
   taxAmount?: number;
+  /** @nullable */
+  notes?: string | null;
   status: InvoiceStatus;
   dueDate: string;
   /** @nullable */
@@ -719,38 +740,49 @@ export interface Invoice {
 
 export interface InvoiceInput {
   customerName: string;
+  customerPhone?: string;
+  customerAddress?: string;
   bookingId?: string;
+  vehicleNumber?: string;
+  driverName?: string;
+  tripFrom?: string;
+  tripTo?: string;
+  kmsTraveled?: number;
+  serviceDate?: string;
+  description?: string;
+  taxRate?: number;
   amount: number;
   taxAmount?: number;
   dueDate: string;
+  paymentMode?: string;
+  notes?: string;
 }
 
 export interface InvoiceUpdate {
   status?: string;
   paymentMode?: string;
   paidAt?: string;
+  notes?: string;
 }
-
-export type ExpenseCategory = typeof ExpenseCategory[keyof typeof ExpenseCategory];
-
-
-export const ExpenseCategory = {
-  fuel: 'fuel',
-  maintenance: 'maintenance',
-  salary: 'salary',
-  toll: 'toll',
-  insurance: 'insurance',
-  misc: 'misc',
-} as const;
 
 export interface Expense {
   id: string;
-  category: ExpenseCategory;
+  category: string;
   amount: number;
   date: string;
   description: string;
   /** @nullable */
   vendorName?: string | null;
+  /** @nullable */
+  vehicleId?: string | null;
+  /** @nullable */
+  vehicleNumber?: string | null;
+  /** @nullable */
+  driverId?: string | null;
+  /** @nullable */
+  driverName?: string | null;
+  /** @nullable */
+  notes?: string | null;
   /** @nullable */
   receiptUrl?: string | null;
   createdAt?: string;
@@ -762,6 +794,11 @@ export interface ExpenseInput {
   date: string;
   description: string;
   vendorName?: string;
+  vehicleId?: string;
+  vehicleNumber?: string;
+  driverId?: string;
+  driverName?: string;
+  notes?: string;
 }
 
 export interface ExpenseUpdate {
@@ -770,6 +807,11 @@ export interface ExpenseUpdate {
   date?: string;
   description?: string;
   vendorName?: string;
+  vehicleId?: string;
+  vehicleNumber?: string;
+  driverId?: string;
+  driverName?: string;
+  notes?: string;
 }
 
 export interface FinanceSummary {

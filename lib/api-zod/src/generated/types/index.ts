@@ -33,7 +33,6 @@ export * from './driverStatus';
 export * from './driverUpdate';
 export * from './enquiryInput';
 export * from './expense';
-export * from './expenseCategory';
 export * from './expenseInput';
 export * from './expenseUpdate';
 export * from './financeSummary';

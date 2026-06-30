@@ -1,8 +1,7 @@
 import { Router, type IRouter } from "express";
-import { eq, count, sum, lt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db, invoicesTable, expensesTable } from "@workspace/db";
 import {
-  ListInvoicesQueryParams,
   ListInvoicesResponse,
   CreateInvoiceBody,
   CreateInvoiceResponse,
@@ -29,9 +28,20 @@ function mapInvoice(i: typeof invoicesTable.$inferSelect) {
     id: i.id,
     invoiceNumber: i.invoiceNumber,
     customerName: i.customerName,
+    customerPhone: i.customerPhone ?? null,
+    customerAddress: i.customerAddress ?? null,
     bookingId: i.bookingId ?? null,
+    vehicleNumber: i.vehicleNumber ?? null,
+    driverName: i.driverName ?? null,
+    tripFrom: i.tripFrom ?? null,
+    tripTo: i.tripTo ?? null,
+    kmsTraveled: i.kmsTraveled ?? null,
+    serviceDate: i.serviceDate ?? null,
+    description: i.description ?? null,
+    taxRate: i.taxRate,
     amount: Number(i.amount),
     taxAmount: Number(i.taxAmount),
+    notes: i.notes ?? null,
     status: i.status,
     dueDate: i.dueDate,
     paidAt: i.paidAt?.toISOString() ?? null,
@@ -48,6 +58,11 @@ function mapExpense(e: typeof expensesTable.$inferSelect) {
     date: e.date,
     description: e.description,
     vendorName: e.vendorName ?? null,
+    vehicleId: e.vehicleId ?? null,
+    vehicleNumber: e.vehicleNumber ?? null,
+    driverId: e.driverId ?? null,
+    driverName: e.driverName ?? null,
+    notes: e.notes ?? null,
     receiptUrl: e.receiptUrl ?? null,
     createdAt: e.createdAt.toISOString(),
   };
@@ -66,15 +81,28 @@ router.post("/v1/finance/invoices", async (req, res): Promise<void> => {
   }
 
   invoiceCounter++;
+  const d = parsed.data;
   const [invoice] = await db
     .insert(invoicesTable)
     .values({
       invoiceNumber: `INV${invoiceCounter}`,
-      customerName: parsed.data.customerName,
-      bookingId: parsed.data.bookingId,
-      amount: String(parsed.data.amount),
-      taxAmount: String(parsed.data.taxAmount ?? 0),
-      dueDate: parsed.data.dueDate,
+      customerName: d.customerName,
+      customerPhone: d.customerPhone,
+      customerAddress: d.customerAddress,
+      bookingId: d.bookingId,
+      vehicleNumber: d.vehicleNumber,
+      driverName: d.driverName,
+      tripFrom: d.tripFrom,
+      tripTo: d.tripTo,
+      kmsTraveled: d.kmsTraveled,
+      serviceDate: d.serviceDate,
+      description: d.description,
+      taxRate: d.taxRate ?? 18,
+      amount: String(d.amount),
+      taxAmount: String(d.taxAmount ?? 0),
+      dueDate: d.dueDate,
+      paymentMode: d.paymentMode,
+      notes: d.notes,
       status: "draft",
     })
     .returning();
@@ -115,6 +143,7 @@ router.patch("/v1/finance/invoices/:id", async (req, res): Promise<void> => {
   if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
   if (parsed.data.paymentMode !== undefined) updateData.paymentMode = parsed.data.paymentMode;
   if (parsed.data.paidAt !== undefined) updateData.paidAt = new Date(parsed.data.paidAt);
+  if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
 
   const [invoice] = await db
     .update(invoicesTable)
@@ -142,14 +171,20 @@ router.post("/v1/finance/expenses", async (req, res): Promise<void> => {
     return;
   }
 
+  const d = parsed.data;
   const [expense] = await db
     .insert(expensesTable)
     .values({
-      category: parsed.data.category,
-      amount: String(parsed.data.amount),
-      date: parsed.data.date,
-      description: parsed.data.description,
-      vendorName: parsed.data.vendorName,
+      category: d.category,
+      amount: String(d.amount),
+      date: d.date,
+      description: d.description,
+      vendorName: d.vendorName,
+      vehicleId: d.vehicleId,
+      vehicleNumber: d.vehicleNumber,
+      driverId: d.driverId,
+      driverName: d.driverName,
+      notes: d.notes,
     })
     .returning();
 
@@ -173,6 +208,11 @@ router.patch("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
   if (parsed.data.date !== undefined) updateData.date = parsed.data.date;
   if (parsed.data.description !== undefined) updateData.description = parsed.data.description;
   if (parsed.data.vendorName !== undefined) updateData.vendorName = parsed.data.vendorName;
+  if (parsed.data.vehicleId !== undefined) updateData.vehicleId = parsed.data.vehicleId || null;
+  if (parsed.data.vehicleNumber !== undefined) updateData.vehicleNumber = parsed.data.vehicleNumber;
+  if (parsed.data.driverId !== undefined) updateData.driverId = parsed.data.driverId || null;
+  if (parsed.data.driverName !== undefined) updateData.driverName = parsed.data.driverName;
+  if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
   const [expense] = await db
     .update(expensesTable)
     .set(updateData)

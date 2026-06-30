@@ -1709,9 +1709,20 @@ export const ListInvoicesResponseItem = zod.object({
   "id": zod.string(),
   "invoiceNumber": zod.string(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullish(),
+  "customerAddress": zod.string().nullish(),
   "bookingId": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "tripFrom": zod.string().nullish(),
+  "tripTo": zod.string().nullish(),
+  "kmsTraveled": zod.number().nullish(),
+  "serviceDate": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "taxRate": zod.number().optional(),
   "amount": zod.number(),
   "taxAmount": zod.number().optional(),
+  "notes": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "dueDate": zod.string(),
   "paidAt": zod.string().nullish(),
@@ -1726,19 +1737,42 @@ export const ListInvoicesResponse = zod.array(ListInvoicesResponseItem)
  */
 export const CreateInvoiceBody = zod.object({
   "customerName": zod.string(),
+  "customerPhone": zod.string().optional(),
+  "customerAddress": zod.string().optional(),
   "bookingId": zod.string().optional(),
+  "vehicleNumber": zod.string().optional(),
+  "driverName": zod.string().optional(),
+  "tripFrom": zod.string().optional(),
+  "tripTo": zod.string().optional(),
+  "kmsTraveled": zod.number().optional(),
+  "serviceDate": zod.string().optional(),
+  "description": zod.string().optional(),
+  "taxRate": zod.number().optional(),
   "amount": zod.number(),
   "taxAmount": zod.number().optional(),
-  "dueDate": zod.string()
+  "dueDate": zod.string(),
+  "paymentMode": zod.string().optional(),
+  "notes": zod.string().optional()
 })
 
 export const CreateInvoiceResponse = zod.object({
   "id": zod.string(),
   "invoiceNumber": zod.string(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullish(),
+  "customerAddress": zod.string().nullish(),
   "bookingId": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "tripFrom": zod.string().nullish(),
+  "tripTo": zod.string().nullish(),
+  "kmsTraveled": zod.number().nullish(),
+  "serviceDate": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "taxRate": zod.number().optional(),
   "amount": zod.number(),
   "taxAmount": zod.number().optional(),
+  "notes": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "dueDate": zod.string(),
   "paidAt": zod.string().nullish(),
@@ -1758,9 +1792,20 @@ export const GetInvoiceResponse = zod.object({
   "id": zod.string(),
   "invoiceNumber": zod.string(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullish(),
+  "customerAddress": zod.string().nullish(),
   "bookingId": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "tripFrom": zod.string().nullish(),
+  "tripTo": zod.string().nullish(),
+  "kmsTraveled": zod.number().nullish(),
+  "serviceDate": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "taxRate": zod.number().optional(),
   "amount": zod.number(),
   "taxAmount": zod.number().optional(),
+  "notes": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "dueDate": zod.string(),
   "paidAt": zod.string().nullish(),
@@ -1779,16 +1824,28 @@ export const UpdateInvoiceParams = zod.object({
 export const UpdateInvoiceBody = zod.object({
   "status": zod.string().optional(),
   "paymentMode": zod.string().optional(),
-  "paidAt": zod.string().optional()
+  "paidAt": zod.string().optional(),
+  "notes": zod.string().optional()
 })
 
 export const UpdateInvoiceResponse = zod.object({
   "id": zod.string(),
   "invoiceNumber": zod.string(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullish(),
+  "customerAddress": zod.string().nullish(),
   "bookingId": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "tripFrom": zod.string().nullish(),
+  "tripTo": zod.string().nullish(),
+  "kmsTraveled": zod.number().nullish(),
+  "serviceDate": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "taxRate": zod.number().optional(),
   "amount": zod.number(),
   "taxAmount": zod.number().optional(),
+  "notes": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "dueDate": zod.string(),
   "paidAt": zod.string().nullish(),
@@ -1802,11 +1859,16 @@ export const UpdateInvoiceResponse = zod.object({
  */
 export const ListExpensesResponseItem = zod.object({
   "id": zod.string(),
-  "category": zod.enum(['fuel', 'maintenance', 'salary', 'toll', 'insurance', 'misc']),
+  "category": zod.string(),
   "amount": zod.number(),
   "date": zod.string(),
   "description": zod.string(),
   "vendorName": zod.string().nullish(),
+  "vehicleId": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "driverId": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "notes": zod.string().nullish(),
   "receiptUrl": zod.string().nullish(),
   "createdAt": zod.string().optional()
 })
@@ -1821,16 +1883,26 @@ export const CreateExpenseBody = zod.object({
   "amount": zod.number(),
   "date": zod.string(),
   "description": zod.string(),
-  "vendorName": zod.string().optional()
+  "vendorName": zod.string().optional(),
+  "vehicleId": zod.string().optional(),
+  "vehicleNumber": zod.string().optional(),
+  "driverId": zod.string().optional(),
+  "driverName": zod.string().optional(),
+  "notes": zod.string().optional()
 })
 
 export const CreateExpenseResponse = zod.object({
   "id": zod.string(),
-  "category": zod.enum(['fuel', 'maintenance', 'salary', 'toll', 'insurance', 'misc']),
+  "category": zod.string(),
   "amount": zod.number(),
   "date": zod.string(),
   "description": zod.string(),
   "vendorName": zod.string().nullish(),
+  "vehicleId": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "driverId": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "notes": zod.string().nullish(),
   "receiptUrl": zod.string().nullish(),
   "createdAt": zod.string().optional()
 })
@@ -1848,16 +1920,26 @@ export const UpdateExpenseBody = zod.object({
   "amount": zod.number().optional(),
   "date": zod.string().optional(),
   "description": zod.string().optional(),
-  "vendorName": zod.string().optional()
+  "vendorName": zod.string().optional(),
+  "vehicleId": zod.string().optional(),
+  "vehicleNumber": zod.string().optional(),
+  "driverId": zod.string().optional(),
+  "driverName": zod.string().optional(),
+  "notes": zod.string().optional()
 })
 
 export const UpdateExpenseResponse = zod.object({
   "id": zod.string(),
-  "category": zod.enum(['fuel', 'maintenance', 'salary', 'toll', 'insurance', 'misc']),
+  "category": zod.string(),
   "amount": zod.number(),
   "date": zod.string(),
   "description": zod.string(),
   "vendorName": zod.string().nullish(),
+  "vehicleId": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "driverId": zod.string().nullish(),
+  "driverName": zod.string().nullish(),
+  "notes": zod.string().nullish(),
   "receiptUrl": zod.string().nullish(),
   "createdAt": zod.string().optional()
 })

@@ -12,4 +12,9 @@ export interface ExpenseInput {
   date: string;
   description: string;
   vendorName?: string;
+  vehicleId?: string;
+  vehicleNumber?: string;
+  driverId?: string;
+  driverName?: string;
+  notes?: string;
 }

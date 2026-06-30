@@ -8,8 +8,20 @@
 
 export interface InvoiceInput {
   customerName: string;
+  customerPhone?: string;
+  customerAddress?: string;
   bookingId?: string;
+  vehicleNumber?: string;
+  driverName?: string;
+  tripFrom?: string;
+  tripTo?: string;
+  kmsTraveled?: number;
+  serviceDate?: string;
+  description?: string;
+  taxRate?: number;
   amount: number;
   taxAmount?: number;
   dueDate: string;
+  paymentMode?: string;
+  notes?: string;
 }

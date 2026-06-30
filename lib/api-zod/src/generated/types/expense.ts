@@ -5,16 +5,25 @@
  * TravelOS – Multi-tenant Travel ERP SaaS API
  * OpenAPI spec version: 0.1.0
  */
-import type { ExpenseCategory } from './expenseCategory';
 
 export interface Expense {
   id: string;
-  category: ExpenseCategory;
+  category: string;
   amount: number;
   date: string;
   description: string;
   /** @nullable */
   vendorName?: string | null;
+  /** @nullable */
+  vehicleId?: string | null;
+  /** @nullable */
+  vehicleNumber?: string | null;
+  /** @nullable */
+  driverId?: string | null;
+  /** @nullable */
+  driverName?: string | null;
+  /** @nullable */
+  notes?: string | null;
   /** @nullable */
   receiptUrl?: string | null;
   createdAt?: string;
