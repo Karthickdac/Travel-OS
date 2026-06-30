@@ -1468,6 +1468,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/Expense"
 
+  /v1/finance/expenses/{id}:
+    patch:
+      operationId: updateExpense
+      tags: [finance]
+      summary: Update expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseUpdate"
+      responses:
+        "200":
+          description: Updated expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+    delete:
+      operationId: deleteExpense
+      tags: [finance]
+      summary: Delete expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
   /v1/finance/summary:
     get:
       operationId: getFinanceSummary
@@ -1485,6 +1523,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FinanceSummary"
+
+  # ── CMS / WEBSITE BUILDER ─────────────────────────────────────────────────
+  /v1/cms/settings:
+    get:
+      operationId: getCmsSettings
+      tags: [cms]
+      summary: Get website CMS settings for authenticated company
+      responses:
+        "200":
+          description: CMS settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebsiteSettings"
+    put:
+      operationId: updateCmsSettings
+      tags: [cms]
+      summary: Update website CMS settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebsiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated CMS settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebsiteSettings"
+
+  /v1/public/cms:
+    get:
+      operationId: getPublicCmsSettings
+      tags: [public]
+      summary: Get public website settings (no auth required)
+      parameters:
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public CMS settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebsiteSettings"
 
   # ── PUBLIC WEBSITE ────────────────────────────────────────────────────────
   /v1/public/packages:
@@ -2609,6 +2697,20 @@ components:
         vendorName:
           type: string
 
+    ExpenseUpdate:
+      type: object
+      properties:
+        category:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+        description:
+          type: string
+        vendorName:
+          type: string
+
     FinanceSummary:
       type: object
       required: [totalRevenue, totalExpenses, netProfit, pendingInvoices, overdueAmount]
@@ -2627,6 +2729,168 @@ components:
           type: integer
         grossMargin:
           type: number
+
+    # ── CMS / Website Settings ─────────────────────────────────────────────
+    WebsiteSettings:
+      type: object
+      required: [id, companyId]
+      properties:
+        id:
+          type: string
+        companyId:
+          type: string
+        heroTitle:
+          type: string
+        heroSubtitle:
+          type: string
+        heroDesc:
+          type: ["string", "null"]
+        heroCtaText:
+          type: string
+        heroCtaPhone:
+          type: ["string", "null"]
+        heroBgImage:
+          type: ["string", "null"]
+        companyDisplayName:
+          type: ["string", "null"]
+        tagline:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        faviconUrl:
+          type: ["string", "null"]
+        primaryColor:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        socialWhatsapp:
+          type: ["string", "null"]
+        socialFacebook:
+          type: ["string", "null"]
+        socialInstagram:
+          type: ["string", "null"]
+        socialYoutube:
+          type: ["string", "null"]
+        stat1Value:
+          type: ["string", "null"]
+        stat1Label:
+          type: ["string", "null"]
+        stat2Value:
+          type: ["string", "null"]
+        stat2Label:
+          type: ["string", "null"]
+        stat3Value:
+          type: ["string", "null"]
+        stat3Label:
+          type: ["string", "null"]
+        stat4Value:
+          type: ["string", "null"]
+        stat4Label:
+          type: ["string", "null"]
+        aboutTitle:
+          type: ["string", "null"]
+        aboutText:
+          type: ["string", "null"]
+        announcementBar:
+          type: ["string", "null"]
+        ctaTitle:
+          type: ["string", "null"]
+        ctaSubtitle:
+          type: ["string", "null"]
+        showPackages:
+          type: boolean
+        showDestinations:
+          type: boolean
+        showEnquiryForm:
+          type: boolean
+        metaTitle:
+          type: ["string", "null"]
+        metaDescription:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    WebsiteSettingsUpdate:
+      type: object
+      properties:
+        heroTitle:
+          type: string
+        heroSubtitle:
+          type: string
+        heroDesc:
+          type: string
+        heroCtaText:
+          type: string
+        heroCtaPhone:
+          type: string
+        heroBgImage:
+          type: string
+        companyDisplayName:
+          type: string
+        tagline:
+          type: string
+        logoUrl:
+          type: string
+        faviconUrl:
+          type: string
+        primaryColor:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        socialWhatsapp:
+          type: string
+        socialFacebook:
+          type: string
+        socialInstagram:
+          type: string
+        socialYoutube:
+          type: string
+        stat1Value:
+          type: string
+        stat1Label:
+          type: string
+        stat2Value:
+          type: string
+        stat2Label:
+          type: string
+        stat3Value:
+          type: string
+        stat3Label:
+          type: string
+        stat4Value:
+          type: string
+        stat4Label:
+          type: string
+        aboutTitle:
+          type: string
+        aboutText:
+          type: string
+        announcementBar:
+          type: string
+        ctaTitle:
+          type: string
+        ctaSubtitle:
+          type: string
+        showPackages:
+          type: boolean
+        showDestinations:
+          type: boolean
+        showEnquiryForm:
+          type: boolean
+        metaTitle:
+          type: string
+        metaDescription:
+          type: string
 
     # ── Public Enquiry ─────────────────────────────────────────────────────
     EnquiryInput:

@@ -1,4 +1,4 @@
-import { useGetPublicPackages } from "@workspace/api-client-react";
+import { useGetPublicPackages, useGetPublicCmsSettings } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { MapPin, Clock, ArrowRight, Phone, Star, Shield, Users, HeadphonesIcon, CheckCircle2, ChevronRight } from "lucide-react";
@@ -84,7 +84,28 @@ function AnimatedNumber({ target }: { target: string }) {
 
 export default function PublicHome() {
   const { data: packages, isLoading } = useGetPublicPackages();
+  const { data: cms } = useGetPublicCmsSettings({});
   const { t } = useLang();
+
+  const heroTitle = cms?.heroTitle || "Madurai SMT Travels";
+  const heroSubtitle = cms?.heroSubtitle || t.hero.tagline;
+  const heroDesc = cms?.heroDesc || t.hero.desc;
+  const heroCtaText = cms?.heroCtaText || t.hero.book;
+  const heroPhone = cms?.phone || cms?.heroCtaPhone || "8110806339";
+  const heroBgImage = cms?.heroBgImage || HERO_IMAGE;
+  const announcementItems = cms?.announcementBar
+    ? cms.announcementBar.split("|").map(s => s.trim()).filter(Boolean)
+    : t.ticker;
+  const cmsStats = cms ? [
+    { v: cms.stat1Value || "5000+", l: cms.stat1Label || "Happy Customers" },
+    { v: cms.stat2Value || "12+", l: cms.stat2Label || "Years Experience" },
+    { v: cms.stat3Value || "50+", l: cms.stat3Label || "Vehicles" },
+    { v: cms.stat4Value || "200+", l: cms.stat4Label || "Tour Packages" },
+  ] : t.stats;
+  const ctaTitle = cms?.ctaTitle || t.cta.heading;
+  const ctaSubtitle = cms?.ctaSubtitle || t.cta.sub;
+  const aboutTitle = cms?.aboutTitle || t.whyUs.heading;
+  const aboutText = cms?.aboutText || t.whyUs.desc;
 
   return (
     <div className="flex flex-col overflow-x-hidden">
@@ -92,7 +113,7 @@ export default function PublicHome() {
       {/* Scrolling Ticker */}
       <div className="bg-primary text-primary-foreground py-2 overflow-hidden mt-16">
         <div className="flex animate-[ticker_30s_linear_infinite] whitespace-nowrap gap-10">
-          {[...t.ticker, ...t.ticker].map((item, i) => (
+          {[...announcementItems, ...announcementItems].map((item, i) => (
             <span key={i} className="text-xs font-semibold shrink-0 tracking-wide">{item}</span>
           ))}
         </div>
@@ -101,7 +122,7 @@ export default function PublicHome() {
       {/* Hero Section */}
       <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
         <motion.img
-          src={HERO_IMAGE}
+          src={heroBgImage}
           alt="South India Travel"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ filter: "brightness(0.32)" }}
@@ -141,42 +162,35 @@ export default function PublicHome() {
             variants={fadeUp}
             className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 leading-none drop-shadow-xl"
           >
-            Madurai<br />
-            <motion.span
-              className="text-amber-400 inline-block"
-              animate={{ textShadow: ["0 0 20px rgba(251,191,36,0)", "0 0 40px rgba(251,191,36,0.5)", "0 0 20px rgba(251,191,36,0)"] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              SMT
-            </motion.span>{" "}Travels
+            {heroTitle}
           </motion.h1>
 
           <motion.p variants={fadeUp} className="text-lg md:text-2xl font-light text-white/80 italic mb-3">
-            {t.hero.tagline}
+            {heroSubtitle}
           </motion.p>
           <motion.p variants={fadeUp} className="max-w-xl mx-auto text-base md:text-lg text-white/70 mb-10">
-            {t.hero.desc}
+            {heroDesc}
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
             <Link href="/enquiry">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" className="h-14 px-10 rounded-full text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-xl shadow-primary/30 gap-2">
-                  {t.hero.book} <ArrowRight className="h-4 w-4" />
+                  {heroCtaText} <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
             </Link>
-            <a href="tel:8110806339">
+            <a href={`tel:${heroPhone}`}>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="outline" className="h-14 px-10 rounded-full text-base font-bold bg-white/10 backdrop-blur-sm text-white border-white/40 hover:bg-white/20 gap-2">
-                  <Phone className="h-4 w-4" /> 8110806339
+                  <Phone className="h-4 w-4" /> {heroPhone}
                 </Button>
               </motion.div>
             </a>
           </motion.div>
 
           <motion.div variants={staggerContainer(0.1)} className="flex flex-wrap justify-center gap-6 md:gap-12">
-            {t.stats.map((s) => (
+            {cmsStats.map((s) => (
               <motion.div key={s.l} variants={scaleIn} className="text-center">
                 <div className="text-3xl font-black text-amber-400">
                   <AnimatedNumber target={s.v} />
@@ -269,7 +283,7 @@ export default function PublicHome() {
               <motion.p variants={fadeUp} className="text-muted-foreground">{t.packages.sub}</motion.p>
             </div>
             <motion.div variants={fadeIn}>
-              <a href="tel:8110806339">
+              <a href={`tel:${heroPhone}`}>
                 <Button variant="outline" className="mt-4 md:mt-0 gap-2 rounded-full">
                   <Phone className="h-4 w-4" /> {t.packages.callBtn}
                 </Button>
@@ -339,7 +353,7 @@ export default function PublicHome() {
                           )}
                         </div>
                       </div>
-                      <a href="tel:8110806339">
+                      <a href={`tel:${heroPhone}`}>
                         <motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }}>
                           <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-1.5 text-xs">
                             <Phone className="h-3 w-3" /> {t.packages.book}
@@ -368,8 +382,8 @@ export default function PublicHome() {
               variants={staggerContainer(0.1)}
             >
               <motion.p variants={slideLeft} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.whyUs.eyebrow}</motion.p>
-              <motion.h2 variants={slideLeft} className="text-4xl font-black tracking-tight mb-4 leading-tight whitespace-pre-line">{t.whyUs.heading}</motion.h2>
-              <motion.p variants={slideLeft} className="text-muted-foreground text-base mb-8">{t.whyUs.desc}</motion.p>
+              <motion.h2 variants={slideLeft} className="text-4xl font-black tracking-tight mb-4 leading-tight whitespace-pre-line">{aboutTitle}</motion.h2>
+              <motion.p variants={slideLeft} className="text-muted-foreground text-base mb-8">{aboutText}</motion.p>
               <motion.ul variants={staggerContainer(0.08)} className="space-y-3 mb-8">
                 {t.whyUs.bullets.map((item) => (
                   <motion.li key={item} variants={fadeUp} className="flex items-start gap-3">
@@ -386,7 +400,7 @@ export default function PublicHome() {
                 ))}
               </motion.ul>
               <motion.div variants={fadeUp} className="flex gap-4 flex-wrap">
-                <a href="tel:8110806339">
+                <a href={`tel:${heroPhone}`}>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                     <Button className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-2">
                       <Phone className="h-4 w-4" /> {t.whyUs.call}
@@ -493,13 +507,13 @@ export default function PublicHome() {
           viewport={{ once: true, amount: 0.3 }}
           variants={staggerContainer(0.15)}
         >
-          <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line">{t.cta.heading}</motion.h2>
-          <motion.p variants={fadeUp} className="text-white/80 text-lg mb-10 max-w-md mx-auto">{t.cta.sub}</motion.p>
+          <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line">{ctaTitle}</motion.h2>
+          <motion.p variants={fadeUp} className="text-white/80 text-lg mb-10 max-w-md mx-auto">{ctaSubtitle}</motion.p>
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="tel:8110806339">
+            <a href={`tel:${heroPhone}`}>
               <motion.div whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.2)" }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" className="h-16 px-12 rounded-full text-xl font-black bg-white text-orange-700 hover:bg-white/90 border-0 shadow-xl gap-3">
-                  <Phone className="h-6 w-6" /> 8110806339
+                  <Phone className="h-6 w-6" /> {heroPhone}
                 </Button>
               </motion.div>
             </a>

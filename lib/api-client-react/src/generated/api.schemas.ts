@@ -764,6 +764,14 @@ export interface ExpenseInput {
   vendorName?: string;
 }
 
+export interface ExpenseUpdate {
+  category?: string;
+  amount?: number;
+  date?: string;
+  description?: string;
+  vendorName?: string;
+}
+
 export interface FinanceSummary {
   totalRevenue: number;
   totalExpenses: number;
@@ -772,6 +780,118 @@ export interface FinanceSummary {
   overdueAmount: number;
   paidInvoices?: number;
   grossMargin?: number;
+}
+
+export interface WebsiteSettings {
+  id: string;
+  companyId: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  /** @nullable */
+  heroDesc?: string | null;
+  heroCtaText?: string;
+  /** @nullable */
+  heroCtaPhone?: string | null;
+  /** @nullable */
+  heroBgImage?: string | null;
+  /** @nullable */
+  companyDisplayName?: string | null;
+  /** @nullable */
+  tagline?: string | null;
+  /** @nullable */
+  logoUrl?: string | null;
+  /** @nullable */
+  faviconUrl?: string | null;
+  /** @nullable */
+  primaryColor?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  socialWhatsapp?: string | null;
+  /** @nullable */
+  socialFacebook?: string | null;
+  /** @nullable */
+  socialInstagram?: string | null;
+  /** @nullable */
+  socialYoutube?: string | null;
+  /** @nullable */
+  stat1Value?: string | null;
+  /** @nullable */
+  stat1Label?: string | null;
+  /** @nullable */
+  stat2Value?: string | null;
+  /** @nullable */
+  stat2Label?: string | null;
+  /** @nullable */
+  stat3Value?: string | null;
+  /** @nullable */
+  stat3Label?: string | null;
+  /** @nullable */
+  stat4Value?: string | null;
+  /** @nullable */
+  stat4Label?: string | null;
+  /** @nullable */
+  aboutTitle?: string | null;
+  /** @nullable */
+  aboutText?: string | null;
+  /** @nullable */
+  announcementBar?: string | null;
+  /** @nullable */
+  ctaTitle?: string | null;
+  /** @nullable */
+  ctaSubtitle?: string | null;
+  showPackages?: boolean;
+  showDestinations?: boolean;
+  showEnquiryForm?: boolean;
+  /** @nullable */
+  metaTitle?: string | null;
+  /** @nullable */
+  metaDescription?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WebsiteSettingsUpdate {
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroDesc?: string;
+  heroCtaText?: string;
+  heroCtaPhone?: string;
+  heroBgImage?: string;
+  companyDisplayName?: string;
+  tagline?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  primaryColor?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  socialWhatsapp?: string;
+  socialFacebook?: string;
+  socialInstagram?: string;
+  socialYoutube?: string;
+  stat1Value?: string;
+  stat1Label?: string;
+  stat2Value?: string;
+  stat2Label?: string;
+  stat3Value?: string;
+  stat3Label?: string;
+  stat4Value?: string;
+  stat4Label?: string;
+  aboutTitle?: string;
+  aboutText?: string;
+  announcementBar?: string;
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  showPackages?: boolean;
+  showDestinations?: boolean;
+  showEnquiryForm?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 export interface EnquiryInput {
@@ -840,5 +960,9 @@ status?: string;
 
 export type GetFinanceSummaryParams = {
 period?: string;
+};
+
+export type GetPublicCmsSettingsParams = {
+companyId?: string;
 };
 

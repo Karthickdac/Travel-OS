@@ -14,6 +14,9 @@ import {
   ListExpensesResponse,
   CreateExpenseBody,
   CreateExpenseResponse,
+  UpdateExpenseParams,
+  UpdateExpenseBody,
+  DeleteExpenseParams,
   GetFinanceSummaryResponse,
 } from "@workspace/api-zod";
 
@@ -151,6 +154,48 @@ router.post("/v1/finance/expenses", async (req, res): Promise<void> => {
     .returning();
 
   res.status(201).json(CreateExpenseResponse.parse(mapExpense(expense)));
+});
+
+router.patch("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
+  const params = UpdateExpenseParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = UpdateExpenseBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const updateData: Record<string, unknown> = {};
+  if (parsed.data.category !== undefined) updateData.category = parsed.data.category;
+  if (parsed.data.amount !== undefined) updateData.amount = String(parsed.data.amount);
+  if (parsed.data.date !== undefined) updateData.date = parsed.data.date;
+  if (parsed.data.description !== undefined) updateData.description = parsed.data.description;
+  if (parsed.data.vendorName !== undefined) updateData.vendorName = parsed.data.vendorName;
+  const [expense] = await db
+    .update(expensesTable)
+    .set(updateData)
+    .where(eq(expensesTable.id, params.data.id))
+    .returning();
+  if (!expense) {
+    res.status(404).json({ error: "Expense not found" });
+    return;
+  }
+  res.json(mapExpense(expense));
+});
+
+router.delete("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
+  const params = DeleteExpenseParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  await db
+    .update(expensesTable)
+    .set({ isDeleted: true })
+    .where(eq(expensesTable.id, params.data.id));
+  res.status(204).send();
 });
 
 router.get("/v1/finance/summary", async (_req, res): Promise<void> => {

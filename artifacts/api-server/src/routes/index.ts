@@ -12,6 +12,7 @@ import customersRouter from "./customers";
 import toursRouter from "./tours";
 import financeRouter from "./finance";
 import dashboardRouter from "./dashboard";
+import cmsRouter from "./cms";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(customersRouter);
 router.use(toursRouter);
 router.use(financeRouter);
 router.use(dashboardRouter);
+router.use(cmsRouter);
 
 export default router;

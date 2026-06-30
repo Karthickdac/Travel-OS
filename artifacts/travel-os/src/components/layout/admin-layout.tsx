@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function PackageIcon(props: any) {
@@ -55,6 +55,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         { href: "/admin/finance/summary", label: "Summary", icon: Wallet },
         { href: "/admin/finance/invoices", label: "Invoices", icon: Receipt },
         { href: "/admin/finance/expenses", label: "Expenses", icon: CreditCard },
+      ]
+    },
+    {
+      title: "Website",
+      items: [
+        { href: "/admin/cms", label: "Website CMS", icon: Globe },
       ]
     },
     {

@@ -43,9 +43,11 @@ import type {
   EnquiryInput,
   Expense,
   ExpenseInput,
+  ExpenseUpdate,
   FinanceSummary,
   FleetStats,
   GetFinanceSummaryParams,
+  GetPublicCmsSettingsParams,
   GetRevenueTrendParams,
   HealthStatus,
   Invoice,
@@ -87,7 +89,9 @@ import type {
   VehicleUpdate,
   Vendor,
   VendorInput,
-  VendorUpdate
+  VendorUpdate,
+  WebsiteSettings,
+  WebsiteSettingsUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -5982,6 +5986,147 @@ export const useCreateExpense = <TError = ErrorType<unknown>,
       return useMutation(getCreateExpenseMutationOptions(options));
     }
 
+export const getUpdateExpenseUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/finance/expenses/${id}`
+}
+
+/**
+ * @summary Update expense
+ */
+export const updateExpense = async (id: string,
+    expenseUpdate: ExpenseUpdate, options?: RequestInit): Promise<Expense> => {
+
+  return customFetch<Expense>(getUpdateExpenseUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(expenseUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateExpenseMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExpense>>, TError,{id: string;data: BodyType<ExpenseUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateExpense>>, TError,{id: string;data: BodyType<ExpenseUpdate>}, TContext> => {
+
+const mutationKey = ['updateExpense'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateExpense>>, {id: string;data: BodyType<ExpenseUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateExpense(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateExpenseMutationResult = NonNullable<Awaited<ReturnType<typeof updateExpense>>>
+    export type UpdateExpenseMutationBody = BodyType<ExpenseUpdate>
+    export type UpdateExpenseMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update expense
+ */
+export const useUpdateExpense = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateExpense>>, TError,{id: string;data: BodyType<ExpenseUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateExpense>>,
+        TError,
+        {id: string;data: BodyType<ExpenseUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateExpenseMutationOptions(options));
+    }
+
+export const getDeleteExpenseUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/finance/expenses/${id}`
+}
+
+/**
+ * @summary Delete expense
+ */
+export const deleteExpense = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteExpenseUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteExpenseMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteExpense'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteExpense>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteExpense(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteExpenseMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExpense>>>
+
+    export type DeleteExpenseMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete expense
+ */
+export const useDeleteExpense = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteExpense>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteExpenseMutationOptions(options));
+    }
+
 export const getGetFinanceSummaryUrl = (params?: GetFinanceSummaryParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -6054,6 +6199,237 @@ export function useGetFinanceSummary<TData = Awaited<ReturnType<typeof getFinanc
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetFinanceSummaryQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetCmsSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/cms/settings`
+}
+
+/**
+ * @summary Get website CMS settings for authenticated company
+ */
+export const getCmsSettings = async ( options?: RequestInit): Promise<WebsiteSettings> => {
+
+  return customFetch<WebsiteSettings>(getGetCmsSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCmsSettingsQueryKey = () => {
+    return [
+    `/api/v1/cms/settings`
+    ] as const;
+    }
+
+
+export const getGetCmsSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getCmsSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCmsSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCmsSettings>>> = ({ signal }) => getCmsSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCmsSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCmsSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getCmsSettings>>>
+export type GetCmsSettingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get website CMS settings for authenticated company
+ */
+
+export function useGetCmsSettings<TData = Awaited<ReturnType<typeof getCmsSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCmsSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCmsSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateCmsSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/cms/settings`
+}
+
+/**
+ * @summary Update website CMS settings
+ */
+export const updateCmsSettings = async (websiteSettingsUpdate: WebsiteSettingsUpdate, options?: RequestInit): Promise<WebsiteSettings> => {
+
+  return customFetch<WebsiteSettings>(getUpdateCmsSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(websiteSettingsUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateCmsSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCmsSettings>>, TError,{data: BodyType<WebsiteSettingsUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCmsSettings>>, TError,{data: BodyType<WebsiteSettingsUpdate>}, TContext> => {
+
+const mutationKey = ['updateCmsSettings'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCmsSettings>>, {data: BodyType<WebsiteSettingsUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateCmsSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCmsSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateCmsSettings>>>
+    export type UpdateCmsSettingsMutationBody = BodyType<WebsiteSettingsUpdate>
+    export type UpdateCmsSettingsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update website CMS settings
+ */
+export const useUpdateCmsSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCmsSettings>>, TError,{data: BodyType<WebsiteSettingsUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCmsSettings>>,
+        TError,
+        {data: BodyType<WebsiteSettingsUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateCmsSettingsMutationOptions(options));
+    }
+
+export const getGetPublicCmsSettingsUrl = (params?: GetPublicCmsSettingsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/public/cms?${stringifiedParams}` : `/api/v1/public/cms`
+}
+
+/**
+ * @summary Get public website settings (no auth required)
+ */
+export const getPublicCmsSettings = async (params?: GetPublicCmsSettingsParams, options?: RequestInit): Promise<WebsiteSettings> => {
+
+  return customFetch<WebsiteSettings>(getGetPublicCmsSettingsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicCmsSettingsQueryKey = (params?: GetPublicCmsSettingsParams,) => {
+    return [
+    `/api/v1/public/cms`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetPublicCmsSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getPublicCmsSettings>>, TError = ErrorType<unknown>>(params?: GetPublicCmsSettingsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicCmsSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicCmsSettingsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicCmsSettings>>> = ({ signal }) => getPublicCmsSettings(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicCmsSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicCmsSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicCmsSettings>>>
+export type GetPublicCmsSettingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get public website settings (no auth required)
+ */
+
+export function useGetPublicCmsSettings<TData = Awaited<ReturnType<typeof getPublicCmsSettings>>, TError = ErrorType<unknown>>(
+ params?: GetPublicCmsSettingsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicCmsSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicCmsSettingsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

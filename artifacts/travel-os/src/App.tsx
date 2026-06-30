@@ -34,6 +34,7 @@ import AdminVendors from "@/pages/admin/vendors";
 import AdminReports from "@/pages/admin/reports";
 import AdminSettings from "@/pages/admin/settings";
 import AdminNotifications from "@/pages/admin/notifications";
+import AdminCms from "@/pages/admin/cms";
 
 import PublicHome from "@/pages/public/home";
 import PublicPackages from "@/pages/public/packages";
@@ -111,6 +112,7 @@ function AdminRoutes() {
         <Route path="/admin/reports" component={AdminReports} />
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/admin/notifications" component={AdminNotifications} />
+        <Route path="/admin/cms" component={AdminCms} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>

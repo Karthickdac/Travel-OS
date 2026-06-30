@@ -1837,6 +1837,43 @@ export const CreateExpenseResponse = zod.object({
 
 
 /**
+ * @summary Update expense
+ */
+export const UpdateExpenseParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateExpenseBody = zod.object({
+  "category": zod.string().optional(),
+  "amount": zod.number().optional(),
+  "date": zod.string().optional(),
+  "description": zod.string().optional(),
+  "vendorName": zod.string().optional()
+})
+
+export const UpdateExpenseResponse = zod.object({
+  "id": zod.string(),
+  "category": zod.enum(['fuel', 'maintenance', 'salary', 'toll', 'insurance', 'misc']),
+  "amount": zod.number(),
+  "date": zod.string(),
+  "description": zod.string(),
+  "vendorName": zod.string().nullish(),
+  "receiptUrl": zod.string().nullish(),
+  "createdAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete expense
+ */
+export const DeleteExpenseParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteExpenseResponse = zod.void()
+
+
+/**
  * @summary Finance P&L summary
  */
 export const GetFinanceSummaryQueryParams = zod.object({
@@ -1851,6 +1888,190 @@ export const GetFinanceSummaryResponse = zod.object({
   "overdueAmount": zod.number(),
   "paidInvoices": zod.number().optional(),
   "grossMargin": zod.number().optional()
+})
+
+
+/**
+ * @summary Get website CMS settings for authenticated company
+ */
+export const GetCmsSettingsResponse = zod.object({
+  "id": zod.string(),
+  "companyId": zod.string(),
+  "heroTitle": zod.string().optional(),
+  "heroSubtitle": zod.string().optional(),
+  "heroDesc": zod.string().nullish(),
+  "heroCtaText": zod.string().optional(),
+  "heroCtaPhone": zod.string().nullish(),
+  "heroBgImage": zod.string().nullish(),
+  "companyDisplayName": zod.string().nullish(),
+  "tagline": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "faviconUrl": zod.string().nullish(),
+  "primaryColor": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "socialWhatsapp": zod.string().nullish(),
+  "socialFacebook": zod.string().nullish(),
+  "socialInstagram": zod.string().nullish(),
+  "socialYoutube": zod.string().nullish(),
+  "stat1Value": zod.string().nullish(),
+  "stat1Label": zod.string().nullish(),
+  "stat2Value": zod.string().nullish(),
+  "stat2Label": zod.string().nullish(),
+  "stat3Value": zod.string().nullish(),
+  "stat3Label": zod.string().nullish(),
+  "stat4Value": zod.string().nullish(),
+  "stat4Label": zod.string().nullish(),
+  "aboutTitle": zod.string().nullish(),
+  "aboutText": zod.string().nullish(),
+  "announcementBar": zod.string().nullish(),
+  "ctaTitle": zod.string().nullish(),
+  "ctaSubtitle": zod.string().nullish(),
+  "showPackages": zod.boolean().optional(),
+  "showDestinations": zod.boolean().optional(),
+  "showEnquiryForm": zod.boolean().optional(),
+  "metaTitle": zod.string().nullish(),
+  "metaDescription": zod.string().nullish(),
+  "createdAt": zod.string().optional(),
+  "updatedAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Update website CMS settings
+ */
+export const UpdateCmsSettingsBody = zod.object({
+  "heroTitle": zod.string().optional(),
+  "heroSubtitle": zod.string().optional(),
+  "heroDesc": zod.string().optional(),
+  "heroCtaText": zod.string().optional(),
+  "heroCtaPhone": zod.string().optional(),
+  "heroBgImage": zod.string().optional(),
+  "companyDisplayName": zod.string().optional(),
+  "tagline": zod.string().optional(),
+  "logoUrl": zod.string().optional(),
+  "faviconUrl": zod.string().optional(),
+  "primaryColor": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "email": zod.string().optional(),
+  "address": zod.string().optional(),
+  "socialWhatsapp": zod.string().optional(),
+  "socialFacebook": zod.string().optional(),
+  "socialInstagram": zod.string().optional(),
+  "socialYoutube": zod.string().optional(),
+  "stat1Value": zod.string().optional(),
+  "stat1Label": zod.string().optional(),
+  "stat2Value": zod.string().optional(),
+  "stat2Label": zod.string().optional(),
+  "stat3Value": zod.string().optional(),
+  "stat3Label": zod.string().optional(),
+  "stat4Value": zod.string().optional(),
+  "stat4Label": zod.string().optional(),
+  "aboutTitle": zod.string().optional(),
+  "aboutText": zod.string().optional(),
+  "announcementBar": zod.string().optional(),
+  "ctaTitle": zod.string().optional(),
+  "ctaSubtitle": zod.string().optional(),
+  "showPackages": zod.boolean().optional(),
+  "showDestinations": zod.boolean().optional(),
+  "showEnquiryForm": zod.boolean().optional(),
+  "metaTitle": zod.string().optional(),
+  "metaDescription": zod.string().optional()
+})
+
+export const UpdateCmsSettingsResponse = zod.object({
+  "id": zod.string(),
+  "companyId": zod.string(),
+  "heroTitle": zod.string().optional(),
+  "heroSubtitle": zod.string().optional(),
+  "heroDesc": zod.string().nullish(),
+  "heroCtaText": zod.string().optional(),
+  "heroCtaPhone": zod.string().nullish(),
+  "heroBgImage": zod.string().nullish(),
+  "companyDisplayName": zod.string().nullish(),
+  "tagline": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "faviconUrl": zod.string().nullish(),
+  "primaryColor": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "socialWhatsapp": zod.string().nullish(),
+  "socialFacebook": zod.string().nullish(),
+  "socialInstagram": zod.string().nullish(),
+  "socialYoutube": zod.string().nullish(),
+  "stat1Value": zod.string().nullish(),
+  "stat1Label": zod.string().nullish(),
+  "stat2Value": zod.string().nullish(),
+  "stat2Label": zod.string().nullish(),
+  "stat3Value": zod.string().nullish(),
+  "stat3Label": zod.string().nullish(),
+  "stat4Value": zod.string().nullish(),
+  "stat4Label": zod.string().nullish(),
+  "aboutTitle": zod.string().nullish(),
+  "aboutText": zod.string().nullish(),
+  "announcementBar": zod.string().nullish(),
+  "ctaTitle": zod.string().nullish(),
+  "ctaSubtitle": zod.string().nullish(),
+  "showPackages": zod.boolean().optional(),
+  "showDestinations": zod.boolean().optional(),
+  "showEnquiryForm": zod.boolean().optional(),
+  "metaTitle": zod.string().nullish(),
+  "metaDescription": zod.string().nullish(),
+  "createdAt": zod.string().optional(),
+  "updatedAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Get public website settings (no auth required)
+ */
+export const GetPublicCmsSettingsQueryParams = zod.object({
+  "companyId": zod.coerce.string().optional()
+})
+
+export const GetPublicCmsSettingsResponse = zod.object({
+  "id": zod.string(),
+  "companyId": zod.string(),
+  "heroTitle": zod.string().optional(),
+  "heroSubtitle": zod.string().optional(),
+  "heroDesc": zod.string().nullish(),
+  "heroCtaText": zod.string().optional(),
+  "heroCtaPhone": zod.string().nullish(),
+  "heroBgImage": zod.string().nullish(),
+  "companyDisplayName": zod.string().nullish(),
+  "tagline": zod.string().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "faviconUrl": zod.string().nullish(),
+  "primaryColor": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "socialWhatsapp": zod.string().nullish(),
+  "socialFacebook": zod.string().nullish(),
+  "socialInstagram": zod.string().nullish(),
+  "socialYoutube": zod.string().nullish(),
+  "stat1Value": zod.string().nullish(),
+  "stat1Label": zod.string().nullish(),
+  "stat2Value": zod.string().nullish(),
+  "stat2Label": zod.string().nullish(),
+  "stat3Value": zod.string().nullish(),
+  "stat3Label": zod.string().nullish(),
+  "stat4Value": zod.string().nullish(),
+  "stat4Label": zod.string().nullish(),
+  "aboutTitle": zod.string().nullish(),
+  "aboutText": zod.string().nullish(),
+  "announcementBar": zod.string().nullish(),
+  "ctaTitle": zod.string().nullish(),
+  "ctaSubtitle": zod.string().nullish(),
+  "showPackages": zod.boolean().optional(),
+  "showDestinations": zod.boolean().optional(),
+  "showEnquiryForm": zod.boolean().optional(),
+  "metaTitle": zod.string().nullish(),
+  "metaDescription": zod.string().nullish(),
+  "createdAt": zod.string().optional(),
+  "updatedAt": zod.string().optional()
 })
 
 
