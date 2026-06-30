@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useGetCmsSettings, useUpdateCmsSettings, useUpdateCompanyDomain, useGetCompany } from "@workspace/api-client-react";
+import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,14 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import {
   Globe, Palette, Layout, Phone, Share2, BarChart2, Type,
   Save, Eye, RefreshCw, Image, Search, Megaphone, Info, Star,
-  CheckCircle2, Copy, ExternalLink, Link2,
+  CheckCircle2, Copy, ExternalLink, Link2, FileText, Newspaper,
+  Plus, Pencil, Trash2, FileImage, AlignLeft, GripVertical,
 } from "lucide-react";
 
 type CmsForm = {
@@ -64,6 +69,184 @@ const EMPTY: CmsForm = {
   metaTitle: "", metaDescription: "",
 };
 
+/* ─── CMS Pages Tab ─────────────────────────────────────────── */
+function CmsPagesTab() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [dialog, setDialog] = useState<{ mode: "create"|"edit"; data?: any }|null>(null);
+  const [form, setForm] = useState({ title: "", slug: "", content: "", metaDescription: "", isPublished: false });
+  const setF = (k: string) => (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const { data: pages, isLoading } = useQuery<any[]>({ queryKey: ["/v1/cms/pages"], queryFn: () => api.get("/cms/pages") });
+  const saveMut = useMutation({ mutationFn: (d: any) => dialog?.mode === "edit" && dialog.data ? api.patch(`/cms/pages/${dialog.data.id}`, d) : api.post("/cms/pages", d), onSuccess: () => { qc.invalidateQueries({ queryKey: ["/v1/cms/pages"] }); setDialog(null); toast({ title: "Page saved" }); } });
+  const delMut = useMutation({ mutationFn: (id: string) => api.delete(`/cms/pages/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ["/v1/cms/pages"] }) });
+
+  const openCreate = () => { setForm({ title: "", slug: "", content: "", metaDescription: "", isPublished: false }); setDialog({ mode: "create" }); };
+  const openEdit = (p: any) => { setForm({ title: p.title, slug: p.slug, content: p.content ?? "", metaDescription: p.metaDescription ?? "", isPublished: p.isPublished }); setDialog({ mode: "edit", data: p }); };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div><h3 className="font-semibold">Static Pages</h3><p className="text-sm text-muted-foreground">Manage About, Privacy Policy, Terms, and other static pages.</p></div>
+        <Button size="sm" onClick={openCreate} className="gap-1.5"><Plus className="h-3.5 w-3.5" />New Page</Button>
+      </div>
+      {isLoading ? <Skeleton className="h-24" /> : !pages?.length ? (
+        <Card className="text-center py-12"><CardContent className="pt-6"><FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" /><p className="font-medium">No pages yet</p></CardContent></Card>
+      ) : (
+        <div className="space-y-2">
+          {pages.map(p => (
+            <Card key={p.id} className="shadow-sm">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2"><p className="font-semibold">{p.title}</p><Badge variant="outline" className={p.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"}>{p.isPublished ? "Published" : "Draft"}</Badge></div>
+                  <p className="text-sm text-muted-foreground font-mono">/{p.slug}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-3.5 w-3.5" /></Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => { if(confirm("Delete page?")) delMut.mutate(p.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      <Dialog open={!!dialog} onOpenChange={() => setDialog(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>{dialog?.mode === "edit" ? "Edit Page" : "New Page"}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5"><Label>Title *</Label><Input value={form.title} onChange={e => { setForm(f => ({ ...f, title: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })); }} placeholder="About Us" /></div>
+              <div className="space-y-1.5"><Label>Slug</Label><Input value={form.slug} onChange={setF("slug")} placeholder="about-us" /></div>
+              <div className="space-y-1.5 col-span-2"><Label>Meta Description</Label><Input value={form.metaDescription} onChange={setF("metaDescription")} /></div>
+              <div className="space-y-1.5 col-span-2"><Label>Content</Label><Textarea value={form.content} onChange={setF("content")} rows={8} placeholder="Page content (HTML or Markdown)..." /></div>
+              <div className="flex items-center gap-2 col-span-2"><input type="checkbox" checked={form.isPublished} onChange={e => setForm(f => ({ ...f, isPublished: e.target.checked }))} className="h-4 w-4" id="pub" /><Label htmlFor="pub">Published</Label></div>
+            </div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialog(null)}>Cancel</Button><Button onClick={() => saveMut.mutate(form)} disabled={!form.title}>Save Page</Button></div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ─── CMS Blogs Tab ─────────────────────────────────────────── */
+function CmsBlogsTab() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [dialog, setDialog] = useState<{ mode: "create"|"edit"; data?: any }|null>(null);
+  const [form, setForm] = useState({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", isPublished: false });
+  const setF = (k: string) => (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const { data: blogs, isLoading } = useQuery<any[]>({ queryKey: ["/v1/cms/blogs"], queryFn: () => api.get("/cms/blogs") });
+  const saveMut = useMutation({ mutationFn: (d: any) => dialog?.mode === "edit" && dialog.data ? api.patch(`/cms/blogs/${dialog.data.id}`, d) : api.post("/cms/blogs", d), onSuccess: () => { qc.invalidateQueries({ queryKey: ["/v1/cms/blogs"] }); setDialog(null); toast({ title: "Post saved" }); } });
+  const delMut = useMutation({ mutationFn: (id: string) => api.delete(`/cms/blogs/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ["/v1/cms/blogs"] }) });
+
+  const openCreate = () => { setForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", isPublished: false }); setDialog({ mode: "create" }); };
+  const openEdit = (b: any) => { setForm({ title: b.title, slug: b.slug, excerpt: b.excerpt ?? "", content: b.content ?? "", coverImage: b.coverImage ?? "", tags: (b.tags ?? []).join(", "), isPublished: b.isPublished }); setDialog({ mode: "edit", data: b }); };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div><h3 className="font-semibold">Blog Posts</h3><p className="text-sm text-muted-foreground">Write travel tips, destination guides, and news articles.</p></div>
+        <Button size="sm" onClick={openCreate} className="gap-1.5"><Plus className="h-3.5 w-3.5" />New Post</Button>
+      </div>
+      {isLoading ? <Skeleton className="h-24" /> : !blogs?.length ? (
+        <Card className="text-center py-12"><CardContent className="pt-6"><Newspaper className="h-10 w-10 text-muted-foreground mx-auto mb-3" /><p className="font-medium">No blog posts yet</p></CardContent></Card>
+      ) : (
+        <div className="space-y-2">
+          {blogs.map(b => (
+            <Card key={b.id} className="shadow-sm">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex gap-3 items-start flex-1 min-w-0">
+                  {b.coverImage && <img src={b.coverImage} alt="" className="w-16 h-12 rounded object-cover flex-shrink-0" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2"><p className="font-semibold truncate">{b.title}</p><Badge variant="outline" className={b.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"}>{b.isPublished ? "Published" : "Draft"}</Badge></div>
+                    {b.excerpt && <p className="text-sm text-muted-foreground truncate">{b.excerpt}</p>}
+                    <p className="text-xs text-muted-foreground mt-0.5">{new Date(b.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(b)}><Pencil className="h-3.5 w-3.5" /></Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => { if(confirm("Delete post?")) delMut.mutate(b.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      <Dialog open={!!dialog} onOpenChange={() => setDialog(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader><DialogTitle>{dialog?.mode === "edit" ? "Edit Post" : "New Blog Post"}</DialogTitle></DialogHeader>
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5 col-span-2"><Label>Title *</Label><Input value={form.title} onChange={e => { setForm(f => ({ ...f, title: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })); }} placeholder="Top 10 Places in South India" /></div>
+              <div className="space-y-1.5"><Label>Slug</Label><Input value={form.slug} onChange={setF("slug")} /></div>
+              <div className="space-y-1.5"><Label>Cover Image URL</Label><Input value={form.coverImage} onChange={setF("coverImage")} placeholder="https://…" /></div>
+              <div className="space-y-1.5 col-span-2"><Label>Excerpt</Label><Input value={form.excerpt} onChange={setF("excerpt")} placeholder="Short description (shown in listing)" /></div>
+              <div className="space-y-1.5"><Label>Tags (comma separated)</Label><Input value={form.tags} onChange={setF("tags")} placeholder="travel, south india, tips" /></div>
+              <div className="flex items-center gap-2"><input type="checkbox" checked={form.isPublished} onChange={e => setForm(f => ({ ...f, isPublished: e.target.checked }))} className="h-4 w-4" id="bpub" /><Label htmlFor="bpub">Published</Label></div>
+              <div className="space-y-1.5 col-span-2"><Label>Content</Label><Textarea value={form.content} onChange={setF("content")} rows={10} placeholder="Blog content (HTML or Markdown)..." /></div>
+            </div>
+            <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setDialog(null)}>Cancel</Button><Button onClick={() => saveMut.mutate({ ...form, tags: form.tags.split(",").map(t => t.trim()).filter(Boolean) })} disabled={!form.title}>Save Post</Button></div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ─── CMS Media Library Tab ──────────────────────────────────── */
+function CmsMediaTab() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [form, setForm] = useState({ fileName: "", fileUrl: "", fileType: "image", alt: "", caption: "" });
+  const setF = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const { data: media, isLoading } = useQuery<any[]>({ queryKey: ["/v1/cms/media"], queryFn: () => api.get("/cms/media") });
+  const uploadMut = useMutation({ mutationFn: (d: any) => api.post("/cms/media", d), onSuccess: () => { qc.invalidateQueries({ queryKey: ["/v1/cms/media"] }); setForm({ fileName: "", fileUrl: "", fileType: "image", alt: "", caption: "" }); toast({ title: "Media added" }); } });
+  const delMut = useMutation({ mutationFn: (id: string) => api.delete(`/cms/media/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ["/v1/cms/media"] }) });
+
+  const images = (media ?? []).filter(m => m.fileType === "image");
+
+  return (
+    <div className="space-y-6">
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-base">Add Media by URL</CardTitle><CardDescription>Paste a direct URL to an image or video to add it to your media library.</CardDescription></CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5 col-span-2"><Label>File URL *</Label><Input value={form.fileUrl} onChange={setF("fileUrl")} placeholder="https://images.unsplash.com/…" /></div>
+            <div className="space-y-1.5"><Label>File Name</Label><Input value={form.fileName} onChange={setF("fileName")} placeholder="hero-ooty.jpg" /></div>
+            <div className="space-y-1.5"><Label>Alt Text</Label><Input value={form.alt} onChange={setF("alt")} placeholder="Ooty hills in morning mist" /></div>
+            <div className="space-y-1.5"><Label>Caption</Label><Input value={form.caption} onChange={setF("caption")} placeholder="Ooty, Tamil Nadu" /></div>
+            <div className="flex items-end"><Button onClick={() => uploadMut.mutate(form)} disabled={!form.fileUrl} className="gap-1.5"><Plus className="h-3.5 w-3.5" />Add to Library</Button></div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {isLoading ? <Skeleton className="h-32" /> : !images.length ? (
+        <Card className="text-center py-12"><CardContent className="pt-6"><FileImage className="h-10 w-10 text-muted-foreground mx-auto mb-3" /><p className="font-medium">No media yet</p></CardContent></Card>
+      ) : (
+        <div>
+          <h3 className="font-semibold mb-3">Library ({images.length} images)</h3>
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+            {images.map(m => (
+              <div key={m.id} className="relative group rounded-lg overflow-hidden border border-border aspect-video bg-muted">
+                <img src={m.fileUrl} alt={m.alt ?? ""} className="w-full h-full object-cover" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-2">
+                  <p className="text-white text-xs text-center truncate w-full">{m.fileName || m.fileUrl.split("/").pop()}</p>
+                  <Button size="sm" variant="destructive" className="h-6 text-xs px-2" onClick={() => { if(confirm("Remove media?")) delMut.mutate(m.id); }}>Remove</Button>
+                  <Button size="sm" variant="secondary" className="h-6 text-xs px-2" onClick={() => { navigator.clipboard.writeText(m.fileUrl); toast({ title: "URL copied" }); }}>Copy URL</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Shared helper ──────────────────────────────────────────── */
 function FieldRow({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
     <div className="space-y-1.5">
@@ -286,6 +469,9 @@ export default function AdminCms() {
           <TabsTrigger value="stats" className="gap-1.5"><BarChart2 className="h-3.5 w-3.5" />Stats</TabsTrigger>
           <TabsTrigger value="content" className="gap-1.5"><Type className="h-3.5 w-3.5" />Content</TabsTrigger>
           <TabsTrigger value="features" className="gap-1.5"><Layout className="h-3.5 w-3.5" />Sections</TabsTrigger>
+          <TabsTrigger value="pages" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Pages</TabsTrigger>
+          <TabsTrigger value="blogs" className="gap-1.5"><Newspaper className="h-3.5 w-3.5" />Blog</TabsTrigger>
+          <TabsTrigger value="media" className="gap-1.5"><FileImage className="h-3.5 w-3.5" />Media</TabsTrigger>
           <TabsTrigger value="seo" className="gap-1.5"><Search className="h-3.5 w-3.5" />SEO</TabsTrigger>
           <TabsTrigger value="domain" className="gap-1.5"><Globe className="h-3.5 w-3.5" />Domain</TabsTrigger>
         </TabsList>
@@ -454,6 +640,21 @@ export default function AdminCms() {
               ))}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ── Pages ── */}
+        <TabsContent value="pages" className="mt-4">
+          <CmsPagesTab />
+        </TabsContent>
+
+        {/* ── Blogs ── */}
+        <TabsContent value="blogs" className="mt-4">
+          <CmsBlogsTab />
+        </TabsContent>
+
+        {/* ── Media ── */}
+        <TabsContent value="media" className="mt-4">
+          <CmsMediaTab />
         </TabsContent>
 
         {/* ── SEO ── */}

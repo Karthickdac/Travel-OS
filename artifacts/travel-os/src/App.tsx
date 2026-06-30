@@ -36,6 +36,9 @@ import AdminReports from "@/pages/admin/reports";
 import AdminSettings from "@/pages/admin/settings";
 import AdminNotifications from "@/pages/admin/notifications";
 import AdminCms from "@/pages/admin/cms";
+import AdminMarketing from "@/pages/admin/marketing";
+import AdminSupport from "@/pages/admin/support";
+import AdminFinancePL from "@/pages/admin/finance/pl";
 
 import PublicHome from "@/pages/public/home";
 import PublicPackages from "@/pages/public/packages";
@@ -110,11 +113,14 @@ function AdminRoutes() {
         <Route path="/admin/finance/summary" component={AdminFinanceSummary} />
         <Route path="/admin/finance/invoices" component={AdminFinanceInvoices} />
         <Route path="/admin/finance/expenses" component={AdminFinanceExpenses} />
+        <Route path="/admin/finance/pl" component={AdminFinancePL} />
         <Route path="/admin/vendors" component={AdminVendors} />
         <Route path="/admin/reports" component={AdminReports} />
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/admin/notifications" component={AdminNotifications} />
         <Route path="/admin/cms" component={AdminCms} />
+        <Route path="/admin/marketing" component={AdminMarketing} />
+        <Route path="/admin/support" component={AdminSupport} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>

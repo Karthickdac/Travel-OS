@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function PackageIcon(props: any) {
@@ -56,6 +56,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         { href: "/admin/finance/summary", label: "Summary", icon: Wallet },
         { href: "/admin/finance/invoices", label: "Invoices", icon: Receipt },
         { href: "/admin/finance/expenses", label: "Expenses", icon: CreditCard },
+        { href: "/admin/finance/pl", label: "P&L Report", icon: BarChart3 },
+      ]
+    },
+    {
+      title: "Marketing",
+      items: [
+        { href: "/admin/marketing", label: "Coupons", icon: Tag },
       ]
     },
     {
@@ -68,6 +75,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       title: "Analytics & Admin",
       items: [
         { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+        { href: "/admin/support", label: "Support Tickets", icon: Headphones },
         { href: "/admin/notifications", label: "Notifications", icon: Bell },
         { href: "/admin/settings", label: "Settings", icon: Settings },
       ]

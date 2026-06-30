@@ -15,11 +15,16 @@ import toursRouter from "./tours";
 import financeRouter from "./finance";
 import dashboardRouter from "./dashboard";
 import cmsRouter from "./cms";
+import driverHrRouter from "./driver_hr";
+import cmsExtendedRouter from "./cms_extended";
+import marketingRouter from "./marketing";
+import vendorExtendedRouter from "./vendor_extended";
+import supportRouter from "./support";
+import tourExtendedRouter from "./tour_extended";
 
 const router: IRouter = Router();
 
 // Global auth middleware — attaches req.user from Bearer token on every request.
-// Routes that need authentication check req.user themselves; public routes ignore it.
 router.use(async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith("Bearer ")) {
@@ -53,5 +58,11 @@ router.use(toursRouter);
 router.use(financeRouter);
 router.use(dashboardRouter);
 router.use(cmsRouter);
+router.use(driverHrRouter);
+router.use(cmsExtendedRouter);
+router.use(marketingRouter);
+router.use(vendorExtendedRouter);
+router.use(supportRouter);
+router.use(tourExtendedRouter);
 
 export default router;

@@ -1,9 +1,18 @@
 import { useGetRevenueTrend, useListBookings, useListDrivers, useListVehicles, useListExpenses, useListInvoices, useListLeads } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { TrendingUp, TrendingDown, Car, Users, Calendar, IndianRupee, FileText, Target } from "lucide-react";
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, TrendingDown, Car, Users, Calendar, IndianRupee, FileText, Target, Download } from "lucide-react";
+
+function downloadCsv(filename: string, rows: string[][], headers: string[]) {
+  const csvContent = [headers, ...rows].map(r => r.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
 
 const COLORS = ["#f97316", "#0d9488", "#3b82f6", "#8b5cf6", "#ec4899", "#eab308"];
 
@@ -79,11 +88,36 @@ export default function AdminReports() {
     { name: "Off Road", value: vehicles?.filter(v => v.status === "off_road").length ?? 0 },
   ].filter(v => v.value > 0);
 
+  const exportBookingsCsv = () => {
+    const rows = (bookings?.data ?? []).map(b => [b.bookingNumber, b.customerName, b.type, b.status, b.pickupLocation, b.dropLocation, b.pickupDate, String(b.amount ?? "")]);
+    downloadCsv("bookings.csv", rows, ["Booking #","Customer","Type","Status","From","To","Date","Amount"]);
+  };
+  const exportInvoicesCsv = () => {
+    const rows = (invoices ?? []).map(i => [i.invoiceNumber, i.customerName ?? "", i.status, String(i.amount ?? ""), i.tripFrom ?? "", i.tripTo ?? ""]);
+    downloadCsv("invoices.csv", rows, ["Invoice #","Customer","Status","Amount","From","To"]);
+  };
+  const exportExpensesCsv = () => {
+    const rows = (expenses ?? []).map(e => [e.category, e.description ?? "", String(e.amount ?? ""), e.date ?? "", e.vendorName ?? ""]);
+    downloadCsv("expenses.csv", rows, ["Category","Description","Amount","Date","Vendor"]);
+  };
+  const exportLeadsCsv = () => {
+    const rows = (leads ?? []).map(l => [l.name, l.phone, l.email ?? "", l.status, l.source ?? "", l.createdAt ?? ""]);
+    downloadCsv("leads.csv", rows, ["Name","Phone","Email","Status","Source","Created"]);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
-        <p className="text-muted-foreground mt-1">Business performance overview and insights.</p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
+          <p className="text-muted-foreground mt-1">Business performance overview and insights.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={exportBookingsCsv} className="gap-1.5"><Download className="h-3.5 w-3.5" />Bookings CSV</Button>
+          <Button size="sm" variant="outline" onClick={exportInvoicesCsv} className="gap-1.5"><Download className="h-3.5 w-3.5" />Invoices CSV</Button>
+          <Button size="sm" variant="outline" onClick={exportExpensesCsv} className="gap-1.5"><Download className="h-3.5 w-3.5" />Expenses CSV</Button>
+          <Button size="sm" variant="outline" onClick={exportLeadsCsv} className="gap-1.5"><Download className="h-3.5 w-3.5" />Leads CSV</Button>
+        </div>
       </div>
 
       {/* KPI Cards */}
