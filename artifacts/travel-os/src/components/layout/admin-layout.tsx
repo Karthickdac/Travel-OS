@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function PackageIcon(props: any) {
@@ -109,10 +109,24 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     () => typeof window !== "undefined" && localStorage.getItem("admin-sidebar-collapsed") === "1",
   );
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("admin-sidebar-groups") || "{}");
+    } catch {
+      return {};
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem("admin-sidebar-collapsed", collapsed ? "1" : "0");
   }, [collapsed]);
+
+  useEffect(() => {
+    localStorage.setItem("admin-sidebar-groups", JSON.stringify(openGroups));
+  }, [openGroups]);
+
+  const toggleGroup = (title: string) =>
+    setOpenGroups((prev) => ({ ...prev, [title]: prev[title] === false ? true : false }));
 
   // Close the mobile drawer whenever the route changes.
   useEffect(() => {
@@ -213,42 +227,57 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <ScrollArea className="flex-1">
-          <nav className={cn("py-6 space-y-6", collapsed ? "md:px-2 px-4" : "px-4")}>
-            {navGroups.map((group) => (
-              <div key={group.title}>
-                <h4
-                  className={cn(
-                    "px-3 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider mb-2",
-                    collapsed ? "md:hidden" : "",
+          <nav className={cn("py-6 space-y-3", collapsed ? "md:px-2 px-4" : "px-4")}>
+            {navGroups.map((group) => {
+              // In icon-rail mode every group is shown (icons only); otherwise the
+              // header toggles the group open/closed (default open).
+              const isOpen = collapsed || openGroups[group.title] !== false;
+              return (
+                <div key={group.title}>
+                  {!collapsed && (
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.title)}
+                      aria-expanded={isOpen}
+                      className="w-full flex items-center justify-between px-3 mb-1 py-1 rounded-md text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+                    >
+                      <span>{group.title}</span>
+                      <ChevronDown
+                        className={cn(
+                          "h-3.5 w-3.5 transition-transform duration-200 shrink-0",
+                          isOpen ? "" : "-rotate-90",
+                        )}
+                      />
+                    </button>
                   )}
-                >
-                  {group.title}
-                </h4>
-                <div className="space-y-1">
-                  {group.items.map((item) => {
-                    const isActive = location === item.href || location.startsWith(`${item.href}/`);
-                    const Icon = item.icon;
-                    return (
-                      <Link key={item.href} href={item.href}>
-                        <div
-                          title={collapsed ? item.label : undefined}
-                          className={cn(
-                            "flex items-center gap-3 rounded-md transition-colors cursor-pointer text-sm font-medium px-3 py-2",
-                            collapsed ? "md:justify-center md:px-0" : "",
-                            isActive
-                              ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                              : "text-sidebar-foreground hover:bg-sidebar-accent",
-                          )}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className={cn(collapsed ? "md:hidden" : "")}>{item.label}</span>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                  {isOpen && (
+                    <div className="space-y-1">
+                      {group.items.map((item) => {
+                        const isActive = location === item.href || location.startsWith(`${item.href}/`);
+                        const Icon = item.icon;
+                        return (
+                          <Link key={item.href} href={item.href}>
+                            <div
+                              title={collapsed ? item.label : undefined}
+                              className={cn(
+                                "flex items-center gap-3 rounded-md transition-colors cursor-pointer text-sm font-medium px-3 py-2",
+                                collapsed ? "md:justify-center md:px-0" : "",
+                                isActive
+                                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                                  : "text-sidebar-foreground hover:bg-sidebar-accent",
+                              )}
+                            >
+                              <Icon className="h-4 w-4 shrink-0" />
+                              <span className={cn(collapsed ? "md:hidden" : "")}>{item.label}</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </nav>
         </ScrollArea>
 
