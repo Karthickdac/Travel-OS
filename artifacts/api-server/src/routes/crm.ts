@@ -25,9 +25,14 @@ import {
   DeleteQuotationParams,
   ConvertQuotationToBookingParams,
   ConvertQuotationToBookingResponse,
+  ConvertLeadToBookingParams,
+  ConvertLeadToBookingBody,
+  ConvertLeadToBookingResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+class ConvertConflict extends Error {}
 
 let quotationCounter = 100;
 let bookingCounter = 2000;
@@ -326,6 +331,104 @@ router.post("/v1/crm/quotations/:id/convert", async (req, res): Promise<void> =>
   };
 
   res.status(201).json(ConvertQuotationToBookingResponse.parse(mapped));
+});
+
+router.post("/v1/crm/leads/:id/convert", async (req, res): Promise<void> => {
+  const params = ConvertLeadToBookingParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = ConvertLeadToBookingBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const user = (req as any).user as { role?: string; companyId?: string | null } | undefined;
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const [lead] = await db.select().from(leadsTable).where(eq(leadsTable.id, params.data.id));
+  if (!lead || lead.isDeleted) {
+    res.status(404).json({ error: "Lead not found" });
+    return;
+  }
+  // Tenant isolation: company users may only convert their own company's leads.
+  if (user.role !== "master_admin" && lead.companyId !== user.companyId) {
+    res.status(404).json({ error: "Lead not found" });
+    return;
+  }
+  if (lead.status === "won") {
+    res.status(409).json({ error: "Lead has already been converted" });
+    return;
+  }
+
+  const body = parsed.data;
+
+  const booking = await db.transaction(async (tx) => {
+    // Re-read inside the transaction with a row lock to prevent duplicate conversions.
+    const [locked] = await tx
+      .select()
+      .from(leadsTable)
+      .where(eq(leadsTable.id, lead.id))
+      .for("update");
+    if (!locked || locked.status === "won") {
+      throw new ConvertConflict();
+    }
+    bookingCounter++;
+    const [created] = await tx
+      .insert(bookingsTable)
+      .values({
+        companyId: locked.companyId,
+        bookingNumber: `BK${bookingCounter}`,
+        type: body.type || "tour",
+        status: "confirmed",
+        pickupDate: body.pickupDate ? new Date(body.pickupDate) : (locked.travelDate ? new Date(locked.travelDate) : new Date()),
+        pickupLocation: body.pickupLocation || "TBD",
+        dropLocation: body.dropLocation || locked.destination || "TBD",
+        customerName: locked.name,
+        customerPhone: locked.phone,
+        amount: body.amount != null ? String(body.amount) : (locked.budget ?? "0"),
+        advancePaid: body.advancePaid != null ? String(body.advancePaid) : "0",
+        notes: body.notes || locked.notes || null,
+      })
+      .returning();
+    // Mark the lead as won once it has produced a booking.
+    await tx.update(leadsTable).set({ status: "won" }).where(eq(leadsTable.id, locked.id));
+    return created;
+  }).catch((err: unknown) => {
+    if (err instanceof ConvertConflict) return null;
+    throw err;
+  });
+
+  if (!booking) {
+    res.status(409).json({ error: "Lead has already been converted" });
+    return;
+  }
+
+  const mapped = {
+    id: booking.id,
+    bookingNumber: booking.bookingNumber,
+    type: booking.type,
+    status: booking.status,
+    pickupDate: booking.pickupDate.toISOString(),
+    pickupLocation: booking.pickupLocation,
+    dropLocation: booking.dropLocation,
+    customerName: booking.customerName,
+    customerPhone: booking.customerPhone ?? null,
+    amount: Number(booking.amount),
+    advancePaid: Number(booking.advancePaid),
+    driverName: null,
+    vehicleNumber: null,
+    vehicleCategory: null,
+    notes: booking.notes ?? null,
+    createdAt: booking.createdAt.toISOString(),
+  };
+
+  res.status(201).json(ConvertLeadToBookingResponse.parse(mapped));
 });
 
 export default router;

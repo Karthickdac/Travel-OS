@@ -1564,6 +1564,43 @@ export const ConvertQuotationToBookingResponse = zod.object({
 
 
 /**
+ * @summary Convert lead to booking
+ */
+export const ConvertLeadToBookingParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ConvertLeadToBookingBody = zod.object({
+  "type": zod.string().optional(),
+  "pickupDate": zod.string().optional(),
+  "pickupLocation": zod.string().optional(),
+  "dropLocation": zod.string().optional(),
+  "amount": zod.number().optional(),
+  "advancePaid": zod.number().optional(),
+  "notes": zod.string().optional()
+})
+
+export const ConvertLeadToBookingResponse = zod.object({
+  "id": zod.string(),
+  "bookingNumber": zod.string(),
+  "type": zod.enum(['local_cab', 'airport_transfer', 'outstation', 'tour', 'corporate', 'wedding', 'hourly']),
+  "status": zod.enum(['enquiry', 'confirmed', 'assigned', 'in_progress', 'completed', 'cancelled']),
+  "pickupDate": zod.string(),
+  "pickupLocation": zod.string(),
+  "dropLocation": zod.string(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string().nullish(),
+  "amount": zod.number(),
+  "advancePaid": zod.number().optional(),
+  "driverName": zod.string().nullish(),
+  "vehicleNumber": zod.string().nullish(),
+  "vehicleCategory": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string().optional()
+})
+
+
+/**
  * @summary List customers
  */
 export const ListCustomersQueryParams = zod.object({

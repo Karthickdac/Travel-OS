@@ -20,6 +20,7 @@ export * from './companyInput';
 export * from './companyListResult';
 export * from './companyStatus';
 export * from './companyUpdate';
+export * from './convertLeadInput';
 export * from './customer';
 export * from './customerInput';
 export * from './customerUpdate';

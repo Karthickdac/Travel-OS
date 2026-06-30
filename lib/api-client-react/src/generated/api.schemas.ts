@@ -558,6 +558,16 @@ export interface LeadPipeline {
   lost: number;
 }
 
+export interface ConvertLeadInput {
+  type?: string;
+  pickupDate?: string;
+  pickupLocation?: string;
+  dropLocation?: string;
+  amount?: number;
+  advancePaid?: number;
+  notes?: string;
+}
+
 export type QuotationStatus = typeof QuotationStatus[keyof typeof QuotationStatus];
 
 

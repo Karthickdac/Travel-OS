@@ -31,6 +31,7 @@ import type {
   CompanyInput,
   CompanyListResult,
   CompanyUpdate,
+  ConvertLeadInput,
   Customer,
   CustomerInput,
   CustomerUpdate,
@@ -5091,6 +5092,77 @@ export const useConvertQuotationToBooking = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getConvertQuotationToBookingMutationOptions(options));
+    }
+
+export const getConvertLeadToBookingUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/crm/leads/${id}/convert`
+}
+
+/**
+ * @summary Convert lead to booking
+ */
+export const convertLeadToBooking = async (id: string,
+    convertLeadInput?: ConvertLeadInput, options?: RequestInit): Promise<Booking> => {
+
+  return customFetch<Booking>(getConvertLeadToBookingUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(convertLeadInput)
+  }
+);}
+
+
+
+
+export const getConvertLeadToBookingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof convertLeadToBooking>>, TError,{id: string;data?: BodyType<ConvertLeadInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof convertLeadToBooking>>, TError,{id: string;data?: BodyType<ConvertLeadInput>}, TContext> => {
+
+const mutationKey = ['convertLeadToBooking'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof convertLeadToBooking>>, {id: string;data?: BodyType<ConvertLeadInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  convertLeadToBooking(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConvertLeadToBookingMutationResult = NonNullable<Awaited<ReturnType<typeof convertLeadToBooking>>>
+    export type ConvertLeadToBookingMutationBody = BodyType<ConvertLeadInput> | undefined
+    export type ConvertLeadToBookingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Convert lead to booking
+ */
+export const useConvertLeadToBooking = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof convertLeadToBooking>>, TError,{id: string;data?: BodyType<ConvertLeadInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof convertLeadToBooking>>,
+        TError,
+        {id: string;data?: BodyType<ConvertLeadInput>},
+        TContext
+      > => {
+      return useMutation(getConvertLeadToBookingMutationOptions(options));
     }
 
 export const getListCustomersUrl = (params?: ListCustomersParams,) => {
