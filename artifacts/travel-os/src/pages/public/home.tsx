@@ -1,27 +1,74 @@
 import { useGetPublicPackages } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Clock, ArrowRight, Plane, Star, Phone, Shield, Users, HeadphonesIcon } from "lucide-react";
+import {
+  MapPin, Clock, ArrowRight, Phone, Star, Shield, Users,
+  HeadphonesIcon, CheckCircle2, ChevronRight
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const HERO_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1920&q=85&auto=format&fit=crop";
+
 const DESTINATIONS = [
-  { name: "Madurai", tagline: "Temple City of Culture and Heritage", color: "from-orange-600 to-red-700" },
-  { name: "Rameshwaram", tagline: "Sacred Island of Lord Ramanathaswamy", color: "from-blue-600 to-indigo-700" },
-  { name: "Dhanushkodi", tagline: "The Land End – Where History Meets the Sea", color: "from-teal-600 to-cyan-700" },
-  { name: "Kanyakumari", tagline: "Where the Sun Rises and Sets in Glory", color: "from-purple-600 to-pink-700" },
-  { name: "Kovalam Beach", tagline: "Relax & Unwind at the Famous Beach Paradise", color: "from-emerald-600 to-green-700" },
-  { name: "Trivandrum", tagline: "Spiritual Bliss at the Divine Temples", color: "from-amber-600 to-orange-700" },
-  { name: "Jatayu Earth Center", tagline: "Explore the World's Largest Bird Sculpture", color: "from-slate-600 to-gray-700" },
+  {
+    name: "Madurai",
+    tagline: "Temple City of Culture and Heritage",
+    image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Rameshwaram",
+    tagline: "Sacred Island of Lord Ramanathaswamy",
+    image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=600&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Dhanushkodi",
+    tagline: "The Land End – Where History Meets the Sea",
+    image: "https://images.unsplash.com/photo-1561361058-c24e1d9bd0ac?w=600&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Kanyakumari",
+    tagline: "Where the Sun Rises and Sets in Glory",
+    image: "https://images.unsplash.com/photo-1590080875861-dc27c08c1bc5?w=600&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Kovalam Beach",
+    tagline: "Relax & Unwind at the Famous Beach Paradise",
+    image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Trivandrum",
+    tagline: "Spiritual Bliss at the Divine Temples",
+    image: "https://images.unsplash.com/photo-1625905254553-4dc51ef00be2?w=600&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Jatayu Earth Center",
+    tagline: "World's Largest Bird Sculpture",
+    image: "https://images.unsplash.com/photo-1626196340148-c7b0de7c0ffd?w=600&q=80&auto=format&fit=crop",
+  },
 ];
 
 const SERVICES = [
-  { icon: Users, label: "Family Tours" },
-  { icon: Plane, label: "Pilgrimage Trips" },
-  { icon: MapPin, label: "Tourist Packages" },
-  { icon: ArrowRight, label: "Airport Pickup & Drop" },
-  { icon: Shield, label: "Safe & Comfortable Journey" },
-  { icon: HeadphonesIcon, label: "24/7 Customer Support" },
+  { icon: Users, label: "Family Tours", desc: "Tailored packages for families of all sizes" },
+  { icon: MapPin, label: "Pilgrimage Trips", desc: "Sacred journeys to holy temples & sites" },
+  { icon: Shield, label: "Safe Travel", desc: "Experienced drivers & insured vehicles" },
+  { icon: HeadphonesIcon, label: "24/7 Support", desc: "Always available for bookings & help" },
+  { icon: CheckCircle2, label: "Airport Transfer", desc: "Pickup & drop from any airport" },
+  { icon: Phone, label: "Outstation Cab", desc: "Comfortable cabs for long distance travel" },
+];
+
+const WHY_US = [
+  "10+ years of trusted service in South India",
+  "Fleet of well-maintained AC vehicles",
+  "Experienced, licensed & courteous drivers",
+  "Transparent pricing — no hidden charges",
+  "Customised itineraries for groups & families",
+  "Pilgrimage expertise: Madurai · Rameshwaram · Kanyakumari",
+];
+
+const TICKER_ITEMS = [
+  "🏛️ Madurai Meenakshi Temple", "🌊 Rameshwaram Pilgrimage", "🌅 Kanyakumari Sunrise",
+  "🦅 Jatayu Earth Center", "🏖️ Kovalam Beach", "📞 8110806339", "🚗 AC Innova & Crysta Fleet",
+  "✅ Safe & Comfortable Travel", "⭐ 4.9 Customer Rating", "🕍 Dhanushkodi Land's End",
 ];
 
 export default function PublicHome() {
@@ -29,76 +76,110 @@ export default function PublicHome() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-background pt-20 pb-28">
-        <div className="absolute inset-0 bg-primary/5 z-0" />
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[700px] h-[700px] bg-primary/10 rounded-full blur-[100px] z-0" />
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[500px] h-[500px] bg-red-500/10 rounded-full blur-[100px] z-0" />
 
-        <div className="container relative z-10 mx-auto px-4 md:px-6 flex flex-col items-center text-center">
-          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary mb-6 gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-            Safe • Comfortable • Reliable Travel Service
+      {/* Scrolling Ticker */}
+      <div className="bg-primary text-primary-foreground py-2 overflow-hidden">
+        <div className="flex animate-[ticker_30s_linear_infinite] whitespace-nowrap gap-12">
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+            <span key={i} className="text-sm font-medium shrink-0">{item}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
+        <img
+          src={HERO_IMAGE}
+          alt="South India Travel"
+          className="absolute inset-0 w-full h-full object-cover scale-105"
+          style={{ filter: "brightness(0.35)" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
+
+        <div className="relative z-10 container mx-auto px-4 text-center text-white">
+          <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-1.5 text-sm font-semibold text-white/90 mb-6 gap-2">
+            <span className="flex h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+            Trusted by 5000+ Happy Travellers
           </div>
 
-          <h1 className="max-w-4xl text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl text-foreground mb-4">
-            Madurai <span className="text-primary">SMT</span> Travels
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 leading-none drop-shadow-xl">
+            Madurai<br />
+            <span className="text-red-400">SMT</span> Travels
           </h1>
-          <p className="text-xl text-muted-foreground font-medium mb-3 italic">
+          <p className="text-lg md:text-2xl font-light text-white/80 italic mb-3">
             "Your Journey, Our Responsibility"
           </p>
-          <p className="max-w-2xl text-base text-muted-foreground md:text-lg mb-10">
-            Specialising in pilgrimage tours, family trips and outstation cab services across Tamil Nadu, Kerala and beyond. Book with confidence — we handle everything.
+          <p className="max-w-xl mx-auto text-base md:text-lg text-white/70 mb-10">
+            Premium pilgrimage tours, family trips & outstation cab services across Tamil Nadu and Kerala.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
             <Link href="/enquiry">
-              <Button size="lg" className="w-full sm:w-auto text-base h-14 px-8 rounded-full">
-                Book Now <ArrowRight className="ml-2 h-4 w-4" />
+              <Button size="lg" className="h-14 px-10 rounded-full text-base font-bold bg-red-600 hover:bg-red-700 text-white border-0 shadow-xl gap-2">
+                Book Your Trip <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <a href="tel:8110806339">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-14 px-8 rounded-full border-border gap-2">
+              <Button size="lg" variant="outline" className="h-14 px-10 rounded-full text-base font-bold bg-white/10 backdrop-blur-sm text-white border-white/40 hover:bg-white/20 gap-2">
                 <Phone className="h-4 w-4" /> 8110806339
               </Button>
             </a>
           </div>
 
-          {/* Stats */}
-          <div className="flex flex-wrap justify-center gap-8 text-center mt-2">
+          {/* Stats bar */}
+          <div className="flex flex-wrap justify-center gap-6 md:gap-12">
             {[
-              { label: "Happy Travellers", value: "5000+" },
-              { label: "Years of Service", value: "10+" },
-              { label: "Destinations Covered", value: "50+" },
-              { label: "Customer Rating", value: "4.9★" },
+              { v: "5000+", l: "Happy Travellers" },
+              { v: "10+", l: "Years of Service" },
+              { v: "50+", l: "Destinations" },
+              { v: "4.9★", l: "Customer Rating" },
             ].map((s) => (
-              <div key={s.label}>
-                <div className="text-2xl font-extrabold text-primary">{s.value}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
+              <div key={s.l} className="text-center">
+                <div className="text-3xl font-black text-red-400">{s.v}</div>
+                <div className="text-xs text-white/60 font-medium mt-0.5">{s.l}</div>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Scroll hint */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/50">
+          <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
+          <div className="w-px h-8 bg-white/30 rounded-full animate-pulse"></div>
+        </div>
       </section>
 
       {/* Destinations Grid */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4 md:px-6">
+      <section className="py-20 bg-gray-50 dark:bg-muted/20">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight mb-3">Our Tour Package Destinations</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Handpicked sacred sites, beaches and heritage locations across South India.</p>
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-2">Where We Take You</p>
+            <h2 className="text-4xl font-black tracking-tight mb-3">Our Tour Destinations</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Handpicked pilgrimage sites, beaches and heritage landmarks across South India.
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {DESTINATIONS.map((dest) => (
-              <div
-                key={dest.name}
-                className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${dest.color} text-white p-5 flex flex-col justify-end min-h-[140px] shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer group`}
-              >
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                <div className="relative z-10">
-                  <p className="font-bold text-base leading-tight">{dest.name}</p>
-                  <p className="text-xs text-white/80 mt-1 leading-snug">{dest.tagline}</p>
+              <div key={dest.name} className="group relative overflow-hidden rounded-2xl aspect-[4/5] shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-1">
+                <img
+                  src={dest.image}
+                  alt={dest.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${dest.name}/400/500`;
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-white font-bold text-base leading-tight">{dest.name}</p>
+                  <p className="text-white/70 text-xs mt-1 leading-snug">{dest.tagline}</p>
+                </div>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5">
+                    <ChevronRight className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -108,132 +189,228 @@ export default function PublicHome() {
 
       {/* Featured Packages */}
       <section className="py-20 bg-background">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">Featured Tour Packages</h2>
-              <p className="text-muted-foreground">Our most popular pilgrimage and travel packages.</p>
+              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-2">Best Value Trips</p>
+              <h2 className="text-4xl font-black tracking-tight mb-2">Featured Tour Packages</h2>
+              <p className="text-muted-foreground">All-inclusive packages with transport, stay & guide.</p>
             </div>
-            <Link href="/enquiry">
-              <Button variant="ghost" className="mt-4 md:mt-0 text-primary">
-                Enquire Now <ArrowRight className="ml-2 h-4 w-4" />
+            <a href="tel:8110806339">
+              <Button variant="outline" className="mt-4 md:mt-0 gap-2 rounded-full">
+                <Phone className="h-4 w-4" /> Call to Customise
               </Button>
-            </Link>
+            </a>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading ? (
-              Array(3).fill(0).map((_, i) => (
-                <Card key={i} className="overflow-hidden border-none shadow-md">
-                  <Skeleton className="h-48 w-full rounded-none" />
-                  <CardHeader><Skeleton className="h-6 w-2/3" /></CardHeader>
-                  <CardContent><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-4/5 mt-2" /></CardContent>
-                </Card>
+              Array(6).fill(0).map((_, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden shadow-md">
+                  <Skeleton className="h-56 w-full rounded-none" />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                </div>
               ))
             ) : packages?.length ? (
-              packages.slice(0, 6).map((pkg) => (
-                <Card key={pkg.id} className="overflow-hidden border-border/50 shadow-md hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
-                  <div className="aspect-[16/9] relative overflow-hidden bg-muted">
+              packages.map((pkg) => (
+                <div key={pkg.id} className="group rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-card border border-border/40">
+                  {/* Image */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                     {pkg.imageUrl ? (
-                      <img src={pkg.imageUrl} alt={pkg.title} className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" />
+                      <img
+                        src={pkg.imageUrl}
+                        alt={pkg.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${pkg.destinationName}/800/500`;
+                        }}
+                      />
                     ) : (
-                      <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 text-muted-foreground/30">
-                        <Plane className="h-12 w-12" />
-                      </div>
+                      <img
+                        src={`https://picsum.photos/seed/${pkg.destinationName}/800/500`}
+                        alt={pkg.title}
+                        className="w-full h-full object-cover"
+                      />
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                    {/* Type badge */}
                     {pkg.packageType && (
-                      <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm text-foreground text-xs font-bold px-2.5 py-1 rounded-full shadow capitalize">
+                      <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full capitalize shadow">
                         {pkg.packageType}
                       </div>
                     )}
+
+                    {/* Rating */}
+                    {pkg.rating && (
+                      <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {pkg.rating}
+                      </div>
+                    )}
+
+                    {/* Duration overlay */}
+                    <div className="absolute bottom-3 left-3 text-white text-sm font-semibold flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" /> {pkg.duration} Days
+                    </div>
                   </div>
-                  <CardHeader className="p-4 pb-0">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
-                        <MapPin className="h-3 w-3 mr-1" /> {pkg.destinationName}
-                      </div>
-                      {pkg.rating && (
-                        <div className="flex items-center text-sm font-semibold text-amber-500">
-                          <Star className="h-3 w-3 mr-1 fill-current" /> {pkg.rating}
-                        </div>
-                      )}
+
+                  {/* Content */}
+                  <div className="p-4">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                      <MapPin className="h-3 w-3 text-primary shrink-0" /> {pkg.destinationName}
                     </div>
-                    <CardTitle className="text-base leading-snug group-hover:text-primary transition-colors line-clamp-2">{pkg.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-2">
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                      {pkg.description || "Experience the best this destination has to offer with our carefully crafted itinerary."}
+                    <h3 className="font-bold text-base mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-1">
+                      {pkg.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
+                      {pkg.description}
                     </p>
-                    <div className="flex items-center gap-3 text-xs font-medium text-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5 text-primary" /> {pkg.duration} Days
+
+                    <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                      <div>
+                        <span className="text-xs text-muted-foreground block">Starting from</span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xl font-black text-primary">₹{Number(pkg.price).toLocaleString()}</span>
+                          {pkg.originalPrice && Number(pkg.originalPrice) > Number(pkg.price) && (
+                            <span className="text-xs text-muted-foreground line-through">₹{Number(pkg.originalPrice).toLocaleString()}</span>
+                          )}
+                        </div>
                       </div>
+                      <a href="tel:8110806339">
+                        <Button size="sm" className="rounded-full bg-red-600 hover:bg-red-700 text-white border-0 gap-1.5 text-xs">
+                          <Phone className="h-3 w-3" /> Book
+                        </Button>
+                      </a>
                     </div>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0 flex items-center justify-between border-t border-border/50 mt-3">
-                    <div>
-                      <span className="text-xs text-muted-foreground block">Starting from</span>
-                      <span className="text-lg font-bold">₹{Number(pkg.price).toLocaleString()}</span>
-                      {pkg.originalPrice && Number(pkg.originalPrice) > Number(pkg.price) && (
-                        <span className="text-xs text-muted-foreground line-through ml-2">₹{Number(pkg.originalPrice).toLocaleString()}</span>
-                      )}
-                    </div>
-                    <a href="tel:8110806339">
-                      <Button size="sm" className="rounded-full text-xs gap-1">
-                        <Phone className="h-3 w-3" /> Book Now
-                      </Button>
-                    </a>
-                  </CardFooter>
-                </Card>
+                  </div>
+                </div>
               ))
             ) : (
               <div className="col-span-3 text-center py-12 text-muted-foreground">
-                No packages available at the moment. Please check back later.
+                No packages available. Please check back later.
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="py-20 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="container relative z-10 mx-auto px-4 md:px-6 text-center">
-          <h2 className="text-3xl font-bold mb-3">Our Services</h2>
-          <p className="text-primary-foreground/80 mb-12 max-w-xl mx-auto">Everything you need for a safe, comfortable, and memorable journey across South India.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
-            {SERVICES.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex flex-col items-center gap-3 bg-white/10 hover:bg-white/20 transition-colors rounded-xl p-5">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <Icon className="h-5 w-5" />
+      {/* Why Choose Us */}
+      <section className="py-20 bg-gray-50 dark:bg-muted/20">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-2">Why Travellers Trust Us</p>
+              <h2 className="text-4xl font-black tracking-tight mb-4 leading-tight">The Madurai SMT<br />Travels Promise</h2>
+              <p className="text-muted-foreground text-base mb-8">
+                Over a decade of taking families, pilgrims and corporate groups safely across South India's most iconic destinations. We don't just arrange travel — we craft memories.
+              </p>
+              <ul className="space-y-3">
+                {WHY_US.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex gap-4">
+                <a href="tel:8110806339">
+                  <Button className="rounded-full bg-red-600 hover:bg-red-700 text-white border-0 gap-2">
+                    <Phone className="h-4 w-4" /> Call Now
+                  </Button>
+                </a>
+                <Link href="/enquiry">
+                  <Button variant="outline" className="rounded-full gap-2">
+                    Send Enquiry <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <div className="relative grid grid-cols-2 gap-3">
+              {[
+                "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=400&q=80&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1626196340148-c7b0de7c0ffd?w=400&q=80&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=400&q=80&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400&q=80&auto=format&fit=crop",
+              ].map((src, i) => (
+                <div key={i} className={`rounded-2xl overflow-hidden shadow-lg ${i === 1 ? "mt-6" : i === 3 ? "-mt-6" : ""}`}>
+                  <img
+                    src={src}
+                    alt="Travel"
+                    className="w-full aspect-square object-cover hover:scale-105 transition-transform duration-700"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://picsum.photos/seed/travel${i}/400/400`;
+                    }}
+                  />
                 </div>
-                <span className="text-sm font-medium">{label}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Grid */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-2">What We Offer</p>
+            <h2 className="text-4xl font-black tracking-tight mb-3">Our Services</h2>
+            <p className="text-muted-foreground max-w-md mx-auto">Everything for a safe, comfortable and memorable South India journey.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+            {SERVICES.map(({ icon: Icon, label, desc }) => (
+              <div key={label} className="group p-6 rounded-2xl border border-border/60 hover:border-primary/40 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-card">
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <p className="font-bold text-base mb-1">{label}</p>
+                <p className="text-sm text-muted-foreground">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contact CTA */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4 md:px-6 text-center">
-          <h2 className="text-2xl font-bold mb-3">Ready to Plan Your Journey?</h2>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">Call us now for bookings and enquiries. We are available 24/7 to help plan your perfect trip.</p>
+      {/* CTA Banner */}
+      <section className="relative py-24 overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1561361058-c24e1d9bd0ac?w=1920&q=80&auto=format&fit=crop"
+          alt="Travel CTA"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.25)" }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
+        />
+        <div className="absolute inset-0 bg-red-900/60" />
+        <div className="relative z-10 container mx-auto px-4 text-center text-white">
+          <h2 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
+            Ready to Plan Your<br />Dream Journey?
+          </h2>
+          <p className="text-white/80 text-lg mb-10 max-w-md mx-auto">
+            Call us now for instant bookings and customised tour packages. We're available 24/7.
+          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="tel:8110806339">
-              <Button size="lg" className="h-14 px-10 rounded-full text-lg font-bold gap-3">
-                <Phone className="h-5 w-5" /> 8110806339
+              <Button size="lg" className="h-16 px-12 rounded-full text-xl font-black bg-white text-red-700 hover:bg-white/90 border-0 shadow-xl gap-3">
+                <Phone className="h-6 w-6" /> 8110806339
               </Button>
             </a>
             <Link href="/enquiry">
-              <Button size="lg" variant="outline" className="h-14 px-10 rounded-full text-base">
-                Send Enquiry
+              <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-base font-bold border-white/50 text-white hover:bg-white/10 gap-2">
+                Send Enquiry <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
           </div>
-          <p className="text-sm text-muted-foreground mt-6 italic font-medium">"Your Journey, Our Responsibility"</p>
+          <p className="mt-8 text-white/60 italic font-medium text-sm">
+            "Your Journey, Our Responsibility" — Madurai SMT Travels
+          </p>
         </div>
       </section>
+
     </div>
   );
 }
