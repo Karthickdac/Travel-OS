@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Clock, ArrowRight, Phone, Star, Shield, Users, HeadphonesIcon, CheckCircle2, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/lang-context";
+import { motion, useInView } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 
 const HERO_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1920&q=85&auto=format&fit=crop";
 
@@ -26,12 +28,66 @@ const WHY_IMAGES = [
   "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400&q=80&auto=format&fit=crop",
 ];
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.7 } },
+};
+
+const staggerContainer = (stagger = 0.1, delayStart = 0) => ({
+  hidden: {},
+  show: { transition: { staggerChildren: stagger, delayChildren: delayStart } },
+});
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.88 },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const slideLeft = {
+  hidden: { opacity: 0, x: -50 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const slideRight = {
+  hidden: { opacity: 0, x: 50 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+};
+
+function AnimatedNumber({ target }: { target: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true });
+  const [display, setDisplay] = useState("0");
+
+  useEffect(() => {
+    if (!inView) return;
+    const num = parseInt(target.replace(/\D/g, ""), 10);
+    if (isNaN(num)) { setDisplay(target); return; }
+    const suffix = target.replace(/[\d,]/g, "");
+    let start = 0;
+    const duration = 1400;
+    const step = Math.ceil(num / (duration / 16));
+    const timer = setInterval(() => {
+      start = Math.min(start + step, num);
+      setDisplay(start.toLocaleString() + suffix);
+      if (start >= num) clearInterval(timer);
+    }, 16);
+    return () => clearInterval(timer);
+  }, [inView, target]);
+
+  return <div ref={ref}>{display}</div>;
+}
+
 export default function PublicHome() {
   const { data: packages, isLoading } = useGetPublicPackages();
   const { t } = useLang();
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col overflow-x-hidden">
 
       {/* Scrolling Ticker */}
       <div className="bg-primary text-primary-foreground py-2 overflow-hidden mt-16">
@@ -44,68 +100,137 @@ export default function PublicHome() {
 
       {/* Hero Section */}
       <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-        <img
+        <motion.img
           src={HERO_IMAGE}
           alt="South India Travel"
-          className="absolute inset-0 w-full h-full object-cover scale-105"
+          className="absolute inset-0 w-full h-full object-cover"
           style={{ filter: "brightness(0.32)" }}
+          initial={{ scale: 1.12 }}
+          animate={{ scale: 1.0 }}
+          transition={{ duration: 8, ease: "easeOut" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/80" />
 
-        <div className="relative z-10 container mx-auto px-4 text-center text-white pt-8">
-          <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-1.5 text-sm font-semibold text-white/90 mb-6 gap-2">
+        {/* Floating orbs */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 right-1/4 w-56 h-56 rounded-full bg-amber-400/10 blur-3xl pointer-events-none"
+          animate={{ scale: [1.1, 0.9, 1.1], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+
+        <motion.div
+          className="relative z-10 container mx-auto px-4 text-center text-white pt-8"
+          variants={staggerContainer(0.15, 0.2)}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-1.5 text-sm font-semibold text-white/90 mb-6 gap-2"
+          >
             <span className="flex h-2 w-2 rounded-full bg-green-400 animate-pulse" />
             {t.hero.badge}
-          </div>
+          </motion.div>
 
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 leading-none drop-shadow-xl">
+          <motion.h1
+            variants={fadeUp}
+            className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 leading-none drop-shadow-xl"
+          >
             Madurai<br />
-            <span className="text-amber-400">SMT</span> Travels
-          </h1>
-          <p className="text-lg md:text-2xl font-light text-white/80 italic mb-3">{t.hero.tagline}</p>
-          <p className="max-w-xl mx-auto text-base md:text-lg text-white/70 mb-10">{t.hero.desc}</p>
+            <motion.span
+              className="text-amber-400 inline-block"
+              animate={{ textShadow: ["0 0 20px rgba(251,191,36,0)", "0 0 40px rgba(251,191,36,0.5)", "0 0 20px rgba(251,191,36,0)"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              SMT
+            </motion.span>{" "}Travels
+          </motion.h1>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
+          <motion.p variants={fadeUp} className="text-lg md:text-2xl font-light text-white/80 italic mb-3">
+            {t.hero.tagline}
+          </motion.p>
+          <motion.p variants={fadeUp} className="max-w-xl mx-auto text-base md:text-lg text-white/70 mb-10">
+            {t.hero.desc}
+          </motion.p>
+
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
             <Link href="/enquiry">
-              <Button size="lg" className="h-14 px-10 rounded-full text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-xl shadow-primary/20 gap-2">
-                {t.hero.book} <ArrowRight className="h-4 w-4" />
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Button size="lg" className="h-14 px-10 rounded-full text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-xl shadow-primary/30 gap-2">
+                  {t.hero.book} <ArrowRight className="h-4 w-4" />
+                </Button>
+              </motion.div>
             </Link>
             <a href="tel:8110806339">
-              <Button size="lg" variant="outline" className="h-14 px-10 rounded-full text-base font-bold bg-white/10 backdrop-blur-sm text-white border-white/40 hover:bg-white/20 gap-2">
-                <Phone className="h-4 w-4" /> 8110806339
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Button size="lg" variant="outline" className="h-14 px-10 rounded-full text-base font-bold bg-white/10 backdrop-blur-sm text-white border-white/40 hover:bg-white/20 gap-2">
+                  <Phone className="h-4 w-4" /> 8110806339
+                </Button>
+              </motion.div>
             </a>
-          </div>
+          </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-6 md:gap-12">
+          <motion.div variants={staggerContainer(0.1)} className="flex flex-wrap justify-center gap-6 md:gap-12">
             {t.stats.map((s) => (
-              <div key={s.l} className="text-center">
-                <div className="text-3xl font-black text-amber-400">{s.v}</div>
+              <motion.div key={s.l} variants={scaleIn} className="text-center">
+                <div className="text-3xl font-black text-amber-400">
+                  <AnimatedNumber target={s.v} />
+                </div>
                 <div className="text-xs text-white/60 font-medium mt-0.5">{s.l}</div>
-              </div>
+              </motion.div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40">
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.8 }}
+        >
           <span className="text-xs font-medium tracking-widest uppercase">{t.hero.scroll}</span>
-          <div className="w-px h-8 bg-white/30 rounded-full animate-pulse" />
-        </div>
+          <motion.div
+            className="w-px h-8 bg-white/30 rounded-full"
+            animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.8, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+        </motion.div>
       </section>
 
       {/* Destinations Grid */}
       <section className="py-20 bg-gray-50 dark:bg-muted/20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.destinations.eyebrow}</p>
-            <h2 className="text-4xl font-black tracking-tight mb-3">{t.destinations.heading}</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">{t.destinations.sub}</p>
-          </div>
+          <motion.div
+            className="text-center mb-12"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={staggerContainer(0.12)}
+          >
+            <motion.p variants={fadeUp} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.destinations.eyebrow}</motion.p>
+            <motion.h2 variants={fadeUp} className="text-4xl font-black tracking-tight mb-3">{t.destinations.heading}</motion.h2>
+            <motion.p variants={fadeUp} className="text-muted-foreground max-w-xl mx-auto">{t.destinations.sub}</motion.p>
+          </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer(0.08)}
+          >
             {t.destCards.map((dest, i) => (
-              <div key={dest.name} className="group relative overflow-hidden rounded-2xl aspect-[4/5] shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-1">
+              <motion.div
+                key={dest.name}
+                variants={scaleIn}
+                whileHover={{ y: -6, transition: { duration: 0.25 } }}
+                className="group relative overflow-hidden rounded-2xl aspect-[4/5] shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
+              >
                 <img
                   src={DEST_IMAGES[i]}
                   alt={dest.name}
@@ -122,39 +247,58 @@ export default function PublicHome() {
                     <ChevronRight className="h-4 w-4 text-white" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Featured Packages */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+          <motion.div
+            className="flex flex-col md:flex-row md:items-end justify-between mb-12"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={staggerContainer(0.12)}
+          >
             <div>
-              <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.packages.eyebrow}</p>
-              <h2 className="text-4xl font-black tracking-tight mb-2">{t.packages.heading}</h2>
-              <p className="text-muted-foreground">{t.packages.sub}</p>
+              <motion.p variants={fadeUp} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.packages.eyebrow}</motion.p>
+              <motion.h2 variants={fadeUp} className="text-4xl font-black tracking-tight mb-2">{t.packages.heading}</motion.h2>
+              <motion.p variants={fadeUp} className="text-muted-foreground">{t.packages.sub}</motion.p>
             </div>
-            <a href="tel:8110806339">
-              <Button variant="outline" className="mt-4 md:mt-0 gap-2 rounded-full">
-                <Phone className="h-4 w-4" /> {t.packages.callBtn}
-              </Button>
-            </a>
-          </div>
+            <motion.div variants={fadeIn}>
+              <a href="tel:8110806339">
+                <Button variant="outline" className="mt-4 md:mt-0 gap-2 rounded-full">
+                  <Phone className="h-4 w-4" /> {t.packages.callBtn}
+                </Button>
+              </a>
+            </motion.div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.05 }}
+            variants={staggerContainer(0.1)}
+          >
             {isLoading ? (
               Array(6).fill(0).map((_, i) => (
-                <div key={i} className="rounded-2xl overflow-hidden shadow-md">
+                <motion.div key={i} variants={scaleIn} className="rounded-2xl overflow-hidden shadow-md">
                   <Skeleton className="h-56 w-full rounded-none" />
                   <div className="p-4 space-y-2"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-full" /></div>
-                </div>
+                </motion.div>
               ))
             ) : packages?.length ? (
               packages.map((pkg) => (
-                <div key={pkg.id} className="group rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-card border border-border/40">
+                <motion.div
+                  key={pkg.id}
+                  variants={fadeUp}
+                  whileHover={{ y: -6, boxShadow: "0 20px 40px -10px rgba(0,0,0,0.18)", transition: { duration: 0.25 } }}
+                  className="group rounded-2xl overflow-hidden shadow-md bg-card border border-border/40"
+                >
                   <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                     <img
                       src={pkg.imageUrl || `https://picsum.photos/seed/${pkg.destinationName}/800/500`}
@@ -196,18 +340,20 @@ export default function PublicHome() {
                         </div>
                       </div>
                       <a href="tel:8110806339">
-                        <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-1.5 text-xs">
-                          <Phone className="h-3 w-3" /> {t.packages.book}
-                        </Button>
+                        <motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }}>
+                          <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-1.5 text-xs">
+                            <Phone className="h-3 w-3" /> {t.packages.book}
+                          </Button>
+                        </motion.div>
                       </a>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))
             ) : (
               <div className="col-span-3 text-center py-12 text-muted-foreground">{t.packages.noPackages}</div>
             )}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -215,42 +361,70 @@ export default function PublicHome() {
       <section className="py-20 bg-gray-50 dark:bg-muted/20">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.whyUs.eyebrow}</p>
-              <h2 className="text-4xl font-black tracking-tight mb-4 leading-tight whitespace-pre-line">{t.whyUs.heading}</h2>
-              <p className="text-muted-foreground text-base mb-8">{t.whyUs.desc}</p>
-              <ul className="space-y-3 mb-8">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={staggerContainer(0.1)}
+            >
+              <motion.p variants={slideLeft} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.whyUs.eyebrow}</motion.p>
+              <motion.h2 variants={slideLeft} className="text-4xl font-black tracking-tight mb-4 leading-tight whitespace-pre-line">{t.whyUs.heading}</motion.h2>
+              <motion.p variants={slideLeft} className="text-muted-foreground text-base mb-8">{t.whyUs.desc}</motion.p>
+              <motion.ul variants={staggerContainer(0.08)} className="space-y-3 mb-8">
                 {t.whyUs.bullets.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                  <motion.li key={item} variants={fadeUp} className="flex items-start gap-3">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                    >
+                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    </motion.div>
                     <span className="text-sm font-medium">{item}</span>
-                  </li>
+                  </motion.li>
                 ))}
-              </ul>
-              <div className="flex gap-4 flex-wrap">
+              </motion.ul>
+              <motion.div variants={fadeUp} className="flex gap-4 flex-wrap">
                 <a href="tel:8110806339">
-                  <Button className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-2">
-                    <Phone className="h-4 w-4" /> {t.whyUs.call}
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                    <Button className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-2">
+                      <Phone className="h-4 w-4" /> {t.whyUs.call}
+                    </Button>
+                  </motion.div>
                 </a>
                 <Link href="/enquiry">
-                  <Button variant="outline" className="rounded-full gap-2">
-                    {t.whyUs.enquire} <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                    <Button variant="outline" className="rounded-full gap-2">
+                      {t.whyUs.enquire} <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </motion.div>
                 </Link>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              className="grid grid-cols-2 gap-3"
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={staggerContainer(0.12)}
+            >
               {WHY_IMAGES.map((src, i) => (
-                <div key={i} className={`rounded-2xl overflow-hidden shadow-lg ${i === 1 ? "mt-6" : i === 3 ? "-mt-6" : ""}`}>
+                <motion.div
+                  key={i}
+                  variants={slideRight}
+                  whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
+                  className={`rounded-2xl overflow-hidden shadow-lg ${i === 1 ? "mt-6" : i === 3 ? "-mt-6" : ""}`}
+                >
                   <img
                     src={src} alt="Travel"
-                    className="w-full aspect-square object-cover hover:scale-105 transition-transform duration-700"
+                    className="w-full aspect-square object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/why${i}/400/400`; }}
                   />
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -258,25 +432,46 @@ export default function PublicHome() {
       {/* Services */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.services.eyebrow}</p>
-            <h2 className="text-4xl font-black tracking-tight mb-3">{t.services.heading}</h2>
-            <p className="text-muted-foreground max-w-md mx-auto">{t.services.sub}</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+          <motion.div
+            className="text-center mb-12"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={staggerContainer(0.1)}
+          >
+            <motion.p variants={fadeUp} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.services.eyebrow}</motion.p>
+            <motion.h2 variants={fadeUp} className="text-4xl font-black tracking-tight mb-3">{t.services.heading}</motion.h2>
+            <motion.p variants={fadeUp} className="text-muted-foreground max-w-md mx-auto">{t.services.sub}</motion.p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-3 gap-5"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer(0.08)}
+          >
             {t.services.items.map(({ label, desc }, i) => {
               const Icon = SERVICE_ICONS[i];
               return (
-                <div key={label} className="group p-6 rounded-2xl border border-border/60 hover:border-primary/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-card">
-                  <div className="h-12 w-12 rounded-xl bg-primary/8 dark:bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 dark:group-hover:bg-primary/20 transition-colors">
+                <motion.div
+                  key={label}
+                  variants={scaleIn}
+                  whileHover={{ y: -6, boxShadow: "0 16px 32px -8px rgba(0,0,0,0.12)", transition: { duration: 0.22 } }}
+                  className="group p-6 rounded-2xl border border-border/60 hover:border-primary/20 transition-colors duration-300 bg-card"
+                >
+                  <motion.div
+                    className="h-12 w-12 rounded-xl bg-primary/[0.08] flex items-center justify-center mb-4"
+                    whileHover={{ rotate: [0, -8, 8, 0], transition: { duration: 0.4 } }}
+                  >
                     <Icon className="h-6 w-6 text-primary" />
-                  </div>
+                  </motion.div>
                   <p className="font-bold text-base mb-1">{label}</p>
                   <p className="text-sm text-muted-foreground">{desc}</p>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -290,23 +485,34 @@ export default function PublicHome() {
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-orange-950/80 to-black/70" />
-        <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h2 className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line">{t.cta.heading}</h2>
-          <p className="text-white/80 text-lg mb-10 max-w-md mx-auto">{t.cta.sub}</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+        <motion.div
+          className="relative z-10 container mx-auto px-4 text-center text-white"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={staggerContainer(0.15)}
+        >
+          <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line">{t.cta.heading}</motion.h2>
+          <motion.p variants={fadeUp} className="text-white/80 text-lg mb-10 max-w-md mx-auto">{t.cta.sub}</motion.p>
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="tel:8110806339">
-              <Button size="lg" className="h-16 px-12 rounded-full text-xl font-black bg-white text-orange-700 hover:bg-white/90 border-0 shadow-xl gap-3">
-                <Phone className="h-6 w-6" /> 8110806339
-              </Button>
+              <motion.div whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.2)" }} whileTap={{ scale: 0.97 }}>
+                <Button size="lg" className="h-16 px-12 rounded-full text-xl font-black bg-white text-orange-700 hover:bg-white/90 border-0 shadow-xl gap-3">
+                  <Phone className="h-6 w-6" /> 8110806339
+                </Button>
+              </motion.div>
             </a>
             <Link href="/enquiry">
-              <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-base font-bold border-white/50 text-white hover:bg-white/10 gap-2">
-                {t.cta.enquire} <ArrowRight className="h-5 w-5" />
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-base font-bold border-white/50 text-white hover:bg-white/10 gap-2">
+                  {t.cta.enquire} <ArrowRight className="h-5 w-5" />
+                </Button>
+              </motion.div>
             </Link>
-          </div>
-          <p className="mt-8 text-white/50 italic font-medium text-sm">{t.cta.tagline}</p>
-        </div>
+          </motion.div>
+          <motion.p variants={fadeIn} className="mt-8 text-white/50 italic font-medium text-sm">{t.cta.tagline}</motion.p>
+        </motion.div>
       </section>
 
     </div>
