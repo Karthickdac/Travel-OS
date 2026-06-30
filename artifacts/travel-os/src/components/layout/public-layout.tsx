@@ -38,7 +38,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             {/* Logo */}
             <Link href="/">
               <div className="flex items-center gap-3 cursor-pointer shrink-0 group">
-                <div className="relative h-10 w-10 rounded-xl bg-red-600 flex items-center justify-center shadow-lg group-hover:shadow-red-500/30 transition-shadow">
+                <div className="relative h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg group-hover:shadow-primary/30 transition-shadow">
                   <span className={`text-white font-black text-xs leading-none tracking-tight`}>SMT</span>
                   <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-400 border-2 border-background animate-pulse" />
                 </div>
@@ -112,7 +112,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               <a href="tel:8110806339">
                 <Button
                   size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white border-0 rounded-full text-xs font-bold px-4 gap-1.5 shadow-lg shadow-red-600/20"
+                  className="bg-primary hover:bg-primary/90 text-white border-0 rounded-full text-xs font-bold px-4 gap-1.5 shadow-lg shadow-primary/20"
                 >
                   <Phone className="h-3 w-3" />
                   <span className="hidden sm:inline">{t.nav.bookNow}</span>
@@ -163,7 +163,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
 
-              <a href="tel:8110806339" className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-bold text-sm mt-1">
+              <a href="tel:8110806339" className="flex items-center gap-2 px-4 py-3 rounded-xl bg-primary text-white font-bold text-sm mt-1">
                 <Phone className="h-4 w-4" /> 8110806339 — {lang === "en" ? "Call to Book" : "முன்பதிவு செய்யுங்கள்"}
               </a>
             </div>
@@ -183,13 +183,13 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="h-8 w-8 rounded-xl bg-red-600 flex items-center justify-center shadow">
+              <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shadow">
                 <span className="text-white font-black text-xs leading-none">SMT</span>
               </div>
               <span className="text-base font-black tracking-tight">Madurai SMT Travels</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs mb-4 leading-relaxed">{t.footer.tagline}</p>
-            <a href="tel:8110806339" className="flex items-center gap-2 text-sm font-bold text-red-600 hover:underline">
+            <a href="tel:8110806339" className="flex items-center gap-2 text-sm font-bold text-primary hover:underline">
               <Phone className="h-4 w-4" /> 8110806339
             </a>
           </div>
@@ -198,7 +198,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <h4 className="font-bold mb-4 text-foreground text-sm uppercase tracking-wider">{t.footer.destinations}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               {t.footer.destItems.map((d) => (
-                <li key={d}><span className="hover:text-red-600 cursor-pointer transition-colors">{d}</span></li>
+                <li key={d}><span className="hover:text-primary cursor-pointer transition-colors">{d}</span></li>
               ))}
             </ul>
           </div>
@@ -207,7 +207,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <h4 className="font-bold mb-4 text-foreground text-sm uppercase tracking-wider">{t.footer.services}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               {t.footer.serviceItems.map((s) => (
-                <li key={s}><span className="hover:text-red-600 cursor-pointer transition-colors">{s}</span></li>
+                <li key={s}><span className="hover:text-primary cursor-pointer transition-colors">{s}</span></li>
               ))}
             </ul>
           </div>
@@ -215,10 +215,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="font-bold mb-4 text-foreground text-sm uppercase tracking-wider">{t.footer.quickLinks}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/"><span className="hover:text-red-600 cursor-pointer transition-colors">{t.footer.home}</span></Link></li>
-              <li><Link href="/packages"><span className="hover:text-red-600 cursor-pointer transition-colors">{t.footer.tourPackages}</span></Link></li>
-              <li><Link href="/enquiry"><span className="hover:text-red-600 cursor-pointer transition-colors">{t.footer.contactUs}</span></Link></li>
-              <li><Link href="/login"><span className="hover:text-red-600 cursor-pointer transition-colors">{t.footer.adminLogin}</span></Link></li>
+              <li><Link href="/"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.home}</span></Link></li>
+              <li><Link href="/packages"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.tourPackages}</span></Link></li>
+              <li><Link href="/enquiry"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.contactUs}</span></Link></li>
+              <li><Link href="/login"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.adminLogin}</span></Link></li>
             </ul>
           </div>
         </div>

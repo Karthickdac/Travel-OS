@@ -34,7 +34,7 @@ export default function PublicHome() {
     <div className="flex flex-col">
 
       {/* Scrolling Ticker */}
-      <div className="bg-red-600 text-white py-2 overflow-hidden mt-16">
+      <div className="bg-primary text-primary-foreground py-2 overflow-hidden mt-16">
         <div className="flex animate-[ticker_30s_linear_infinite] whitespace-nowrap gap-10">
           {[...t.ticker, ...t.ticker].map((item, i) => (
             <span key={i} className="text-xs font-semibold shrink-0 tracking-wide">{item}</span>
@@ -60,14 +60,14 @@ export default function PublicHome() {
 
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 leading-none drop-shadow-xl">
             Madurai<br />
-            <span className="text-red-400">SMT</span> Travels
+            <span className="text-amber-400">SMT</span> Travels
           </h1>
           <p className="text-lg md:text-2xl font-light text-white/80 italic mb-3">{t.hero.tagline}</p>
           <p className="max-w-xl mx-auto text-base md:text-lg text-white/70 mb-10">{t.hero.desc}</p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
             <Link href="/enquiry">
-              <Button size="lg" className="h-14 px-10 rounded-full text-base font-bold bg-red-600 hover:bg-red-700 text-white border-0 shadow-xl gap-2">
+              <Button size="lg" className="h-14 px-10 rounded-full text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-xl shadow-primary/20 gap-2">
                 {t.hero.book} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -81,7 +81,7 @@ export default function PublicHome() {
           <div className="flex flex-wrap justify-center gap-6 md:gap-12">
             {t.stats.map((s) => (
               <div key={s.l} className="text-center">
-                <div className="text-3xl font-black text-red-400">{s.v}</div>
+                <div className="text-3xl font-black text-amber-400">{s.v}</div>
                 <div className="text-xs text-white/60 font-medium mt-0.5">{s.l}</div>
               </div>
             ))}
@@ -98,7 +98,7 @@ export default function PublicHome() {
       <section className="py-20 bg-gray-50 dark:bg-muted/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <p className="text-red-600 font-bold text-xs uppercase tracking-widest mb-2">{t.destinations.eyebrow}</p>
+            <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.destinations.eyebrow}</p>
             <h2 className="text-4xl font-black tracking-tight mb-3">{t.destinations.heading}</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">{t.destinations.sub}</p>
           </div>
@@ -133,7 +133,7 @@ export default function PublicHome() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
-              <p className="text-red-600 font-bold text-xs uppercase tracking-widest mb-2">{t.packages.eyebrow}</p>
+              <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.packages.eyebrow}</p>
               <h2 className="text-4xl font-black tracking-tight mb-2">{t.packages.heading}</h2>
               <p className="text-muted-foreground">{t.packages.sub}</p>
             </div>
@@ -164,7 +164,7 @@ export default function PublicHome() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     {pkg.packageType && (
-                      <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full capitalize shadow">
+                      <div className="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full capitalize shadow">
                         {pkg.packageType}
                       </div>
                     )}
@@ -180,23 +180,23 @@ export default function PublicHome() {
 
                   <div className="p-4">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                      <MapPin className="h-3 w-3 text-red-500 shrink-0" /> {pkg.destinationName}
+                      <MapPin className="h-3 w-3 text-primary shrink-0" /> {pkg.destinationName}
                     </div>
-                    <h3 className="font-bold text-base mb-2 leading-snug group-hover:text-red-600 transition-colors line-clamp-1">{pkg.title}</h3>
+                    <h3 className="font-bold text-base mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-1">{pkg.title}</h3>
                     <p className="text-xs text-muted-foreground line-clamp-2 mb-4">{pkg.description}</p>
 
                     <div className="flex items-center justify-between pt-3 border-t border-border/50">
                       <div>
                         <span className="text-xs text-muted-foreground block">{t.packages.from}</span>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-black text-red-600">₹{Number(pkg.price).toLocaleString()}</span>
+                          <span className="text-xl font-black text-primary">₹{Number(pkg.price).toLocaleString()}</span>
                           {pkg.originalPrice && Number(pkg.originalPrice) > Number(pkg.price) && (
                             <span className="text-xs text-muted-foreground line-through">₹{Number(pkg.originalPrice).toLocaleString()}</span>
                           )}
                         </div>
                       </div>
                       <a href="tel:8110806339">
-                        <Button size="sm" className="rounded-full bg-red-600 hover:bg-red-700 text-white border-0 gap-1.5 text-xs">
+                        <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-1.5 text-xs">
                           <Phone className="h-3 w-3" /> {t.packages.book}
                         </Button>
                       </a>
@@ -216,7 +216,7 @@ export default function PublicHome() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-red-600 font-bold text-xs uppercase tracking-widest mb-2">{t.whyUs.eyebrow}</p>
+              <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.whyUs.eyebrow}</p>
               <h2 className="text-4xl font-black tracking-tight mb-4 leading-tight whitespace-pre-line">{t.whyUs.heading}</h2>
               <p className="text-muted-foreground text-base mb-8">{t.whyUs.desc}</p>
               <ul className="space-y-3 mb-8">
@@ -229,7 +229,7 @@ export default function PublicHome() {
               </ul>
               <div className="flex gap-4 flex-wrap">
                 <a href="tel:8110806339">
-                  <Button className="rounded-full bg-red-600 hover:bg-red-700 text-white border-0 gap-2">
+                  <Button className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-2">
                     <Phone className="h-4 w-4" /> {t.whyUs.call}
                   </Button>
                 </a>
@@ -259,7 +259,7 @@ export default function PublicHome() {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <p className="text-red-600 font-bold text-xs uppercase tracking-widest mb-2">{t.services.eyebrow}</p>
+            <p className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.services.eyebrow}</p>
             <h2 className="text-4xl font-black tracking-tight mb-3">{t.services.heading}</h2>
             <p className="text-muted-foreground max-w-md mx-auto">{t.services.sub}</p>
           </div>
@@ -267,9 +267,9 @@ export default function PublicHome() {
             {t.services.items.map(({ label, desc }, i) => {
               const Icon = SERVICE_ICONS[i];
               return (
-                <div key={label} className="group p-6 rounded-2xl border border-border/60 hover:border-red-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-card">
-                  <div className="h-12 w-12 rounded-xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center mb-4 group-hover:bg-red-100 dark:group-hover:bg-red-950/40 transition-colors">
-                    <Icon className="h-6 w-6 text-red-600" />
+                <div key={label} className="group p-6 rounded-2xl border border-border/60 hover:border-primary/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-card">
+                  <div className="h-12 w-12 rounded-xl bg-primary/8 dark:bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 dark:group-hover:bg-primary/20 transition-colors">
+                    <Icon className="h-6 w-6 text-primary" />
                   </div>
                   <p className="font-bold text-base mb-1">{label}</p>
                   <p className="text-sm text-muted-foreground">{desc}</p>
@@ -289,13 +289,13 @@ export default function PublicHome() {
           style={{ filter: "brightness(0.2)" }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-red-900/70 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-950/80 to-black/70" />
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <h2 className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line">{t.cta.heading}</h2>
           <p className="text-white/80 text-lg mb-10 max-w-md mx-auto">{t.cta.sub}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="tel:8110806339">
-              <Button size="lg" className="h-16 px-12 rounded-full text-xl font-black bg-white text-red-700 hover:bg-white/90 border-0 shadow-xl gap-3">
+              <Button size="lg" className="h-16 px-12 rounded-full text-xl font-black bg-white text-orange-700 hover:bg-white/90 border-0 shadow-xl gap-3">
                 <Phone className="h-6 w-6" /> 8110806339
               </Button>
             </a>
