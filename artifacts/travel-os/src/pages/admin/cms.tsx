@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -181,7 +182,7 @@ function CmsBlogsTab() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5 col-span-2"><Label>Title *</Label><Input value={form.title} onChange={e => { setForm(f => ({ ...f, title: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })); }} placeholder="Top 10 Places in South India" /></div>
               <div className="space-y-1.5"><Label>Slug</Label><Input value={form.slug} onChange={setF("slug")} /></div>
-              <div className="space-y-1.5"><Label>Cover Image URL</Label><Input value={form.coverImage} onChange={setF("coverImage")} placeholder="https://…" /></div>
+              <div className="space-y-1.5"><Label>Cover Image</Label><ImageUpload value={form.coverImage} onChange={url => setForm(f => ({ ...f, coverImage: url }))} /></div>
               <div className="space-y-1.5 col-span-2"><Label>Excerpt</Label><Input value={form.excerpt} onChange={setF("excerpt")} placeholder="Short description (shown in listing)" /></div>
               <div className="space-y-1.5"><Label>Tags (comma separated)</Label><Input value={form.tags} onChange={setF("tags")} placeholder="travel, south india, tips" /></div>
               <div className="flex items-center gap-2"><input type="checkbox" checked={form.isPublished} onChange={e => setForm(f => ({ ...f, isPublished: e.target.checked }))} className="h-4 w-4" id="bpub" /><Label htmlFor="bpub">Published</Label></div>
@@ -211,10 +212,10 @@ function CmsMediaTab() {
   return (
     <div className="space-y-6">
       <Card className="shadow-sm">
-        <CardHeader><CardTitle className="text-base">Add Media by URL</CardTitle><CardDescription>Paste a direct URL to an image or video to add it to your media library.</CardDescription></CardHeader>
+        <CardHeader><CardTitle className="text-base">Add Media</CardTitle><CardDescription>Upload an image from your device to add it to your media library.</CardDescription></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5 col-span-2"><Label>File URL *</Label><Input value={form.fileUrl} onChange={setF("fileUrl")} placeholder="https://images.unsplash.com/…" /></div>
+            <div className="space-y-1.5 col-span-2"><Label>Image File *</Label><ImageUpload value={form.fileUrl} onChange={url => setForm(f => ({ ...f, fileUrl: url }))} previewClassName="h-20 w-32" /></div>
             <div className="space-y-1.5"><Label>File Name</Label><Input value={form.fileName} onChange={setF("fileName")} placeholder="hero-ooty.jpg" /></div>
             <div className="space-y-1.5"><Label>Alt Text</Label><Input value={form.alt} onChange={setF("alt")} placeholder="Ooty hills in morning mist" /></div>
             <div className="space-y-1.5"><Label>Caption</Label><Input value={form.caption} onChange={setF("caption")} placeholder="Ooty, Tamil Nadu" /></div>
@@ -493,13 +494,8 @@ export default function AdminCms() {
                 <FRow label="CTA Button Text" k="heroCtaText" form={form} setF={setFInput} placeholder="Book a Trip" />
                 <FRow label="CTA Phone Number" k="heroCtaPhone" form={form} setF={setFInput} placeholder="8110806339" hint="Tapped on mobile to call" />
               </div>
-              <FieldRow label="Hero Background Image URL" hint="Paste a direct image URL (Unsplash, drive, CDN, etc.)">
-                <div className="flex gap-2">
-                  <Input value={form.heroBgImage} onChange={setFInput("heroBgImage")} placeholder="https://images.unsplash.com/…" className="flex-1" />
-                  {form.heroBgImage && (
-                    <img src={form.heroBgImage} alt="" className="h-9 w-16 rounded object-cover border border-border flex-shrink-0" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                  )}
-                </div>
+              <FieldRow label="Hero Background Image" hint="Upload an image from your device">
+                <ImageUpload value={form.heroBgImage} onChange={url => setForm(f => ({ ...f, heroBgImage: url }))} previewClassName="h-12 w-20" />
               </FieldRow>
               <FieldRow label="Announcement Ticker" hint="Scrolling bar at top — separate multiple messages with |">
                 <div className="flex gap-2 items-start">
@@ -521,13 +517,12 @@ export default function AdminCms() {
                 <FRow label="Company Display Name" k="companyDisplayName" form={form} setF={setFInput} placeholder="Madurai SMT Travels" hint="Shown in header, footer, hero" />
                 <FRow label="Tagline" k="tagline" form={form} setF={setFInput} placeholder="Your Journey, Our Passion" />
               </div>
-              <FieldRow label="Logo URL" hint="Direct link to your logo image (PNG/SVG, transparent background recommended)">
-                <div className="flex gap-2">
-                  <Input value={form.logoUrl} onChange={setFInput("logoUrl")} placeholder="https://…/logo.png" className="flex-1" />
-                  {form.logoUrl && <img src={form.logoUrl} alt="Logo" className="h-9 w-16 rounded object-contain border border-border flex-shrink-0 bg-white p-1" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />}
-                </div>
+              <FieldRow label="Logo" hint="Upload your logo (PNG/SVG, transparent background recommended)">
+                <ImageUpload value={form.logoUrl} onChange={url => setForm(f => ({ ...f, logoUrl: url }))} previewClassName="h-12 w-20 bg-white" accept="image/*,.svg" />
               </FieldRow>
-              <FRow label="Favicon URL" k="faviconUrl" form={form} setF={setFInput} placeholder="https://…/favicon.ico" hint="Small icon shown in browser tab" />
+              <FieldRow label="Favicon" hint="Small icon shown in browser tab">
+                <ImageUpload value={form.faviconUrl} onChange={url => setForm(f => ({ ...f, faviconUrl: url }))} previewClassName="h-10 w-10" accept="image/*,.ico,.svg" />
+              </FieldRow>
               <FieldRow label="Primary Colour" hint="Used for buttons, highlights, and accents across the website">
                 <div className="flex items-center gap-3">
                   <input type="color" value={form.primaryColor} onChange={setFInput("primaryColor")} className="h-10 w-16 rounded cursor-pointer border border-input" />

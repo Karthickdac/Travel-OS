@@ -1,1 +1,1 @@
-- [Domain routing pattern](domain-routing.md) — custom domain lookup skips localhost/.replit.dev/.replit.app hostnames; stored as bare hostname in companies.domain
+- [Object storage image uploads](storage-uploads.md) — local image uploads via presigned PUT; upload-URL minting requires auth, object serving is public; routes under /api not /api/v1.

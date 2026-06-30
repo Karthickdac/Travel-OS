@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { Building2, Palette, Bell, CreditCard, Globe, Lock, Save, Mail, Phone } from "lucide-react";
@@ -161,8 +162,8 @@ export default function AdminSettings() {
                     <div className="flex gap-2"><input type="color" value={branding.secondaryColor} onChange={setB("secondaryColor")} className="h-10 w-14 rounded-md border border-input cursor-pointer" /><Input value={branding.secondaryColor} onChange={setB("secondaryColor")} className="font-mono" /></div>
                   </Field>
                   <Field label="Tagline"><Input value={branding.tagline} onChange={setB("tagline")} placeholder="Your company slogan" /></Field>
-                  <Field label="Logo URL" hint="Direct URL to your logo image"><Input value={branding.logoUrl} onChange={setB("logoUrl")} placeholder="https://..." /></Field>
-                  <Field label="Favicon URL"><Input value={branding.faviconUrl} onChange={setB("faviconUrl")} placeholder="https://..." /></Field>
+                  <Field label="Logo" hint="Upload your logo image"><ImageUpload value={branding.logoUrl} onChange={url => setBranding(f => ({ ...f, logoUrl: url }))} previewClassName="h-12 w-20 bg-white" accept="image/*,.svg" /></Field>
+                  <Field label="Favicon"><ImageUpload value={branding.faviconUrl} onChange={url => setBranding(f => ({ ...f, faviconUrl: url }))} previewClassName="h-10 w-10" accept="image/*,.ico,.svg" /></Field>
                 </Section>
               )}
 

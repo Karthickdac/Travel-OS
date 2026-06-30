@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -44,7 +45,7 @@ function PackageForm({ initial, onSave, onCancel }: { initial?: any; onSave: (d:
           </Select>
         </div>
         <div className="space-y-1.5"><Label>Destination</Label><Input value={form.destinationName} onChange={set("destinationName")} placeholder="Kodaikanal, Tamil Nadu" /></div>
-        <div className="space-y-1.5"><Label>Cover Image URL</Label><Input value={form.imageUrl} onChange={set("imageUrl")} placeholder="https://…" /></div>
+        <div className="space-y-1.5"><Label>Cover Image</Label><ImageUpload value={form.imageUrl} onChange={url => setForm((f: any) => ({ ...f, imageUrl: url }))} /></div>
         <div className="space-y-1.5 col-span-2"><Label>Description</Label><Textarea value={form.description} onChange={set("description")} rows={2} /></div>
         <div className="space-y-1.5"><Label>Inclusions (one per line)</Label><Textarea value={form.inclusions} onChange={set("inclusions")} rows={4} placeholder={"AC Vehicle\nDriver Allowance\nHotel (4N)"} /></div>
         <div className="space-y-1.5"><Label>Exclusions (one per line)</Label><Textarea value={form.exclusions} onChange={set("exclusions")} rows={4} placeholder={"Airfare\nPersonal expenses"} /></div>

@@ -28,6 +28,7 @@ import fleetExtendedRouter from "./fleet_extended";
 import crmExtendedRouter from "./crm_extended";
 import companySettingsRouter from "./company_settings";
 import portalRouter from "./portal";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -78,5 +79,6 @@ router.use(fleetExtendedRouter);
 router.use(crmExtendedRouter);
 router.use(companySettingsRouter);
 router.use(portalRouter);
+router.use(storageRouter);
 
 export default router;
