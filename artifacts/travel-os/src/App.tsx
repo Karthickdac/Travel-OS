@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { LangProvider } from "@/lib/lang-context";
 import NotFound from "@/pages/not-found";
 
 import { MasterLayout } from "@/components/layout/master-layout";
@@ -101,12 +102,14 @@ function AdminRoutes() {
 
 function PublicRoutes() {
   return (
-    <PublicLayout>
-      <Switch>
-        <Route path="/" component={PublicHome} />
-        <Route component={NotFound} />
-      </Switch>
-    </PublicLayout>
+    <LangProvider>
+      <PublicLayout>
+        <Switch>
+          <Route path="/" component={PublicHome} />
+          <Route component={NotFound} />
+        </Switch>
+      </PublicLayout>
+    </LangProvider>
   );
 }
 
