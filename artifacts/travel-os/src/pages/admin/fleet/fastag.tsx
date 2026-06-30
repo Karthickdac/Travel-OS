@@ -14,11 +14,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import {
   CreditCard, Plus, Zap, AlertTriangle, CheckCircle2, XCircle,
   RefreshCw, History, Car, Trash2, Pencil, IndianRupee,
-  Building2, ArrowUpRight, Clock,
+  Building2, ArrowUpRight, Clock, MessageSquareText, Sparkles, Copy, Webhook,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -214,8 +215,37 @@ export default function AdminFastagPage() {
   const [tagForm, setTagForm] = useState(EMPTY_TAG_FORM);
   const [rechargeForm, setRechargeForm] = useState(EMPTY_RECHARGE);
   const [balanceForm, setBalanceForm] = useState(EMPTY_BALANCE);
+  const [smsText, setSmsText] = useState("");
+  const [smsSyncing, setSmsSyncing] = useState(false);
+  const [showWebhook, setShowWebhook] = useState(false);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["/v1/fleet/fastag"] });
+
+  const { data: webhookInfo } = useQuery({
+    queryKey: ["/v1/fleet/fastag/sms-webhook-url"],
+    queryFn: () => api.get<{ configured: boolean; url: string | null }>("/fleet/fastag/sms-webhook-url"),
+    enabled: showWebhook,
+  });
+
+  const handleSmsSync = async () => {
+    if (!smsText.trim()) { toast({ title: "Paste the bank SMS first", variant: "destructive" }); return; }
+    setSmsSyncing(true);
+    try {
+      const r = await api.post<{ updated: { balance: number }; parsed: any }>(
+        "/fleet/fastag/sms-sync",
+        { message: smsText, fastagId: refreshTag?.id },
+      );
+      toast({ title: `Balance updated to ₹${Number(r.updated.balance).toLocaleString()}`, description: "Read from bank SMS" });
+      setBalanceForm(f => ({ ...f, balance: String(r.updated.balance) }));
+      setSmsText("");
+      refresh();
+      setRefreshTag(null);
+    } catch (e: any) {
+      toast({ title: "Couldn't read balance from SMS", description: e?.message ?? "Try Manual entry instead", variant: "destructive" });
+    } finally {
+      setSmsSyncing(false);
+    }
+  };
 
   const lowCount = (fastags ?? []).filter(f => Number(f.balance) < Number(f.lowBalanceThreshold)).length;
   const totalBalance = (fastags ?? []).reduce((s, f) => s + Number(f.balance), 0);
@@ -289,14 +319,18 @@ export default function AdminFastagPage() {
         <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />Register FASTag</Button>
       </div>
 
-      {/* Info banner about live API */}
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 text-sm text-blue-800">
-        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-blue-600" />
-        <div>
-          <span className="font-semibold">Manual balance tracking mode.</span>{" "}
-          Live balance check via NETC/bank API requires a partnership agreement with your issuing bank (HDFC, ICICI, SBI etc.).
-          Use <strong>Update Balance</strong> after checking manually, or <strong>Record Recharge</strong> after each top-up to keep records accurate.
+      {/* Info banner about realtime SMS auto-update */}
+      <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-900">
+        <Sparkles className="h-5 w-5 shrink-0 mt-0.5 text-emerald-600" />
+        <div className="flex-1">
+          <span className="font-semibold">Realtime balance from bank SMS.</span>{" "}
+          Direct NETC/bank balance APIs need a bank partnership — instead, every toll deduction and recharge SMS from
+          your bank already carries the live balance. Open <strong>Update Balance</strong> on any tag and paste that SMS to
+          auto-update instantly, or set up <strong>auto-sync</strong> to forward those SMS automatically.
         </div>
+        <Button size="sm" variant="outline" className="gap-1.5 shrink-0 border-emerald-300 bg-white" onClick={() => setShowWebhook(true)}>
+          <Webhook className="h-3.5 w-3.5" />Auto-sync setup
+        </Button>
       </div>
 
       {/* Stats */}
@@ -508,12 +542,35 @@ export default function AdminFastagPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Check balance on your bank's app/website and enter the current balance below. This will update the record and set the last-checked timestamp.
-            </p>
+            {/* Realtime: read balance from the bank SMS */}
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
+                <MessageSquareText className="h-4 w-4" />Paste bank SMS (realtime)
+              </div>
+              <p className="text-xs text-emerald-700/90">
+                Paste the latest toll-deduction or recharge SMS from your bank. We'll read the live balance and update it automatically.
+              </p>
+              <Textarea
+                value={smsText}
+                onChange={e => setSmsText(e.target.value)}
+                rows={3}
+                placeholder="e.g. Toll of Rs.85.00 deducted on FASTag for TN58AB1234. Avl Bal: Rs.415.00 -HDFC Bank"
+                className="bg-white text-xs"
+              />
+              <Button size="sm" onClick={handleSmsSync} disabled={smsSyncing} className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700">
+                <Sparkles className="h-3.5 w-3.5" />{smsSyncing ? "Reading…" : "Read balance from SMS"}
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[11px] uppercase tracking-wide text-muted-foreground">or enter manually</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
             <div className="space-y-1.5">
               <Label>Current Balance (₹) *</Label>
-              <Input type="number" value={balanceForm.balance} onChange={e => setBalanceForm(f => ({ ...f, balance: e.target.value }))} placeholder="0" className="text-xl font-bold" autoFocus />
+              <Input type="number" value={balanceForm.balance} onChange={e => setBalanceForm(f => ({ ...f, balance: e.target.value }))} placeholder="0" className="text-xl font-bold" />
             </div>
             <div className="space-y-1.5">
               <Label>Notes</Label>
@@ -524,6 +581,50 @@ export default function AdminFastagPage() {
               <Button onClick={handleRefreshBalance} disabled={updateFastag.isPending} className="gap-2">
                 <RefreshCw className="h-4 w-4" />Update Balance
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auto-sync (webhook) setup dialog */}
+      <Dialog open={showWebhook} onOpenChange={setShowWebhook}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Webhook className="h-5 w-5" />Auto-sync FASTag balances
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-sm">
+            <p className="text-muted-foreground">
+              For fully automatic realtime updates, forward your bank's FASTag SMS to the webhook below using a free
+              SMS-forwarding app (e.g. <strong>SMS to URL Forwarder</strong> on Android) on the phone that receives the alerts.
+              Each toll deduction or recharge SMS will update the matching vehicle's balance within seconds.
+            </p>
+            <ol className="list-decimal pl-5 space-y-1 text-muted-foreground">
+              <li>Install an SMS-to-webhook forwarder app on the SIM that gets the FASTag SMS.</li>
+              <li>Set the request method to <strong>POST</strong> and the body to send the full SMS text (field <code className="text-xs bg-muted px-1 rounded">message</code>, <code className="text-xs bg-muted px-1 rounded">text</code>, or <code className="text-xs bg-muted px-1 rounded">body</code>).</li>
+              <li>Paste this webhook URL as the destination:</li>
+            </ol>
+            <div className="space-y-1.5">
+              <Label>Webhook URL</Label>
+              <div className="flex gap-2">
+                <Input readOnly value={webhookInfo?.url ?? "Loading…"} className="font-mono text-xs" onFocus={e => e.currentTarget.select()} />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  disabled={!webhookInfo?.url}
+                  onClick={() => { if (webhookInfo?.url) { navigator.clipboard.writeText(webhookInfo.url); toast({ title: "Webhook URL copied" }); } }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Keep this URL private — the token in it authorises balance updates. The SMS must contain the vehicle number
+                or the FASTag's last 4 digits so we can match it to the right tag.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setShowWebhook(false)}>Done</Button>
             </div>
           </div>
         </DialogContent>

@@ -1,1 +1,1 @@
-- [Object storage image uploads](storage-uploads.md) — local image uploads via presigned PUT; upload-URL minting requires auth, object serving is public; routes under /api not /api/v1.
+- [FASTag realtime balance](fastag-realtime-balance.md) — no public bank balance API; parse the bank's FASTag SMS instead. Per-company HMAC webhook token, fail-closed on missing SESSION_SECRET, 409 on ambiguous tag match.
