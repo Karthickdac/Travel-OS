@@ -936,6 +936,63 @@ export interface WebsiteSettingsUpdate {
   metaDescription?: string;
 }
 
+export interface Fastag {
+  id: string;
+  vehicleId?: string | null;
+  vehicleNumber: string;
+  tagId: string;
+  bank: string;
+  balance: number;
+  lowBalanceThreshold: number;
+  status: string;
+  lastCheckedAt?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FastagInput {
+  vehicleId?: string;
+  vehicleNumber: string;
+  tagId: string;
+  bank?: string;
+  balance?: number;
+  lowBalanceThreshold?: number;
+  status?: string;
+  notes?: string;
+}
+
+export interface FastagUpdate {
+  balance?: number;
+  status?: string;
+  bank?: string;
+  lowBalanceThreshold?: number;
+  notes?: string;
+  lastCheckedAt?: string;
+}
+
+export interface FastagRecharge {
+  id: string;
+  fastagId?: string | null;
+  amount: number;
+  transactionRef?: string | null;
+  rechargeMode: string;
+  balanceBefore?: number | null;
+  balanceAfter?: number | null;
+  rechargedBy?: string | null;
+  notes?: string | null;
+  rechargedAt: string;
+  createdAt: string;
+}
+
+export interface FastagRechargeInput {
+  amount: number;
+  transactionRef?: string;
+  rechargeMode?: string;
+  rechargedBy?: string;
+  notes?: string;
+}
+
 export interface DomainUpdate {
   domain: string;
 }
@@ -978,6 +1035,10 @@ limit?: number;
 export type ListVehiclesParams = {
 category?: string;
 status?: string;
+};
+
+export type DeleteFastag200 = {
+  success?: boolean;
 };
 
 export type ListDriversParams = {

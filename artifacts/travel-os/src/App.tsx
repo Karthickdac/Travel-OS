@@ -20,6 +20,7 @@ import MasterAnalytics from "@/pages/master/analytics";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminBookings from "@/pages/admin/bookings";
 import AdminFleet from "@/pages/admin/fleet";
+import AdminFastag from "@/pages/admin/fleet/fastag";
 import AdminDrivers from "@/pages/admin/drivers";
 import AdminUsers from "@/pages/admin/users";
 import AdminLeads from "@/pages/admin/crm/leads";
@@ -97,6 +98,7 @@ function AdminRoutes() {
       <Switch>
         <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/bookings" component={AdminBookings} />
+        <Route path="/admin/fleet/fastag" component={AdminFastag} />
         <Route path="/admin/fleet" component={AdminFleet} />
         <Route path="/admin/drivers" component={AdminDrivers} />
         <Route path="/admin/users" component={AdminUsers} />

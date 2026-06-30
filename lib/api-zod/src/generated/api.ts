@@ -871,6 +871,153 @@ export const GetFleetStatsResponse = zod.object({
 
 
 /**
+ * @summary List all FASTag records
+ */
+export const ListFastagsResponseItem = zod.object({
+  "id": zod.string(),
+  "vehicleId": zod.string().nullish(),
+  "vehicleNumber": zod.string(),
+  "tagId": zod.string(),
+  "bank": zod.string(),
+  "balance": zod.number(),
+  "lowBalanceThreshold": zod.number(),
+  "status": zod.string(),
+  "lastCheckedAt": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListFastagsResponse = zod.array(ListFastagsResponseItem)
+
+
+/**
+ * @summary Register a FASTag for a vehicle
+ */
+export const CreateFastagBody = zod.object({
+  "vehicleId": zod.string().optional(),
+  "vehicleNumber": zod.string(),
+  "tagId": zod.string(),
+  "bank": zod.string().optional(),
+  "balance": zod.number().optional(),
+  "lowBalanceThreshold": zod.number().optional(),
+  "status": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const CreateFastagResponse = zod.object({
+  "id": zod.string(),
+  "vehicleId": zod.string().nullish(),
+  "vehicleNumber": zod.string(),
+  "tagId": zod.string(),
+  "bank": zod.string(),
+  "balance": zod.number(),
+  "lowBalanceThreshold": zod.number(),
+  "status": zod.string(),
+  "lastCheckedAt": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Update FASTag balance or details
+ */
+export const UpdateFastagParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateFastagBody = zod.object({
+  "balance": zod.number().optional(),
+  "status": zod.string().optional(),
+  "bank": zod.string().optional(),
+  "lowBalanceThreshold": zod.number().optional(),
+  "notes": zod.string().optional(),
+  "lastCheckedAt": zod.string().optional()
+})
+
+export const UpdateFastagResponse = zod.object({
+  "id": zod.string(),
+  "vehicleId": zod.string().nullish(),
+  "vehicleNumber": zod.string(),
+  "tagId": zod.string(),
+  "bank": zod.string(),
+  "balance": zod.number(),
+  "lowBalanceThreshold": zod.number(),
+  "status": zod.string(),
+  "lastCheckedAt": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Remove a FASTag record
+ */
+export const DeleteFastagParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteFastagResponse = zod.object({
+  "success": zod.boolean().optional()
+})
+
+
+/**
+ * @summary Get recharge history for a FASTag
+ */
+export const GetFastagRechargesParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetFastagRechargesResponseItem = zod.object({
+  "id": zod.string(),
+  "fastagId": zod.string().nullish(),
+  "amount": zod.number(),
+  "transactionRef": zod.string().nullish(),
+  "rechargeMode": zod.string(),
+  "balanceBefore": zod.number().nullish(),
+  "balanceAfter": zod.number().nullish(),
+  "rechargedBy": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "rechargedAt": zod.string(),
+  "createdAt": zod.string()
+})
+export const GetFastagRechargesResponse = zod.array(GetFastagRechargesResponseItem)
+
+
+/**
+ * @summary Record a recharge and update balance
+ */
+export const CreateFastagRechargeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const CreateFastagRechargeBody = zod.object({
+  "amount": zod.number(),
+  "transactionRef": zod.string().optional(),
+  "rechargeMode": zod.string().optional(),
+  "rechargedBy": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const CreateFastagRechargeResponse = zod.object({
+  "id": zod.string(),
+  "fastagId": zod.string().nullish(),
+  "amount": zod.number(),
+  "transactionRef": zod.string().nullish(),
+  "rechargeMode": zod.string(),
+  "balanceBefore": zod.number().nullish(),
+  "balanceAfter": zod.number().nullish(),
+  "rechargedBy": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "rechargedAt": zod.string(),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary List drivers
  */
 export const ListDriversQueryParams = zod.object({

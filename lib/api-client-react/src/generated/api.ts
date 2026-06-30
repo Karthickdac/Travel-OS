@@ -34,6 +34,7 @@ import type {
   Customer,
   CustomerInput,
   CustomerUpdate,
+  DeleteFastag200,
   Destination,
   DestinationInput,
   DomainUpdate,
@@ -45,6 +46,11 @@ import type {
   Expense,
   ExpenseInput,
   ExpenseUpdate,
+  Fastag,
+  FastagInput,
+  FastagRecharge,
+  FastagRechargeInput,
+  FastagUpdate,
   FinanceSummary,
   FleetStats,
   GetFinanceSummaryParams,
@@ -2942,6 +2948,442 @@ export function useGetFleetStats<TData = Awaited<ReturnType<typeof getFleetStats
 
 
 
+
+export const getListFastagsUrl = () => {
+
+
+
+
+  return `/api/v1/fleet/fastag`
+}
+
+/**
+ * @summary List all FASTag records
+ */
+export const listFastags = async ( options?: RequestInit): Promise<Fastag[]> => {
+
+  return customFetch<Fastag[]>(getListFastagsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFastagsQueryKey = () => {
+    return [
+    `/api/v1/fleet/fastag`
+    ] as const;
+    }
+
+
+export const getListFastagsQueryOptions = <TData = Awaited<ReturnType<typeof listFastags>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFastags>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFastagsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFastags>>> = ({ signal }) => listFastags({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFastags>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFastagsQueryResult = NonNullable<Awaited<ReturnType<typeof listFastags>>>
+export type ListFastagsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all FASTag records
+ */
+
+export function useListFastags<TData = Awaited<ReturnType<typeof listFastags>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFastags>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFastagsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateFastagUrl = () => {
+
+
+
+
+  return `/api/v1/fleet/fastag`
+}
+
+/**
+ * @summary Register a FASTag for a vehicle
+ */
+export const createFastag = async (fastagInput: FastagInput, options?: RequestInit): Promise<Fastag> => {
+
+  return customFetch<Fastag>(getCreateFastagUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(fastagInput)
+  }
+);}
+
+
+
+
+export const getCreateFastagMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFastag>>, TError,{data: BodyType<FastagInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createFastag>>, TError,{data: BodyType<FastagInput>}, TContext> => {
+
+const mutationKey = ['createFastag'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFastag>>, {data: BodyType<FastagInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createFastag(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateFastagMutationResult = NonNullable<Awaited<ReturnType<typeof createFastag>>>
+    export type CreateFastagMutationBody = BodyType<FastagInput>
+    export type CreateFastagMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Register a FASTag for a vehicle
+ */
+export const useCreateFastag = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFastag>>, TError,{data: BodyType<FastagInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createFastag>>,
+        TError,
+        {data: BodyType<FastagInput>},
+        TContext
+      > => {
+      return useMutation(getCreateFastagMutationOptions(options));
+    }
+
+export const getUpdateFastagUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/fleet/fastag/${id}`
+}
+
+/**
+ * @summary Update FASTag balance or details
+ */
+export const updateFastag = async (id: string,
+    fastagUpdate: FastagUpdate, options?: RequestInit): Promise<Fastag> => {
+
+  return customFetch<Fastag>(getUpdateFastagUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(fastagUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateFastagMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFastag>>, TError,{id: string;data: BodyType<FastagUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFastag>>, TError,{id: string;data: BodyType<FastagUpdate>}, TContext> => {
+
+const mutationKey = ['updateFastag'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFastag>>, {id: string;data: BodyType<FastagUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateFastag(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFastagMutationResult = NonNullable<Awaited<ReturnType<typeof updateFastag>>>
+    export type UpdateFastagMutationBody = BodyType<FastagUpdate>
+    export type UpdateFastagMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update FASTag balance or details
+ */
+export const useUpdateFastag = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFastag>>, TError,{id: string;data: BodyType<FastagUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFastag>>,
+        TError,
+        {id: string;data: BodyType<FastagUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateFastagMutationOptions(options));
+    }
+
+export const getDeleteFastagUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/fleet/fastag/${id}`
+}
+
+/**
+ * @summary Remove a FASTag record
+ */
+export const deleteFastag = async (id: string, options?: RequestInit): Promise<DeleteFastag200> => {
+
+  return customFetch<DeleteFastag200>(getDeleteFastagUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteFastagMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFastag>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFastag>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteFastag'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFastag>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteFastag(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteFastagMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFastag>>>
+
+    export type DeleteFastagMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove a FASTag record
+ */
+export const useDeleteFastag = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFastag>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteFastag>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteFastagMutationOptions(options));
+    }
+
+export const getGetFastagRechargesUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/fleet/fastag/${id}/recharges`
+}
+
+/**
+ * @summary Get recharge history for a FASTag
+ */
+export const getFastagRecharges = async (id: string, options?: RequestInit): Promise<FastagRecharge[]> => {
+
+  return customFetch<FastagRecharge[]>(getGetFastagRechargesUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFastagRechargesQueryKey = (id: string,) => {
+    return [
+    `/api/v1/fleet/fastag/${id}/recharges`
+    ] as const;
+    }
+
+
+export const getGetFastagRechargesQueryOptions = <TData = Awaited<ReturnType<typeof getFastagRecharges>>, TError = ErrorType<unknown>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFastagRecharges>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFastagRechargesQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFastagRecharges>>> = ({ signal }) => getFastagRecharges(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFastagRecharges>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFastagRechargesQueryResult = NonNullable<Awaited<ReturnType<typeof getFastagRecharges>>>
+export type GetFastagRechargesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get recharge history for a FASTag
+ */
+
+export function useGetFastagRecharges<TData = Awaited<ReturnType<typeof getFastagRecharges>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFastagRecharges>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFastagRechargesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateFastagRechargeUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/fleet/fastag/${id}/recharges`
+}
+
+/**
+ * @summary Record a recharge and update balance
+ */
+export const createFastagRecharge = async (id: string,
+    fastagRechargeInput: FastagRechargeInput, options?: RequestInit): Promise<FastagRecharge> => {
+
+  return customFetch<FastagRecharge>(getCreateFastagRechargeUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(fastagRechargeInput)
+  }
+);}
+
+
+
+
+export const getCreateFastagRechargeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFastagRecharge>>, TError,{id: string;data: BodyType<FastagRechargeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createFastagRecharge>>, TError,{id: string;data: BodyType<FastagRechargeInput>}, TContext> => {
+
+const mutationKey = ['createFastagRecharge'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFastagRecharge>>, {id: string;data: BodyType<FastagRechargeInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createFastagRecharge(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateFastagRechargeMutationResult = NonNullable<Awaited<ReturnType<typeof createFastagRecharge>>>
+    export type CreateFastagRechargeMutationBody = BodyType<FastagRechargeInput>
+    export type CreateFastagRechargeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Record a recharge and update balance
+ */
+export const useCreateFastagRecharge = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFastagRecharge>>, TError,{id: string;data: BodyType<FastagRechargeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createFastagRecharge>>,
+        TError,
+        {id: string;data: BodyType<FastagRechargeInput>},
+        TContext
+      > => {
+      return useMutation(getCreateFastagRechargeMutationOptions(options));
+    }
 
 export const getListDriversUrl = (params?: ListDriversParams,) => {
   const normalizedParams = new URLSearchParams();

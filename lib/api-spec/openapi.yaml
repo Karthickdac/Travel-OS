@@ -14,6 +14,7 @@ tags:
   - name: users
   - name: bookings
   - name: fleet
+  - name: fastag
   - name: drivers
   - name: vendors
   - name: crm
@@ -720,6 +721,128 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FleetStats"
+
+  # ── FASTAG ────────────────────────────────────────────────────────────────
+  /v1/fleet/fastag:
+    get:
+      operationId: listFastags
+      tags: [fastag]
+      summary: List all FASTag records
+      responses:
+        "200":
+          description: FASTag list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Fastag"
+    post:
+      operationId: createFastag
+      tags: [fastag]
+      summary: Register a FASTag for a vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FastagInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fastag"
+
+  /v1/fleet/fastag/{id}:
+    patch:
+      operationId: updateFastag
+      tags: [fastag]
+      summary: Update FASTag balance or details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FastagUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fastag"
+    delete:
+      operationId: deleteFastag
+      tags: [fastag]
+      summary: Remove a FASTag record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /v1/fleet/fastag/{id}/recharges:
+    get:
+      operationId: getFastagRecharges
+      tags: [fastag]
+      summary: Get recharge history for a FASTag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recharge history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FastagRecharge"
+    post:
+      operationId: createFastagRecharge
+      tags: [fastag]
+      summary: Record a recharge and update balance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FastagRechargeInput"
+      responses:
+        "201":
+          description: Recharge recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FastagRecharge"
 
   # ── DRIVERS ───────────────────────────────────────────────────────────────
   /v1/drivers:
@@ -3002,6 +3125,124 @@ components:
         metaTitle:
           type: string
         metaDescription:
+          type: string
+
+    # ── FASTag ─────────────────────────────────────────────────────────────
+    Fastag:
+      type: object
+      required: [id, vehicleNumber, tagId, bank, balance, lowBalanceThreshold, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        vehicleId:
+          type: string
+          nullable: true
+        vehicleNumber:
+          type: string
+        tagId:
+          type: string
+        bank:
+          type: string
+        balance:
+          type: number
+        lowBalanceThreshold:
+          type: number
+        status:
+          type: string
+        lastCheckedAt:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    FastagInput:
+      type: object
+      required: [vehicleNumber, tagId]
+      properties:
+        vehicleId:
+          type: string
+        vehicleNumber:
+          type: string
+        tagId:
+          type: string
+        bank:
+          type: string
+        balance:
+          type: number
+        lowBalanceThreshold:
+          type: number
+        status:
+          type: string
+        notes:
+          type: string
+
+    FastagUpdate:
+      type: object
+      properties:
+        balance:
+          type: number
+        status:
+          type: string
+        bank:
+          type: string
+        lowBalanceThreshold:
+          type: number
+        notes:
+          type: string
+        lastCheckedAt:
+          type: string
+
+    FastagRecharge:
+      type: object
+      required: [id, amount, rechargeMode, rechargedAt, createdAt]
+      properties:
+        id:
+          type: string
+        fastagId:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        transactionRef:
+          type: string
+          nullable: true
+        rechargeMode:
+          type: string
+        balanceBefore:
+          type: number
+          nullable: true
+        balanceAfter:
+          type: number
+          nullable: true
+        rechargedBy:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        rechargedAt:
+          type: string
+        createdAt:
+          type: string
+
+    FastagRechargeInput:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: number
+        transactionRef:
+          type: string
+        rechargeMode:
+          type: string
+        rechargedBy:
+          type: string
+        notes:
           type: string
 
     # ── Domain ─────────────────────────────────────────────────────────────
