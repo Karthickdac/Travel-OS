@@ -4,6 +4,17 @@ import { db, websiteSettingsTable, companiesTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
+// Allowed homepage layout values — kept in sync with the frontend
+// artifacts/travel-os/src/lib/homepage-templates.ts. Used to validate/normalize
+// the PUT /cms/settings payload so non-UI clients cannot persist unrenderable values.
+const VALID_TEMPLATES = new Set(["classic", "minimal", "bold", "luxe", "vibrant"]);
+const SECTION_VARIANTS: Record<string, Set<string>> = {
+  hero: new Set(["centered", "split", "minimal"]),
+  destinations: new Set(["masonry", "compact", "featured"]),
+  packages: new Set(["grid", "carousel", "list"]),
+  whyUs: new Set(["split", "centered", "cards"]),
+};
+
 function mapSettings(s: typeof websiteSettingsTable.$inferSelect) {
   return {
     id: s.id,
@@ -112,6 +123,38 @@ router.put("/v1/cms/settings", async (req, res): Promise<void> => {
   for (const f of fields) {
     if (body[f] !== undefined) (updateData as any)[f] = body[f];
   }
+
+  // Validate/normalize the homepage layout fields so non-UI clients cannot
+  // persist values the public site can't render.
+  if (updateData.homepageTemplate !== undefined) {
+    if (!VALID_TEMPLATES.has(String(updateData.homepageTemplate))) {
+      res.status(400).json({ error: `Invalid homepageTemplate. Allowed: ${[...VALID_TEMPLATES].join(", ")}` });
+      return;
+    }
+  }
+  if (updateData.sectionLayouts !== undefined) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(String(updateData.sectionLayouts));
+    } catch {
+      res.status(400).json({ error: "sectionLayouts must be a valid JSON object" });
+      return;
+    }
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      res.status(400).json({ error: "sectionLayouts must be a JSON object" });
+      return;
+    }
+    // Strip unknown sections and invalid variant values (normalize to canonical).
+    const normalized: Record<string, string> = {};
+    for (const [section, variant] of Object.entries(parsed as Record<string, unknown>)) {
+      const allowed = SECTION_VARIANTS[section];
+      if (allowed && typeof variant === "string" && allowed.has(variant)) {
+        normalized[section] = variant;
+      }
+    }
+    updateData.sectionLayouts = JSON.stringify(normalized);
+  }
+
   const [updated] = await db.update(websiteSettingsTable).set(updateData).where(eq(websiteSettingsTable.companyId, companyId)).returning();
   res.json(mapSettings(updated));
 });
