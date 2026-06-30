@@ -123,6 +123,14 @@ function MasterRoutes() {
   );
 }
 
+// Wraps an admin-only page: company_staff are redirected to their dashboard so
+// they cannot deep-link to pages hidden from their role's menu.
+function AdminOnly({ component: Component }: { component: React.ComponentType }) {
+  const { user } = useAuth();
+  if (user?.role === "company_staff") return <Redirect to="/admin/dashboard" />;
+  return <Component />;
+}
+
 function AdminRoutes() {
   return (
     <AdminLayout>
@@ -135,10 +143,10 @@ function AdminRoutes() {
         <Route path="/admin/fleet/availability" component={AdminFleetAvailability} />
         <Route path="/admin/fleet" component={AdminFleet} />
         <Route path="/admin/drivers/leave" component={AdminDriversLeave} />
-        <Route path="/admin/drivers/bonus-penalty" component={AdminDriversBonusPenalty} />
+        <Route path="/admin/drivers/bonus-penalty"><AdminOnly component={AdminDriversBonusPenalty} /></Route>
         <Route path="/admin/drivers/performance" component={AdminDriversPerformance} />
         <Route path="/admin/drivers" component={AdminDrivers} />
-        <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/admin/users"><AdminOnly component={AdminUsers} /></Route>
         <Route path="/admin/crm/leads" component={AdminLeads} />
         <Route path="/admin/crm/quotations" component={AdminQuotations} />
         <Route path="/admin/crm/tasks" component={AdminCrmTasks} />
@@ -146,29 +154,29 @@ function AdminRoutes() {
         <Route path="/admin/customers" component={AdminCustomers} />
         <Route path="/admin/tours/destinations" component={AdminDestinations} />
         <Route path="/admin/tours/packages" component={AdminPackages} />
-        <Route path="/admin/finance/summary" component={AdminFinanceSummary} />
-        <Route path="/admin/finance/invoices" component={AdminFinanceInvoices} />
-        <Route path="/admin/finance/expenses" component={AdminFinanceExpenses} />
-        <Route path="/admin/finance/pl" component={AdminFinancePL} />
-        <Route path="/admin/finance/gst" component={AdminFinanceGst} />
-        <Route path="/admin/finance/refunds" component={AdminFinanceRefunds} />
-        <Route path="/admin/finance/cashbook" component={AdminFinanceCashbook} />
-        <Route path="/admin/finance/ledger" component={AdminFinanceLedger} />
+        <Route path="/admin/finance/summary"><AdminOnly component={AdminFinanceSummary} /></Route>
+        <Route path="/admin/finance/invoices"><AdminOnly component={AdminFinanceInvoices} /></Route>
+        <Route path="/admin/finance/expenses"><AdminOnly component={AdminFinanceExpenses} /></Route>
+        <Route path="/admin/finance/pl"><AdminOnly component={AdminFinancePL} /></Route>
+        <Route path="/admin/finance/gst"><AdminOnly component={AdminFinanceGst} /></Route>
+        <Route path="/admin/finance/refunds"><AdminOnly component={AdminFinanceRefunds} /></Route>
+        <Route path="/admin/finance/cashbook"><AdminOnly component={AdminFinanceCashbook} /></Route>
+        <Route path="/admin/finance/ledger"><AdminOnly component={AdminFinanceLedger} /></Route>
         <Route path="/admin/vendors" component={AdminVendors} />
         <Route path="/admin/reports/operational" component={AdminReportsOperational} />
-        <Route path="/admin/reports" component={AdminReports} />
-        <Route path="/admin/settings/integrations" component={AdminSettingsIntegrations} />
-        <Route path="/admin/settings" component={AdminSettings} />
+        <Route path="/admin/reports"><AdminOnly component={AdminReports} /></Route>
+        <Route path="/admin/settings/integrations"><AdminOnly component={AdminSettingsIntegrations} /></Route>
+        <Route path="/admin/settings"><AdminOnly component={AdminSettings} /></Route>
         <Route path="/admin/notifications" component={AdminNotifications} />
-        <Route path="/admin/cms/menus" component={AdminCmsMenus} />
-        <Route path="/admin/cms/seo" component={AdminCmsSeo} />
-        <Route path="/admin/cms/homepage" component={AdminCmsHomepage} />
-        <Route path="/admin/cms/themes" component={AdminCmsThemes} />
-        <Route path="/admin/cms" component={AdminCms} />
-        <Route path="/admin/marketing/referrals" component={AdminMarketingReferrals} />
-        <Route path="/admin/marketing/campaigns" component={AdminMarketingCampaigns} />
-        <Route path="/admin/marketing/loyalty" component={AdminMarketingLoyalty} />
-        <Route path="/admin/marketing" component={AdminMarketing} />
+        <Route path="/admin/cms/menus"><AdminOnly component={AdminCmsMenus} /></Route>
+        <Route path="/admin/cms/seo"><AdminOnly component={AdminCmsSeo} /></Route>
+        <Route path="/admin/cms/homepage"><AdminOnly component={AdminCmsHomepage} /></Route>
+        <Route path="/admin/cms/themes"><AdminOnly component={AdminCmsThemes} /></Route>
+        <Route path="/admin/cms"><AdminOnly component={AdminCms} /></Route>
+        <Route path="/admin/marketing/referrals"><AdminOnly component={AdminMarketingReferrals} /></Route>
+        <Route path="/admin/marketing/campaigns"><AdminOnly component={AdminMarketingCampaigns} /></Route>
+        <Route path="/admin/marketing/loyalty"><AdminOnly component={AdminMarketingLoyalty} /></Route>
+        <Route path="/admin/marketing"><AdminOnly component={AdminMarketing} /></Route>
         <Route path="/admin/support" component={AdminSupport} />
         <Route component={NotFound} />
       </Switch>
