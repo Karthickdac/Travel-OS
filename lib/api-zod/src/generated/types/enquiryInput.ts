@@ -10,8 +10,8 @@ export interface EnquiryInput {
   name: string;
   phone: string;
   email?: string;
-  destination: string;
-  travelDate: string;
+  destination?: string;
+  travelDate?: string;
   pax?: number;
   budget?: number;
   message?: string;

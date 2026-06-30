@@ -32,17 +32,25 @@ export default function PublicEnquiry() {
     if (!form.name || !form.phone) return;
     setLoading(true);
     try {
+      const paxNum = parseInt(form.passengers, 10);
       const res = await fetch("/api/v1/public/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.name, phone: form.phone, email: form.email,
-          tripType: form.tripType, message: [
-            `From: ${form.fromCity}`, `To: ${form.toDestination}`,
-            `Date: ${form.travelDate}`, `Passengers: ${form.passengers}`,
-            `Budget: ${form.budget}`, form.message
+          name: form.name,
+          phone: form.phone,
+          ...(form.email ? { email: form.email } : {}),
+          ...(form.toDestination ? { destination: form.toDestination } : {}),
+          ...(form.travelDate ? { travelDate: form.travelDate } : {}),
+          ...(Number.isFinite(paxNum) ? { pax: paxNum } : {}),
+          message: [
+            form.tripType && `Trip Type: ${form.tripType}`,
+            form.fromCity && `From: ${form.fromCity}`,
+            form.returnDate && `Return: ${form.returnDate}`,
+            form.vehiclePreference && `Vehicle: ${form.vehiclePreference}`,
+            form.budget && `Budget: ${form.budget}`,
+            form.message,
           ].filter(Boolean).join(" | "),
-          source: "website_enquiry_form",
         }),
       });
       if (res.ok) setSubmitted(true);

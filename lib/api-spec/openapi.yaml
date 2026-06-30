@@ -3389,7 +3389,7 @@ components:
     # ── Public Enquiry ─────────────────────────────────────────────────────
     EnquiryInput:
       type: object
-      required: [name, phone, destination, travelDate]
+      required: [name, phone]
       properties:
         name:
           type: string
