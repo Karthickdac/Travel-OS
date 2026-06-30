@@ -1,86 +1,18 @@
 import { useGetPublicPackages, useGetPublicCmsSettings } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, ArrowRight, Phone, Star, Shield, Users, HeadphonesIcon, CheckCircle2, ChevronRight } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { MapPin, ArrowRight, Phone, Shield, Users, HeadphonesIcon } from "lucide-react";
 import { useLang } from "@/lib/lang-context";
-import { motion, useInView, type Variants } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { getTemplate, resolveSectionLayouts } from "@/lib/homepage-templates";
+import { fadeUp, fadeIn, scaleIn, staggerContainer } from "./sections/_shared";
+import HeroSection from "./sections/hero-section";
+import DestinationsSection from "./sections/destinations-section";
+import PackagesSection, { type PublicPackage } from "./sections/packages-section";
+import WhySection from "./sections/why-section";
 
 const HERO_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1920&q=85&auto=format&fit=crop";
-
-const DEST_IMAGES = [
-  "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1561361058-c24e1d9bd0ac?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1590080875861-dc27c08c1bc5?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1625905254553-4dc51ef00be2?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1626196340148-c7b0de7c0ffd?w=600&q=80&auto=format&fit=crop",
-];
-
 const SERVICE_ICONS = [Users, MapPin, Shield, HeadphonesIcon, Phone, ArrowRight];
-
-const WHY_IMAGES = [
-  "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=400&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1626196340148-c7b0de7c0ffd?w=400&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=400&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400&q=80&auto=format&fit=crop",
-];
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-};
-
-const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.7 } },
-};
-
-const staggerContainer = (stagger = 0.1, delayStart = 0): Variants => ({
-  hidden: {},
-  show: { transition: { staggerChildren: stagger, delayChildren: delayStart } },
-});
-
-const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.88 },
-  show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
-};
-
-const slideLeft: Variants = {
-  hidden: { opacity: 0, x: -50 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
-};
-
-const slideRight: Variants = {
-  hidden: { opacity: 0, x: 50 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
-};
-
-function AnimatedNumber({ target }: { target: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true });
-  const [display, setDisplay] = useState("0");
-
-  useEffect(() => {
-    if (!inView) return;
-    const num = parseInt(target.replace(/\D/g, ""), 10);
-    if (isNaN(num)) { setDisplay(target); return; }
-    const suffix = target.replace(/[\d,]/g, "");
-    let start = 0;
-    const duration = 1400;
-    const step = Math.ceil(num / (duration / 16));
-    const timer = setInterval(() => {
-      start = Math.min(start + step, num);
-      setDisplay(start.toLocaleString() + suffix);
-      if (start >= num) clearInterval(timer);
-    }, 16);
-    return () => clearInterval(timer);
-  }, [inView, target]);
-
-  return <div ref={ref}>{display}</div>;
-}
 
 const SITE_DOMAIN = window.location.hostname;
 
@@ -88,6 +20,10 @@ export default function PublicHome() {
   const { data: packages, isLoading } = useGetPublicPackages({ domain: SITE_DOMAIN });
   const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
   const { t } = useLang();
+
+  const template = getTemplate(cms?.homepageTemplate);
+  const tokens = template.tokens;
+  const layouts = resolveSectionLayouts(cms?.homepageTemplate, cms?.sectionLayouts);
 
   const heroTitle = cms?.heroTitle || "Madurai SMT Travels";
   const heroSubtitle = cms?.heroSubtitle || t.hero.tagline;
@@ -109,6 +45,9 @@ export default function PublicHome() {
   const aboutTitle = cms?.aboutTitle || t.whyUs.heading;
   const aboutText = cms?.aboutText || t.whyUs.desc;
 
+  const showDestinations = cms?.showDestinations ?? true;
+  const showPackages = cms?.showPackages ?? true;
+
   return (
     <div className="flex flex-col overflow-x-hidden">
 
@@ -121,342 +60,55 @@ export default function PublicHome() {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-        <motion.img
-          src={heroBgImage}
-          alt="South India Travel"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: "brightness(0.32)" }}
-          initial={{ scale: 1.12 }}
-          animate={{ scale: 1.0 }}
-          transition={{ duration: 8, ease: "easeOut" }}
+      <HeroSection
+        t={t}
+        tokens={tokens}
+        variant={layouts.hero}
+        heroPhone={heroPhone}
+        heroTitle={heroTitle}
+        heroSubtitle={heroSubtitle}
+        heroDesc={heroDesc}
+        heroCtaText={heroCtaText}
+        heroBgImage={heroBgImage}
+        stats={cmsStats}
+      />
+
+      {showDestinations && (
+        <DestinationsSection t={t} tokens={tokens} variant={layouts.destinations} heroPhone={heroPhone} />
+      )}
+
+      {showPackages && (
+        <PackagesSection
+          t={t}
+          tokens={tokens}
+          variant={layouts.packages}
+          heroPhone={heroPhone}
+          packages={packages as PublicPackage[] | undefined}
+          isLoading={isLoading}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/80" />
+      )}
 
-        {/* Floating orbs */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-56 h-56 rounded-full bg-amber-400/10 blur-3xl pointer-events-none"
-          animate={{ scale: [1.1, 0.9, 1.1], opacity: [0.2, 0.5, 0.2] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
-
-        <motion.div
-          className="relative z-10 container mx-auto px-4 text-center text-white pt-8"
-          variants={staggerContainer(0.15, 0.2)}
-          initial="hidden"
-          animate="show"
-        >
-          <motion.div
-            variants={fadeUp}
-            className="inline-flex items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-1.5 text-sm font-semibold text-white/90 mb-6 gap-2"
-          >
-            <span className="flex h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-            {t.hero.badge}
-          </motion.div>
-
-          <motion.h1
-            variants={fadeUp}
-            className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 leading-none drop-shadow-xl"
-          >
-            {heroTitle}
-          </motion.h1>
-
-          <motion.p variants={fadeUp} className="text-lg md:text-2xl font-light text-white/80 italic mb-3">
-            {heroSubtitle}
-          </motion.p>
-          <motion.p variants={fadeUp} className="max-w-xl mx-auto text-base md:text-lg text-white/70 mb-10">
-            {heroDesc}
-          </motion.p>
-
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
-            <Link href="/enquiry">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" className="h-14 px-10 rounded-full text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-xl shadow-primary/30 gap-2">
-                  {heroCtaText} <ArrowRight className="h-4 w-4" />
-                </Button>
-              </motion.div>
-            </Link>
-            <a href={`tel:${heroPhone}`}>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" variant="outline" className="h-14 px-10 rounded-full text-base font-bold bg-white/10 backdrop-blur-sm text-white border-white/40 hover:bg-white/20 gap-2">
-                  <Phone className="h-4 w-4" /> {heroPhone}
-                </Button>
-              </motion.div>
-            </a>
-          </motion.div>
-
-          <motion.div variants={staggerContainer(0.1)} className="flex flex-wrap justify-center gap-6 md:gap-12">
-            {cmsStats.map((s) => (
-              <motion.div key={s.l} variants={scaleIn} className="text-center">
-                <div className="text-3xl font-black text-amber-400">
-                  <AnimatedNumber target={s.v} />
-                </div>
-                <div className="text-xs text-white/60 font-medium mt-0.5">{s.l}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.8 }}
-        >
-          <span className="text-xs font-medium tracking-widest uppercase">{t.hero.scroll}</span>
-          <motion.div
-            className="w-px h-8 bg-white/30 rounded-full"
-            animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.8, 0.3] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-        </motion.div>
-      </section>
-
-      {/* Destinations Grid */}
-      <section className="py-20 bg-gray-50 dark:bg-muted/20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="text-center mb-12"
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={staggerContainer(0.12)}
-          >
-            <motion.p variants={fadeUp} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.destinations.eyebrow}</motion.p>
-            <motion.h2 variants={fadeUp} className="text-4xl font-black tracking-tight mb-3">{t.destinations.heading}</motion.h2>
-            <motion.p variants={fadeUp} className="text-muted-foreground max-w-xl mx-auto">{t.destinations.sub}</motion.p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.1 }}
-            variants={staggerContainer(0.08)}
-          >
-            {t.destCards.map((dest, i) => (
-              <motion.div
-                key={dest.name}
-                variants={scaleIn}
-                whileHover={{ y: -6, transition: { duration: 0.25 } }}
-                className="group relative overflow-hidden rounded-2xl aspect-[4/5] shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
-              >
-                <img
-                  src={DEST_IMAGES[i]}
-                  alt={dest.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${i}/400/500`; }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <p className="text-white font-bold text-base leading-tight">{dest.name}</p>
-                  <p className="text-white/70 text-xs mt-1 leading-snug">{dest.tagline}</p>
-                </div>
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5">
-                    <ChevronRight className="h-4 w-4 text-white" />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Featured Packages */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="flex flex-col md:flex-row md:items-end justify-between mb-12"
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={staggerContainer(0.12)}
-          >
-            <div>
-              <motion.p variants={fadeUp} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.packages.eyebrow}</motion.p>
-              <motion.h2 variants={fadeUp} className="text-4xl font-black tracking-tight mb-2">{t.packages.heading}</motion.h2>
-              <motion.p variants={fadeUp} className="text-muted-foreground">{t.packages.sub}</motion.p>
-            </div>
-            <motion.div variants={fadeIn}>
-              <a href={`tel:${heroPhone}`}>
-                <Button variant="outline" className="mt-4 md:mt-0 gap-2 rounded-full">
-                  <Phone className="h-4 w-4" /> {t.packages.callBtn}
-                </Button>
-              </a>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.05 }}
-            variants={staggerContainer(0.1)}
-          >
-            {isLoading ? (
-              Array(6).fill(0).map((_, i) => (
-                <motion.div key={i} variants={scaleIn} className="rounded-2xl overflow-hidden shadow-md">
-                  <Skeleton className="h-56 w-full rounded-none" />
-                  <div className="p-4 space-y-2"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-full" /></div>
-                </motion.div>
-              ))
-            ) : packages?.length ? (
-              packages.map((pkg) => (
-                <motion.div
-                  key={pkg.id}
-                  variants={fadeUp}
-                  whileHover={{ y: -6, boxShadow: "0 20px 40px -10px rgba(0,0,0,0.18)", transition: { duration: 0.25 } }}
-                  className="group rounded-2xl overflow-hidden shadow-md bg-card border border-border/40"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-                    <img
-                      src={pkg.imageUrl || `https://picsum.photos/seed/${pkg.destinationName}/800/500`}
-                      alt={pkg.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${pkg.destinationName}/800/500`; }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    {pkg.packageType && (
-                      <div className="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full capitalize shadow">
-                        {pkg.packageType}
-                      </div>
-                    )}
-                    {pkg.rating && (
-                      <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {pkg.rating}
-                      </div>
-                    )}
-                    <div className="absolute bottom-3 left-3 text-white text-sm font-semibold flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5" /> {pkg.duration} {t.packages.days}
-                    </div>
-                  </div>
-
-                  <div className="p-4">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                      <MapPin className="h-3 w-3 text-primary shrink-0" /> {pkg.destinationName}
-                    </div>
-                    <h3 className="font-bold text-base mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-1">{pkg.title}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-4">{pkg.description}</p>
-
-                    <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                      <div>
-                        <span className="text-xs text-muted-foreground block">{t.packages.from}</span>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-black text-primary">₹{Number(pkg.price).toLocaleString()}</span>
-                          {pkg.originalPrice && Number(pkg.originalPrice) > Number(pkg.price) && (
-                            <span className="text-xs text-muted-foreground line-through">₹{Number(pkg.originalPrice).toLocaleString()}</span>
-                          )}
-                        </div>
-                      </div>
-                      <a href={`tel:${heroPhone}`}>
-                        <motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }}>
-                          <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-1.5 text-xs">
-                            <Phone className="h-3 w-3" /> {t.packages.book}
-                          </Button>
-                        </motion.div>
-                      </a>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-12 text-muted-foreground">{t.packages.noPackages}</div>
-            )}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="py-20 bg-gray-50 dark:bg-muted/20">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={staggerContainer(0.1)}
-            >
-              <motion.p variants={slideLeft} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.whyUs.eyebrow}</motion.p>
-              <motion.h2 variants={slideLeft} className="text-4xl font-black tracking-tight mb-4 leading-tight whitespace-pre-line">{aboutTitle}</motion.h2>
-              <motion.p variants={slideLeft} className="text-muted-foreground text-base mb-8">{aboutText}</motion.p>
-              <motion.ul variants={staggerContainer(0.08)} className="space-y-3 mb-8">
-                {t.whyUs.bullets.map((item) => (
-                  <motion.li key={item} variants={fadeUp} className="flex items-start gap-3">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                    >
-                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                    </motion.div>
-                    <span className="text-sm font-medium">{item}</span>
-                  </motion.li>
-                ))}
-              </motion.ul>
-              <motion.div variants={fadeUp} className="flex gap-4 flex-wrap">
-                <a href={`tel:${heroPhone}`}>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                    <Button className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-2">
-                      <Phone className="h-4 w-4" /> {t.whyUs.call}
-                    </Button>
-                  </motion.div>
-                </a>
-                <Link href="/enquiry">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                    <Button variant="outline" className="rounded-full gap-2">
-                      {t.whyUs.enquire} <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </motion.div>
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              className="grid grid-cols-2 gap-3"
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={staggerContainer(0.12)}
-            >
-              {WHY_IMAGES.map((src, i) => (
-                <motion.div
-                  key={i}
-                  variants={slideRight}
-                  whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
-                  className={`rounded-2xl overflow-hidden shadow-lg ${i === 1 ? "mt-6" : i === 3 ? "-mt-6" : ""}`}
-                >
-                  <img
-                    src={src} alt="Travel"
-                    className="w-full aspect-square object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/why${i}/400/400`; }}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <WhySection
+        t={t}
+        tokens={tokens}
+        variant={layouts.whyUs}
+        heroPhone={heroPhone}
+        aboutTitle={aboutTitle}
+        aboutText={aboutText}
+      />
 
       {/* Services */}
-      <section className="py-20 bg-background">
+      <section className={`${tokens.sectionPadding} ${tokens.sectionBg}`}>
         <div className="container mx-auto px-4">
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-12 max-w-2xl mx-auto"
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.3 }}
             variants={staggerContainer(0.1)}
           >
-            <motion.p variants={fadeUp} className="text-primary font-bold text-xs uppercase tracking-widest mb-2">{t.services.eyebrow}</motion.p>
-            <motion.h2 variants={fadeUp} className="text-4xl font-black tracking-tight mb-3">{t.services.heading}</motion.h2>
+            <motion.p variants={fadeUp} className={`${tokens.eyebrowClass} mb-2`}>{t.services.eyebrow}</motion.p>
+            <motion.h2 variants={fadeUp} className={`${tokens.headingClass} mb-3`} style={tokens.headingFont ? { fontFamily: tokens.headingFont } : undefined}>{t.services.heading}</motion.h2>
             <motion.p variants={fadeUp} className="text-muted-foreground max-w-md mx-auto">{t.services.sub}</motion.p>
           </motion.div>
 
@@ -474,13 +126,13 @@ export default function PublicHome() {
                   key={label}
                   variants={scaleIn}
                   whileHover={{ y: -6, boxShadow: "0 16px 32px -8px rgba(0,0,0,0.12)", transition: { duration: 0.22 } }}
-                  className="group p-6 rounded-2xl border border-border/60 hover:border-primary/20 transition-colors duration-300 bg-card"
+                  className={`group p-6 ${tokens.cardRadius} ${tokens.cardClass} hover:border-primary/20 transition-colors duration-300`}
                 >
                   <motion.div
                     className="h-12 w-12 rounded-xl bg-primary/[0.08] flex items-center justify-center mb-4"
                     whileHover={{ rotate: [0, -8, 8, 0], transition: { duration: 0.4 } }}
                   >
-                    <Icon className="h-6 w-6 text-primary" />
+                    {Icon && <Icon className="h-6 w-6 text-primary" />}
                   </motion.div>
                   <p className="font-bold text-base mb-1">{label}</p>
                   <p className="text-sm text-muted-foreground">{desc}</p>
@@ -509,7 +161,7 @@ export default function PublicHome() {
           viewport={{ once: true, amount: 0.3 }}
           variants={staggerContainer(0.15)}
         >
-          <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line">{ctaTitle}</motion.h2>
+          <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line" style={tokens.headingFont ? { fontFamily: tokens.headingFont } : undefined}>{ctaTitle}</motion.h2>
           <motion.p variants={fadeUp} className="text-white/80 text-lg mb-10 max-w-md mx-auto">{ctaSubtitle}</motion.p>
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href={`tel:${heroPhone}`}>

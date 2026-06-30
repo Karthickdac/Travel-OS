@@ -1,2 +1,3 @@
 - [Public city autocomplete](city-autocomplete.md) — public enquiry From/To cities use a server-side Photon geocoding proxy (no key, fail-soft to static list), not the per-company Google Maps key.
 - [TravelOS tenant scoping gap](travelos-tenant-scoping.md) — most routes do NOT filter by company_id despite replit.md; enforce companyId in new mutation handlers; booking type enum + in-memory counter notes.
+- [TravelOS website settings split](travelos-website-settings.md) — website_settings (public, /cms) vs company_settings (theme, /company); homepage template system relies on client-side fallbacks, no server validation.

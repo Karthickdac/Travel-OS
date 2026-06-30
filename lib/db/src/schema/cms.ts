@@ -55,6 +55,10 @@ export const websiteSettingsTable = pgTable("website_settings", {
   showDestinations: boolean("show_destinations").notNull().default(true),
   showEnquiryForm: boolean("show_enquiry_form").notNull().default(true),
 
+  // Homepage layout
+  homepageTemplate: text("homepage_template").notNull().default("classic"),
+  sectionLayouts: text("section_layouts").notNull().default("{}"),
+
   // SEO
   metaTitle: text("meta_title").default("Madurai SMT Travels — Cab & Tour Packages"),
   metaDescription: text("meta_description").default("Book cab and tour packages across South India with Madurai SMT Travels. Best prices, trusted service, 24/7 support."),

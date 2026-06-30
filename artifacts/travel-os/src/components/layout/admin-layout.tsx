@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function PackageIcon(props: any) {
@@ -84,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/cms", label: "Website CMS", icon: Globe },
       { href: "/admin/cms/homepage", label: "Homepage Builder", icon: LayoutDashboard },
+      { href: "/admin/cms/layout", label: "Website Layout", icon: LayoutTemplate },
       { href: "/admin/cms/menus", label: "Menus", icon: ListTodo },
       { href: "/admin/cms/seo", label: "SEO", icon: Globe },
       { href: "/admin/cms/themes", label: "Theme Engine", icon: Palette },

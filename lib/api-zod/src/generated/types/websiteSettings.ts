@@ -71,6 +71,8 @@ export interface WebsiteSettings {
   showPackages?: boolean;
   showDestinations?: boolean;
   showEnquiryForm?: boolean;
+  homepageTemplate?: string;
+  sectionLayouts?: string;
   /** @nullable */
   metaTitle?: string | null;
   /** @nullable */

@@ -3218,6 +3218,10 @@ components:
           type: boolean
         showEnquiryForm:
           type: boolean
+        homepageTemplate:
+          type: string
+        sectionLayouts:
+          type: string
         metaTitle:
           type: ["string", "null"]
         metaDescription:
@@ -3298,6 +3302,10 @@ components:
           type: boolean
         showEnquiryForm:
           type: boolean
+        homepageTemplate:
+          type: string
+        sectionLayouts:
+          type: string
         metaTitle:
           type: string
         metaDescription:
