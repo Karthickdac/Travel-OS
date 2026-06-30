@@ -259,4 +259,101 @@ router.post("/v1/public/enquiry", async (req, res): Promise<void> => {
   res.status(201).json(SubmitEnquiryResponse.parse(mapped));
 });
 
+// Public city autocomplete proxy. Uses the OpenStreetMap-based Photon geocoder
+// (no API key required) so the public enquiry form can suggest any city.
+// Fails soft (returns an empty list) so the client can fall back to its static list.
+const PLACE_VALUES = new Set([
+  "city",
+  "town",
+  "village",
+  "municipality",
+  "suburb",
+  "locality",
+  "hamlet",
+]);
+
+// Small in-memory cache (1h) so repeated lookups avoid hitting the upstream geocoder.
+const geocodeCache = new Map<string, { suggestions: string[]; expires: number }>();
+const GEOCODE_TTL_MS = 60 * 60 * 1000;
+
+// Naive per-IP rate limit: max 30 requests / 10s window.
+const geocodeHits = new Map<string, { count: number; resetAt: number }>();
+const GEOCODE_WINDOW_MS = 10 * 1000;
+const GEOCODE_MAX = 30;
+
+function geocodeRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = geocodeHits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    geocodeHits.set(ip, { count: 1, resetAt: now + GEOCODE_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > GEOCODE_MAX;
+}
+
+router.get("/v1/public/geocode", async (req, res): Promise<void> => {
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  if (q.length < 2) {
+    res.json({ suggestions: [] });
+    return;
+  }
+
+  if (geocodeRateLimited(req.ip ?? "unknown")) {
+    res.status(429).json({ suggestions: [] });
+    return;
+  }
+
+  const cacheKey = q.toLowerCase();
+  const cached = geocodeCache.get(cacheKey);
+  if (cached && cached.expires > Date.now()) {
+    res.json({ suggestions: cached.suggestions });
+    return;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    // lat/lon + bias scale prioritise Indian results while still allowing global cities.
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=15&lang=en&lat=22&lon=79&location_bias_scale=0.6`;
+    const resp = await fetch(url, { signal: controller.signal });
+    if (!resp.ok) {
+      res.json({ suggestions: [] });
+      return;
+    }
+    const data = (await resp.json()) as {
+      features?: Array<{ properties?: Record<string, unknown> }>;
+    };
+
+    const seen = new Set<string>();
+    const suggestions: string[] = [];
+    for (const f of data.features ?? []) {
+      const p = f.properties ?? {};
+      if (p.osm_key !== "place") continue;
+      if (typeof p.osm_value === "string" && !PLACE_VALUES.has(p.osm_value)) continue;
+      const name = typeof p.name === "string" ? p.name : "";
+      if (!name) continue;
+      const label = [
+        name,
+        typeof p.state === "string" ? p.state : "",
+        typeof p.country === "string" ? p.country : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      const key = label.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      suggestions.push(label);
+      if (suggestions.length >= 8) break;
+    }
+    geocodeCache.set(cacheKey, { suggestions, expires: Date.now() + GEOCODE_TTL_MS });
+    res.json({ suggestions });
+  } catch (err) {
+    req.log.warn({ err }, "geocode lookup failed");
+    res.json({ suggestions: [] });
+  } finally {
+    clearTimeout(timer);
+  }
+});
+
 export default router;

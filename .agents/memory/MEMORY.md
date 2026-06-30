@@ -1,1 +1,1 @@
-- [FASTag realtime balance](fastag-realtime-balance.md) — no public bank balance API; parse the bank's FASTag SMS instead. Per-company HMAC webhook token, fail-closed on missing SESSION_SECRET, 409 on ambiguous tag match.
+- [Public city autocomplete](city-autocomplete.md) — public enquiry From/To cities use a server-side Photon geocoding proxy (no key, fail-soft to static list), not the per-company Google Maps key.

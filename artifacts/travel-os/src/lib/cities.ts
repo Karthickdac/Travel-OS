@@ -1,3 +1,18 @@
+// Live city lookup via the server-side geocoding proxy. Returns [] on any
+// failure so callers can fall back to the static POPULAR_DESTINATIONS list.
+export async function fetchCitySuggestions(query: string): Promise<string[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  try {
+    const res = await fetch(`/api/v1/public/geocode?q=${encodeURIComponent(q)}`);
+    if (!res.ok) return [];
+    const data = (await res.json()) as { suggestions?: string[] };
+    return Array.isArray(data.suggestions) ? data.suggestions : [];
+  } catch {
+    return [];
+  }
+}
+
 // Popular Indian travel cities & destinations used for enquiry autocomplete.
 // South India / Tamil Nadu first (primary market), then major national spots.
 export const POPULAR_DESTINATIONS = [

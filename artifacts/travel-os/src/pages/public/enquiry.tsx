@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Phone, MapPin, Mail, Send, CheckCircle2, Clock, Users, Car } from "lucide-react";
 import { useLang } from "@/lib/lang-context";
 import { AutocompleteInput } from "@/components/autocomplete-input";
-import { POPULAR_DESTINATIONS } from "@/lib/cities";
+import { POPULAR_DESTINATIONS, fetchCitySuggestions } from "@/lib/cities";
 
 const TRIP_TYPES = ["Pilgrimage Tour", "Family Tour", "Honeymoon Package", "Adventure Tour", "Corporate Trip", "Airport Transfer", "Outstation Cab", "Local Cab", "Custom Package"];
 
@@ -157,8 +157,8 @@ export default function PublicEnquiry() {
                     {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="space-y-1.5"><Label>From City</Label><AutocompleteInput value={form.fromCity} onChange={(v) => setForm(f => ({ ...f, fromCity: v }))} suggestions={POPULAR_DESTINATIONS} placeholder="e.g. Madurai" /></div>
-                <div className="space-y-1.5"><Label>To / Destination</Label><AutocompleteInput value={form.toDestination} onChange={(v) => setForm(f => ({ ...f, toDestination: v }))} suggestions={POPULAR_DESTINATIONS} placeholder="e.g. Rameshwaram" /></div>
+                <div className="space-y-1.5"><Label>From City</Label><AutocompleteInput value={form.fromCity} onChange={(v) => setForm(f => ({ ...f, fromCity: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Madurai" /></div>
+                <div className="space-y-1.5"><Label>To / Destination</Label><AutocompleteInput value={form.toDestination} onChange={(v) => setForm(f => ({ ...f, toDestination: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Rameshwaram" /></div>
                 <div className="space-y-1.5"><Label>Travel Date</Label><Input type="date" value={form.travelDate} onChange={setF("travelDate")} /></div>
                 <div className="space-y-1.5"><Label>Return Date</Label><Input type="date" value={form.returnDate} onChange={setF("returnDate")} /></div>
                 <div className="space-y-1.5">
