@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function PackageIcon(props: any) {
@@ -30,7 +30,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       items: [
         { href: "/admin/fleet", label: "Fleet & Vehicles", icon: CarFront },
         { href: "/admin/fleet/fastag", label: "FASTag", icon: Nfc },
+        { href: "/admin/fleet/fuel", label: "Fuel Logs", icon: Fuel },
+        { href: "/admin/fleet/accidents", label: "Accidents", icon: AlertTriangle },
+        { href: "/admin/fleet/availability", label: "Availability", icon: CalendarClock },
         { href: "/admin/drivers", label: "Drivers", icon: Contact },
+        { href: "/admin/drivers/leave", label: "Driver Leave", icon: CalendarClock },
+        { href: "/admin/drivers/bonus-penalty", label: "Bonus & Penalty", icon: Award },
+        { href: "/admin/drivers/performance", label: "Driver Performance", icon: Gauge },
         { href: "/admin/users", label: "Staff", icon: Users2 },
         { href: "/admin/vendors", label: "Vendors", icon: Building2 },
       ]
@@ -40,7 +46,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       items: [
         { href: "/admin/crm/leads", label: "Leads Pipeline", icon: Users },
         { href: "/admin/crm/quotations", label: "Quotations", icon: FileText },
+        { href: "/admin/crm/tasks", label: "Follow-up Tasks", icon: ListTodo },
         { href: "/admin/customers", label: "Customers", icon: BookOpen },
+        { href: "/admin/crm/customer-profile", label: "Customer 360", icon: Contact },
       ]
     },
     {
@@ -57,27 +65,40 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         { href: "/admin/finance/invoices", label: "Invoices", icon: Receipt },
         { href: "/admin/finance/expenses", label: "Expenses", icon: CreditCard },
         { href: "/admin/finance/pl", label: "P&L Report", icon: BarChart3 },
+        { href: "/admin/finance/gst", label: "GST Report", icon: FileText },
+        { href: "/admin/finance/refunds", label: "Refunds", icon: Wallet },
+        { href: "/admin/finance/cashbook", label: "Cash Book", icon: BookOpen },
+        { href: "/admin/finance/ledger", label: "Ledger", icon: Receipt },
       ]
     },
     {
       title: "Marketing",
       items: [
         { href: "/admin/marketing", label: "Coupons", icon: Tag },
+        { href: "/admin/marketing/referrals", label: "Referrals", icon: Users },
+        { href: "/admin/marketing/campaigns", label: "Campaigns", icon: Megaphone },
+        { href: "/admin/marketing/loyalty", label: "Loyalty", icon: Award },
       ]
     },
     {
       title: "Website",
       items: [
         { href: "/admin/cms", label: "Website CMS", icon: Globe },
+        { href: "/admin/cms/homepage", label: "Homepage Builder", icon: LayoutDashboard },
+        { href: "/admin/cms/menus", label: "Menus", icon: ListTodo },
+        { href: "/admin/cms/seo", label: "SEO", icon: Globe },
+        { href: "/admin/cms/themes", label: "Theme Engine", icon: Palette },
       ]
     },
     {
       title: "Analytics & Admin",
       items: [
         { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+        { href: "/admin/reports/operational", label: "Operational Reports", icon: Gauge },
         { href: "/admin/support", label: "Support Tickets", icon: Headphones },
         { href: "/admin/notifications", label: "Notifications", icon: Bell },
         { href: "/admin/settings", label: "Settings", icon: Settings },
+        { href: "/admin/settings/integrations", label: "Integrations", icon: Plug },
       ]
     },
   ];

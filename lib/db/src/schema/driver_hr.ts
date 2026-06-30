@@ -37,9 +37,40 @@ export const driverSalaryTable = pgTable("driver_salary", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
+export const driverLeaveTable = pgTable("driver_leave", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  companyId: uuid("company_id").notNull().references(() => companiesTable.id),
+  driverId: uuid("driver_id").notNull().references(() => driversTable.id),
+  fromDate: date("from_date", { mode: "string" }).notNull(),
+  toDate: date("to_date", { mode: "string" }).notNull(),
+  type: text("type").notNull().default("casual"), // casual, sick, emergency, unpaid
+  reason: text("reason"),
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+export const driverBonusPenaltyTable = pgTable("driver_bonus_penalty", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  companyId: uuid("company_id").notNull().references(() => companiesTable.id),
+  driverId: uuid("driver_id").notNull().references(() => driversTable.id),
+  type: text("type").notNull(), // bonus, penalty
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  reason: text("reason").notNull(),
+  date: date("date", { mode: "string" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
 export const insertDriverAttendanceSchema = createInsertSchema(driverAttendanceTable).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertDriverSalarySchema = createInsertSchema(driverSalaryTable).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertDriverLeaveSchema = createInsertSchema(driverLeaveTable).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertDriverBonusPenaltySchema = createInsertSchema(driverBonusPenaltyTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertDriverAttendance = z.infer<typeof insertDriverAttendanceSchema>;
 export type InsertDriverSalary = z.infer<typeof insertDriverSalarySchema>;
+export type InsertDriverLeave = z.infer<typeof insertDriverLeaveSchema>;
+export type InsertDriverBonusPenalty = z.infer<typeof insertDriverBonusPenaltySchema>;
 export type DriverAttendance = typeof driverAttendanceTable.$inferSelect;
 export type DriverSalary = typeof driverSalaryTable.$inferSelect;
+export type DriverLeave = typeof driverLeaveTable.$inferSelect;
+export type DriverBonusPenalty = typeof driverBonusPenaltyTable.$inferSelect;

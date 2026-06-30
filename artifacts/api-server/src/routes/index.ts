@@ -21,6 +21,13 @@ import marketingRouter from "./marketing";
 import vendorExtendedRouter from "./vendor_extended";
 import supportRouter from "./support";
 import tourExtendedRouter from "./tour_extended";
+import financeExtendedRouter from "./finance_extended";
+import marketingExtendedRouter from "./marketing_extended";
+import cmsSeoRouter from "./cms_seo";
+import fleetExtendedRouter from "./fleet_extended";
+import crmExtendedRouter from "./crm_extended";
+import companySettingsRouter from "./company_settings";
+import portalRouter from "./portal";
 
 const router: IRouter = Router();
 
@@ -64,5 +71,12 @@ router.use(marketingRouter);
 router.use(vendorExtendedRouter);
 router.use(supportRouter);
 router.use(tourExtendedRouter);
+router.use(financeExtendedRouter);
+router.use(marketingExtendedRouter);
+router.use(cmsSeoRouter);
+router.use(fleetExtendedRouter);
+router.use(crmExtendedRouter);
+router.use(companySettingsRouter);
+router.use(portalRouter);
 
 export default router;

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { driverAttendanceTable, driverSalaryTable, driversTable } from "@workspace/db";
+import { driverAttendanceTable, driverSalaryTable, driverLeaveTable, driverBonusPenaltyTable, driversTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 
 const router = Router();
@@ -121,6 +121,72 @@ router.get("/v1/drivers/salary", async (req, res): Promise<void> => {
     .where(eq(driverSalaryTable.companyId, companyId))
     .orderBy(desc(driverSalaryTable.month));
   res.json(rows);
+});
+
+// ---- Driver Leave ----
+router.get("/v1/drivers/leave", async (req, res): Promise<void> => {
+  const companyId = (req as any).user?.companyId;
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const rows = await db.select({
+    leave: driverLeaveTable,
+    driverName: driversTable.name,
+  }).from(driverLeaveTable)
+    .leftJoin(driversTable, eq(driverLeaveTable.driverId, driversTable.id))
+    .where(eq(driverLeaveTable.companyId, companyId))
+    .orderBy(desc(driverLeaveTable.fromDate));
+  res.json(rows);
+});
+
+router.post("/v1/drivers/:id/leave", async (req, res): Promise<void> => {
+  const companyId = (req as any).user?.companyId;
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { fromDate, toDate, type, reason } = req.body;
+  const [created] = await db.insert(driverLeaveTable)
+    .values({ companyId, driverId: req.params.id, fromDate, toDate, type: type || "casual", reason })
+    .returning();
+  res.status(201).json(created);
+});
+
+router.patch("/v1/drivers/leave/:id", async (req, res): Promise<void> => {
+  const companyId = (req as any).user?.companyId;
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const [updated] = await db.update(driverLeaveTable)
+    .set({ status: req.body.status })
+    .where(and(eq(driverLeaveTable.id, req.params.id), eq(driverLeaveTable.companyId, companyId)))
+    .returning();
+  if (!updated) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(updated);
+});
+
+// ---- Driver Bonus / Penalty ----
+router.get("/v1/drivers/bonus-penalty", async (req, res): Promise<void> => {
+  const companyId = (req as any).user?.companyId;
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const rows = await db.select({
+    entry: driverBonusPenaltyTable,
+    driverName: driversTable.name,
+  }).from(driverBonusPenaltyTable)
+    .leftJoin(driversTable, eq(driverBonusPenaltyTable.driverId, driversTable.id))
+    .where(eq(driverBonusPenaltyTable.companyId, companyId))
+    .orderBy(desc(driverBonusPenaltyTable.date));
+  res.json(rows);
+});
+
+router.post("/v1/drivers/:id/bonus-penalty", async (req, res): Promise<void> => {
+  const companyId = (req as any).user?.companyId;
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { type, amount, reason, date } = req.body;
+  const [created] = await db.insert(driverBonusPenaltyTable)
+    .values({ companyId, driverId: req.params.id, type, amount, reason, date: date || new Date().toISOString().slice(0, 10) })
+    .returning();
+  res.status(201).json(created);
+});
+
+router.delete("/v1/drivers/bonus-penalty/:id", async (req, res): Promise<void> => {
+  const companyId = (req as any).user?.companyId;
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  await db.delete(driverBonusPenaltyTable).where(and(eq(driverBonusPenaltyTable.id, req.params.id), eq(driverBonusPenaltyTable.companyId, companyId)));
+  res.status(204).end();
 });
 
 export default router;

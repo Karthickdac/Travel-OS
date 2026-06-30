@@ -49,6 +49,8 @@ export default function Login() {
             setLocation("/master/dashboard");
           } else if (res.user.role === "company_admin" || res.user.role === "company_staff") {
             setLocation("/admin/dashboard");
+          } else if (res.user.role === "customer") {
+            setLocation("/portal/dashboard");
           } else {
             setLocation("/");
           }
@@ -130,6 +132,7 @@ export default function Login() {
                           <SelectItem value={LoginInputRole.master_admin}>Master Admin</SelectItem>
                           <SelectItem value={LoginInputRole.company_admin}>Company Admin</SelectItem>
                           <SelectItem value={LoginInputRole.company_staff}>Company Staff</SelectItem>
+                          <SelectItem value={LoginInputRole.customer}>Customer</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

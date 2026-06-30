@@ -16,6 +16,7 @@ import MasterDashboard from "@/pages/master/dashboard";
 import MasterCompanies from "@/pages/master/companies";
 import MasterPlans from "@/pages/master/plans";
 import MasterAnalytics from "@/pages/master/analytics";
+import MasterThemes from "@/pages/master/themes";
 
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminBookings from "@/pages/admin/bookings";
@@ -39,6 +40,32 @@ import AdminCms from "@/pages/admin/cms";
 import AdminMarketing from "@/pages/admin/marketing";
 import AdminSupport from "@/pages/admin/support";
 import AdminFinancePL from "@/pages/admin/finance/pl";
+import AdminFinanceGst from "@/pages/admin/finance/gst";
+import AdminFinanceRefunds from "@/pages/admin/finance/refunds";
+import AdminFinanceCashbook from "@/pages/admin/finance/cashbook";
+import AdminFinanceLedger from "@/pages/admin/finance/ledger";
+import AdminMarketingReferrals from "@/pages/admin/marketing/referrals";
+import AdminMarketingCampaigns from "@/pages/admin/marketing/campaigns";
+import AdminMarketingLoyalty from "@/pages/admin/marketing/loyalty";
+import AdminCmsMenus from "@/pages/admin/cms/menus";
+import AdminCmsSeo from "@/pages/admin/cms/seo";
+import AdminCmsHomepage from "@/pages/admin/cms/homepage";
+import AdminCmsThemes from "@/pages/admin/cms/themes";
+import AdminFleetFuel from "@/pages/admin/fleet/fuel";
+import AdminFleetAccidents from "@/pages/admin/fleet/accidents";
+import AdminFleetAvailability from "@/pages/admin/fleet/availability";
+import AdminDriversLeave from "@/pages/admin/drivers/leave";
+import AdminDriversBonusPenalty from "@/pages/admin/drivers/bonus-penalty";
+import AdminDriversPerformance from "@/pages/admin/drivers/performance";
+import AdminCrmTasks from "@/pages/admin/crm/tasks";
+import AdminCustomerProfile from "@/pages/admin/crm/customer-profile";
+import AdminReportsOperational from "@/pages/admin/reports/operational";
+import AdminSettingsIntegrations from "@/pages/admin/settings/integrations";
+
+import { PortalLayout } from "@/components/layout/portal-layout";
+import PortalDashboard from "@/pages/portal/dashboard";
+import PortalBookings from "@/pages/portal/bookings";
+import PortalSupport from "@/pages/portal/support";
 
 import PublicHome from "@/pages/public/home";
 import PublicPackages from "@/pages/public/packages";
@@ -89,6 +116,7 @@ function MasterRoutes() {
         <Route path="/master/companies" component={MasterCompanies} />
         <Route path="/master/plans" component={MasterPlans} />
         <Route path="/master/analytics" component={MasterAnalytics} />
+        <Route path="/master/themes" component={MasterThemes} />
         <Route component={NotFound} />
       </Switch>
     </MasterLayout>
@@ -102,11 +130,19 @@ function AdminRoutes() {
         <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/bookings" component={AdminBookings} />
         <Route path="/admin/fleet/fastag" component={AdminFastag} />
+        <Route path="/admin/fleet/fuel" component={AdminFleetFuel} />
+        <Route path="/admin/fleet/accidents" component={AdminFleetAccidents} />
+        <Route path="/admin/fleet/availability" component={AdminFleetAvailability} />
         <Route path="/admin/fleet" component={AdminFleet} />
+        <Route path="/admin/drivers/leave" component={AdminDriversLeave} />
+        <Route path="/admin/drivers/bonus-penalty" component={AdminDriversBonusPenalty} />
+        <Route path="/admin/drivers/performance" component={AdminDriversPerformance} />
         <Route path="/admin/drivers" component={AdminDrivers} />
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/crm/leads" component={AdminLeads} />
         <Route path="/admin/crm/quotations" component={AdminQuotations} />
+        <Route path="/admin/crm/tasks" component={AdminCrmTasks} />
+        <Route path="/admin/crm/customer-profile" component={AdminCustomerProfile} />
         <Route path="/admin/customers" component={AdminCustomers} />
         <Route path="/admin/tours/destinations" component={AdminDestinations} />
         <Route path="/admin/tours/packages" component={AdminPackages} />
@@ -114,16 +150,42 @@ function AdminRoutes() {
         <Route path="/admin/finance/invoices" component={AdminFinanceInvoices} />
         <Route path="/admin/finance/expenses" component={AdminFinanceExpenses} />
         <Route path="/admin/finance/pl" component={AdminFinancePL} />
+        <Route path="/admin/finance/gst" component={AdminFinanceGst} />
+        <Route path="/admin/finance/refunds" component={AdminFinanceRefunds} />
+        <Route path="/admin/finance/cashbook" component={AdminFinanceCashbook} />
+        <Route path="/admin/finance/ledger" component={AdminFinanceLedger} />
         <Route path="/admin/vendors" component={AdminVendors} />
+        <Route path="/admin/reports/operational" component={AdminReportsOperational} />
         <Route path="/admin/reports" component={AdminReports} />
+        <Route path="/admin/settings/integrations" component={AdminSettingsIntegrations} />
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/admin/notifications" component={AdminNotifications} />
+        <Route path="/admin/cms/menus" component={AdminCmsMenus} />
+        <Route path="/admin/cms/seo" component={AdminCmsSeo} />
+        <Route path="/admin/cms/homepage" component={AdminCmsHomepage} />
+        <Route path="/admin/cms/themes" component={AdminCmsThemes} />
         <Route path="/admin/cms" component={AdminCms} />
+        <Route path="/admin/marketing/referrals" component={AdminMarketingReferrals} />
+        <Route path="/admin/marketing/campaigns" component={AdminMarketingCampaigns} />
+        <Route path="/admin/marketing/loyalty" component={AdminMarketingLoyalty} />
         <Route path="/admin/marketing" component={AdminMarketing} />
         <Route path="/admin/support" component={AdminSupport} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>
+  );
+}
+
+function PortalRoutes() {
+  return (
+    <PortalLayout>
+      <Switch>
+        <Route path="/portal/dashboard" component={PortalDashboard} />
+        <Route path="/portal/bookings" component={PortalBookings} />
+        <Route path="/portal/support" component={PortalSupport} />
+        <Route component={NotFound} />
+      </Switch>
+    </PortalLayout>
   );
 }
 
@@ -154,6 +216,10 @@ function Router() {
 
       <Route path="/admin/*">
         <ProtectedRoute component={AdminRoutes} allowedRoles={["company_admin", "company_staff"]} />
+      </Route>
+
+      <Route path="/portal/*">
+        <ProtectedRoute component={PortalRoutes} allowedRoles={["customer"]} />
       </Route>
 
       <Route path="/*">
