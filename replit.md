@@ -48,8 +48,8 @@ Full enterprise multi-tenant Travel ERP and Website Builder SaaS. Three portals 
 ## Seed credentials
 
 - Master Admin: `master@travelos.io` / `admin123` → portal: Master Admin
-- Company Admin: `admin@rajtravel.com` / `company123` → portal: Company Admin
-- Company Staff: `staff@rajtravel.com` / `company123` → portal: Company Staff
+- Company Admin: `admin@maduraismt.com` / `company123` → portal: Company Admin
+- Company Staff: `staff@maduraismt.com` / `company123` → portal: Company Staff
 
 ## Gotchas
 
