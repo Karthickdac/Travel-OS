@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Building2, Package, LogOut } from "lucide-react";
+import { LayoutDashboard, Building2, Package, LogOut, BarChart3 } from "lucide-react";
 
 export function MasterLayout({ children }: { children: React.ReactNode }) {
   const { logout, user } = useAuth();
@@ -16,6 +16,7 @@ export function MasterLayout({ children }: { children: React.ReactNode }) {
     { href: "/master/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/master/companies", label: "Companies", icon: Building2 },
     { href: "/master/plans", label: "Plans", icon: Package },
+    { href: "/master/analytics", label: "Analytics", icon: BarChart3 },
   ];
 
   return (
@@ -28,7 +29,7 @@ export function MasterLayout({ children }: { children: React.ReactNode }) {
         
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = location === item.href;
+            const isActive = location === item.href || location.startsWith(`${item.href}/`);
             const Icon = item.icon;
             return (
               <Link key={item.href} href={item.href}>

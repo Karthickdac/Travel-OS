@@ -55,7 +55,7 @@ export default function MasterDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${stats.monthlyRevenue.toLocaleString()}</div>
+            <div className="text-3xl font-bold">₹{stats.monthlyRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center">
               <span className="text-emerald-500 flex items-center font-medium mr-1">
                 <ArrowUpRight className="h-3 w-3 mr-1" />

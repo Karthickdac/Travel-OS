@@ -15,6 +15,7 @@ import Login from "@/pages/login";
 import MasterDashboard from "@/pages/master/dashboard";
 import MasterCompanies from "@/pages/master/companies";
 import MasterPlans from "@/pages/master/plans";
+import MasterAnalytics from "@/pages/master/analytics";
 
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminBookings from "@/pages/admin/bookings";
@@ -27,8 +28,17 @@ import AdminCustomers from "@/pages/admin/customers";
 import AdminDestinations from "@/pages/admin/tours/destinations";
 import AdminPackages from "@/pages/admin/tours/packages";
 import AdminFinanceSummary from "@/pages/admin/finance/summary";
+import AdminFinanceInvoices from "@/pages/admin/finance/invoices";
+import AdminFinanceExpenses from "@/pages/admin/finance/expenses";
+import AdminVendors from "@/pages/admin/vendors";
+import AdminReports from "@/pages/admin/reports";
+import AdminSettings from "@/pages/admin/settings";
+import AdminNotifications from "@/pages/admin/notifications";
 
 import PublicHome from "@/pages/public/home";
+import PublicPackages from "@/pages/public/packages";
+import PublicEnquiry from "@/pages/public/enquiry";
+import PublicContact from "@/pages/public/contact";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +83,7 @@ function MasterRoutes() {
         <Route path="/master/dashboard" component={MasterDashboard} />
         <Route path="/master/companies" component={MasterCompanies} />
         <Route path="/master/plans" component={MasterPlans} />
+        <Route path="/master/analytics" component={MasterAnalytics} />
         <Route component={NotFound} />
       </Switch>
     </MasterLayout>
@@ -94,6 +105,12 @@ function AdminRoutes() {
         <Route path="/admin/tours/destinations" component={AdminDestinations} />
         <Route path="/admin/tours/packages" component={AdminPackages} />
         <Route path="/admin/finance/summary" component={AdminFinanceSummary} />
+        <Route path="/admin/finance/invoices" component={AdminFinanceInvoices} />
+        <Route path="/admin/finance/expenses" component={AdminFinanceExpenses} />
+        <Route path="/admin/vendors" component={AdminVendors} />
+        <Route path="/admin/reports" component={AdminReports} />
+        <Route path="/admin/settings" component={AdminSettings} />
+        <Route path="/admin/notifications" component={AdminNotifications} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>
@@ -106,6 +123,9 @@ function PublicRoutes() {
       <PublicLayout>
         <Switch>
           <Route path="/" component={PublicHome} />
+          <Route path="/packages" component={PublicPackages} />
+          <Route path="/enquiry" component={PublicEnquiry} />
+          <Route path="/contact" component={PublicContact} />
           <Route component={NotFound} />
         </Switch>
       </PublicLayout>

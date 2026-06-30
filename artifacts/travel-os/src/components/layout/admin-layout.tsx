@@ -1,8 +1,12 @@
 import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+function PackageIcon(props: any) {
+  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>;
+}
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { logout, user } = useAuth();
@@ -27,6 +31,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         { href: "/admin/fleet", label: "Fleet & Vehicles", icon: CarFront },
         { href: "/admin/drivers", label: "Drivers", icon: Contact },
         { href: "/admin/users", label: "Staff", icon: Users2 },
+        { href: "/admin/vendors", label: "Vendors", icon: Building2 },
       ]
     },
     {
@@ -41,15 +46,25 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       title: "Tours",
       items: [
         { href: "/admin/tours/destinations", label: "Destinations", icon: Map },
-        { href: "/admin/tours/packages", label: "Packages", icon: Package },
+        { href: "/admin/tours/packages", label: "Packages", icon: PackageIcon },
       ]
     },
     {
       title: "Finance",
       items: [
-        { href: "/admin/finance/summary", label: "Financial Summary", icon: Wallet },
+        { href: "/admin/finance/summary", label: "Summary", icon: Wallet },
+        { href: "/admin/finance/invoices", label: "Invoices", icon: Receipt },
+        { href: "/admin/finance/expenses", label: "Expenses", icon: CreditCard },
       ]
-    }
+    },
+    {
+      title: "Analytics & Admin",
+      items: [
+        { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+        { href: "/admin/notifications", label: "Notifications", icon: Bell },
+        { href: "/admin/settings", label: "Settings", icon: Settings },
+      ]
+    },
   ];
 
   return (
@@ -78,7 +93,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                             ? "bg-sidebar-primary text-sidebar-primary-foreground" 
                             : "text-sidebar-foreground hover:bg-sidebar-accent"
                         }`}>
-                          <Icon className="h-4 w-4" />
+                          <Icon className="h-4 w-4 shrink-0" />
                           {item.label}
                         </div>
                       </Link>
@@ -92,7 +107,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         
         <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sm font-bold text-sidebar-foreground">
+            <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sm font-bold text-sidebar-foreground shrink-0">
               {user?.name?.charAt(0) || 'U'}
             </div>
             <div className="flex flex-col overflow-hidden">
@@ -114,8 +129,4 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       </main>
     </div>
   );
-}
-
-function Package(props: any) {
-  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinelinejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>;
 }

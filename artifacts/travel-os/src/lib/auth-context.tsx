@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     query: {
       enabled: !!token,
       retry: false,
-    }
+    } as any
   });
 
   const login = (newToken: string) => {

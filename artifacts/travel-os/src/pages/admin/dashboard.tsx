@@ -8,7 +8,7 @@ import { format } from "date-fns";
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useGetCompanyDashboard();
   const { data: trend, isLoading: trendLoading } = useGetRevenueTrend({ months: 6 });
-  const { data: recentBookings, isLoading: bookingsLoading } = useGetRecentBookings({ limit: 5 });
+  const { data: recentBookings, isLoading: bookingsLoading } = useGetRecentBookings();
 
   const isLoading = statsLoading || trendLoading || bookingsLoading;
 
@@ -63,9 +63,9 @@ export default function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${stats.todayRevenue.toLocaleString()}</div>
+            <div className="text-3xl font-bold">₹{stats.todayRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Monthly: <span className="font-medium text-foreground">${stats.monthlyRevenue.toLocaleString()}</span>
+              Monthly: <span className="font-medium text-foreground">₹{stats.monthlyRevenue.toLocaleString()}</span>
             </p>
           </CardContent>
         </Card>
@@ -113,10 +113,10 @@ export default function AdminDashboard() {
                 <LineChart data={trend} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
                   <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{fontSize: 12, fill: "var(--color-muted-foreground)"}} />
-                  <YAxis tickFormatter={(val) => `$${val}`} tickLine={false} axisLine={false} tick={{fontSize: 12, fill: "var(--color-muted-foreground)"}} />
+                  <YAxis tickFormatter={(val) => `₹${(val/1000).toFixed(0)}K`} tickLine={false} axisLine={false} tick={{fontSize: 12, fill: "var(--color-muted-foreground)"}} />
                   <Tooltip 
                     contentStyle={{ borderRadius: '8px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
-                    formatter={(value: number) => [`$${value}`, "Revenue"]}
+                    formatter={(value: number) => [`₹${Number(value).toLocaleString()}`, "Revenue"]}
                   />
                   <Line type="monotone" dataKey="revenue" stroke="var(--color-primary)" strokeWidth={3} dot={{ r: 4, fill: "var(--color-primary)", strokeWidth: 2 }} activeDot={{ r: 6 }} />
                 </LineChart>
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium">${booking.amount}</div>
+                      <div className="text-sm font-medium">₹{Number(booking.amount).toLocaleString()}</div>
                       <div className="text-[10px] text-muted-foreground">
                         {format(new Date(booking.pickupDate), "MMM d, yyyy")}
                       </div>
