@@ -2,3 +2,4 @@
 - [Public site CMS-driven branding](public-site-cms-branding.md) — public customer pages must pull tenant name/contact from useGetPublicCmsSettings(domain), never hardcode.
 - [TravelOS frontend gotchas](travel-os-frontend-gotchas.md) — framer-motion ease needs `as const`; some Unsplash photo IDs 404 — screenshot-verify images.
 - [New TravelOS tenant seed](travelos-new-tenant-seed.md) — spin up a fully-functional tenant: companies+website_settings+admin user, clone Supreme's catalog/fleet/CRM with FKs nulled.
+- [Per-tenant robots/sitemap](travelos-seo-files.md) — served at domain root by api-server (mount + proxy path registration); validate host header, build canonical URLs from DB domain.
