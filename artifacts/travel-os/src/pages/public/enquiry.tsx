@@ -4,21 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Phone, MapPin, Mail, Send, CheckCircle2, Clock, Users, Car } from "lucide-react";
+import { Phone, MapPin, Mail, Send, CheckCircle2, Clock, Users, Car, Calendar, CreditCard } from "lucide-react";
 import { useLang } from "@/lib/lang-context";
 import { AutocompleteInput } from "@/components/autocomplete-input";
 import { POPULAR_DESTINATIONS, fetchCitySuggestions } from "@/lib/cities";
+import { useGetPublicCmsSettings } from "@workspace/api-client-react";
+
+const SITE_DOMAIN = typeof window !== "undefined" ? window.location.hostname : "";
 
 const TRIP_TYPES = ["Pilgrimage Tour", "Family Tour", "Honeymoon Package", "Adventure Tour", "Corporate Trip", "Airport Transfer", "Outstation Cab", "Local Cab", "Custom Package"];
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.5, delay: i * 0.08, ease: "easeOut" } }),
+  hidden: { opacity: 0, y: 40 },
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.1, ease: "easeOut" as const } }),
 };
 
 export default function PublicEnquiry() {
   const { toast } = useToast();
   const { t } = useLang();
+  const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
+  const contactPhone = cms?.phone || "8110806339";
+  const contactEmail = cms?.email || "admin@maduraismt.com";
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -66,28 +72,40 @@ export default function PublicEnquiry() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen pt-16 flex items-center justify-center px-4">
+      <div className="min-h-screen pt-16 flex items-center justify-center px-4 bg-[#FAF8F5]">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md w-full text-center"
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          className="max-w-lg w-full text-center bg-white p-10 md:p-14 rounded-[2.5rem] shadow-2xl border border-border/50"
         >
-          <div className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+          <div className="h-24 w-24 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-8 border-4 border-green-100">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
           </div>
-          <h2 className="text-2xl font-black mb-2">Enquiry Submitted!</h2>
-          <p className="text-muted-foreground mb-6">Thank you, <strong>{form.name}</strong>! Our team will call you at <strong>{form.phone}</strong> within 30 minutes.</p>
-          <div className="bg-primary/5 rounded-2xl p-5 mb-6 text-left space-y-2">
-            <p className="text-sm font-semibold mb-3">What happens next?</p>
-            {["Our travel expert will call you", "We'll understand your requirements", "Custom itinerary and quote shared", "Confirm and book your dream trip"].map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />{s}
-              </div>
-            ))}
+          <h2 className="text-3xl font-black mb-4 text-foreground" style={{ fontFamily: 'var(--app-font-serif)' }}>Enquiry Submitted Successfully!</h2>
+          <p className="text-muted-foreground text-lg mb-8 leading-relaxed">Thank you, <strong className="text-foreground">{form.name}</strong>! Our travel expert will review your requirements and call you at <strong className="text-foreground">{form.phone}</strong> shortly.</p>
+          
+          <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 mb-8 text-left">
+            <p className="text-sm font-bold uppercase tracking-widest text-primary mb-4">What happens next?</p>
+            <div className="space-y-4">
+              {[
+                "Our travel expert will call you to confirm details", 
+                "We'll understand any specific requirements", 
+                "A custom itinerary and quote will be shared", 
+                "Confirm and book your dream trip securely"
+              ].map((s, i) => (
+                <div key={i} className="flex items-start gap-3 text-[15px] font-medium text-foreground/80">
+                  <div className="h-6 w-6 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 text-xs font-bold">{i+1}</div>
+                  <span className="pt-0.5">{s}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <a href="tel:8110806339">
-            <Button size="lg" className="gap-2 rounded-full w-full"><Phone className="h-4 w-4" />Call us now: 8110806339</Button>
+          
+          <a href={`tel:${contactPhone}`}>
+            <Button size="lg" className="gap-2 rounded-full w-full h-14 text-base font-bold shadow-lg hover:shadow-xl transition-shadow">
+              <Phone className="h-5 w-5" /> Need it faster? Call us now
+            </Button>
           </a>
         </motion.div>
       </div>
@@ -95,79 +113,165 @@ export default function PublicEnquiry() {
   }
 
   return (
-    <div className="min-h-screen pt-16">
+    <div className="min-h-screen pt-14 md:pt-16 bg-[#FAF8F5]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-orange-950 to-teal-900 py-14 px-4 text-white text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <p className="text-primary text-sm font-bold uppercase tracking-widest mb-3">Get a Free Quote</p>
-          <h1 className="text-4xl font-black mb-3">Plan Your Trip</h1>
-          <p className="text-white/70 max-w-md mx-auto">Fill in your details and our travel expert will call you back with a personalised quote.</p>
+      <div className="relative py-20 px-4 text-center overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1920&q=80&auto=format&fit=crop"
+          alt="Contact Hero"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.25)" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-black/60" />
+        
+        <motion.div 
+          className="relative z-10 container mx-auto"
+          initial={{ opacity: 0, y: 30 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.8 }}
+        >
+          <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-4 bg-white/10 inline-block px-4 py-1.5 rounded-full backdrop-blur-sm border border-white/20">Get a Free Quote</p>
+          <h1 className="text-5xl md:text-6xl font-black mb-6 text-white drop-shadow-lg" style={{ fontFamily: 'var(--app-font-serif)' }}>Plan Your Trip</h1>
+          <p className="text-white/80 max-w-xl mx-auto text-lg md:text-xl font-medium leading-relaxed">
+            Fill in your details and our travel expert will prepare a personalised itinerary tailored to your needs.
+          </p>
         </motion.div>
       </div>
 
-      <div className="container mx-auto px-4 py-12 max-w-5xl">
-        <div className="grid md:grid-cols-3 gap-10">
+      <div className="container mx-auto px-4 py-16 max-w-6xl">
+        <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
           {/* Left info */}
-          <div className="space-y-8">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
-              <h2 className="text-xl font-bold mb-4">Why Enquire with Us?</h2>
-              {[
-                { icon: Clock, title: "Quick Response", desc: "Call back within 30 minutes" },
-                { icon: Car, title: "Best Fleet", desc: "AC Innova, Crysta & Tempo" },
-                { icon: Users, title: "Expert Guides", desc: "Experienced local guides" },
-                { icon: CheckCircle2, title: "Best Prices", desc: "No hidden charges" },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="flex items-start gap-3 mb-4">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Icon className="h-4 w-4 text-primary" />
+          <div className="space-y-10 lg:order-2">
+            <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
+              <h2 className="text-2xl font-black mb-8 border-b border-border pb-4" style={{ fontFamily: 'var(--app-font-serif)' }}>Why Enquire with Us?</h2>
+              <div className="space-y-6">
+                {[
+                  { icon: Clock, title: "Quick Response", desc: "Our team will call you back within 30 minutes during business hours." },
+                  { icon: Car, title: "Premium Fleet", desc: "Well-maintained AC Innova, Crysta, Tempo Traveller & Sedans." },
+                  { icon: Users, title: "Expert Guidance", desc: "Experienced local drivers who know the best routes and stops." },
+                  { icon: CheckCircle2, title: "Transparent Pricing", desc: "Best prices guaranteed with absolutely no hidden charges." },
+                ].map(({ icon: Icon, title, desc }) => (
+                  <div key={title} className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-white border border-border shadow-sm flex items-center justify-center shrink-0 text-primary">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg mb-1">{title}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                    </div>
                   </div>
-                  <div><p className="font-semibold text-sm">{title}</p><p className="text-xs text-muted-foreground">{desc}</p></div>
-                </div>
-              ))}
+                ))}
+              </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }} className="bg-primary/5 rounded-2xl p-5">
-              <p className="font-bold mb-3">Contact Directly</p>
-              <div className="space-y-2">
-                <a href="tel:8110806339" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"><Phone className="h-4 w-4 text-primary" />8110806339</a>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="h-4 w-4 text-primary" />Madurai, Tamil Nadu</div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Mail className="h-4 w-4 text-primary" />admin@maduraismt.com</div>
+            <motion.div custom={1} variants={fadeUp} initial="hidden" animate="show" className="bg-gradient-to-br from-primary to-orange-600 rounded-[2rem] p-8 text-white shadow-xl">
+              <p className="font-bold text-xl mb-6" style={{ fontFamily: 'var(--app-font-serif)' }}>Need immediate assistance?</p>
+              <div className="space-y-5">
+                <a href={`tel:${contactPhone}`} className="flex items-center gap-4 text-white hover:text-white/80 transition-colors group">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-white/70 mb-0.5">Call Us Now</p>
+                    <p className="font-black text-xl tracking-wide">{contactPhone}</p>
+                  </div>
+                </a>
+                <div className="flex items-center gap-4 text-white group">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-white/70 mb-0.5">Office</p>
+                    <p className="font-semibold text-[15px]">{cms?.address || "Madurai, Tamil Nadu"}</p>
+                  </div>
+                </div>
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-4 text-white hover:text-white/80 transition-colors group">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-white/70 mb-0.5">Email</p>
+                    <p className="font-semibold text-[15px]">{contactEmail}</p>
+                  </div>
+                </a>
               </div>
             </motion.div>
           </div>
 
           {/* Enquiry form */}
           <motion.div
-            className="md:col-span-2"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
+            className="lg:col-span-2 lg:order-1"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
           >
-            <form onSubmit={handleSubmit} className="bg-card border border-border/40 rounded-3xl p-8 shadow-lg space-y-5">
-              <h3 className="text-lg font-bold">Enquiry Details</h3>
+            <form onSubmit={handleSubmit} className="bg-white border border-border/60 rounded-[2.5rem] p-8 md:p-12 shadow-xl relative overflow-hidden">
+              {/* Decorative top border */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-orange-400 to-primary" />
+              
+              <div className="mb-10">
+                <h3 className="text-3xl font-black mb-3" style={{ fontFamily: 'var(--app-font-serif)' }}>Enquiry Details</h3>
+                <p className="text-muted-foreground font-medium">Please provide as much detail as possible so we can tailor the perfect itinerary for you.</p>
+              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label>Full Name *</Label><Input value={form.name} onChange={setF("name")} placeholder="Your name" required /></div>
-                <div className="space-y-1.5"><Label>Phone Number *</Label><Input value={form.phone} onChange={setF("phone")} placeholder="+91 98765 43210" required /></div>
-                <div className="space-y-1.5"><Label>Email</Label><Input type="email" value={form.email} onChange={setF("email")} placeholder="you@example.com" /></div>
-                <div className="space-y-1.5">
-                  <Label>Trip Type</Label>
-                  <select value={form.tripType} onChange={setF("tripType")} className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background">
-                    <option value="">Select type</option>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                {/* Personal Info section */}
+                <div className="md:col-span-2 bg-muted/30 p-6 rounded-2xl border border-border/50 grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+                  <div className="md:col-span-2 mb-2"><p className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Users className="w-4 h-4" /> Personal Information</p></div>
+                  <div className="space-y-2.5">
+                    <Label className="text-[13px] font-bold text-muted-foreground">Full Name <span className="text-primary">*</span></Label>
+                    <Input value={form.name} onChange={setF("name")} placeholder="Your name" required className="h-12 bg-white rounded-xl" />
+                  </div>
+                  <div className="space-y-2.5">
+                    <Label className="text-[13px] font-bold text-muted-foreground">Phone Number <span className="text-primary">*</span></Label>
+                    <Input value={form.phone} onChange={setF("phone")} placeholder="+91 98765 43210" required className="h-12 bg-white rounded-xl" />
+                  </div>
+                  <div className="space-y-2.5 md:col-span-2">
+                    <Label className="text-[13px] font-bold text-muted-foreground">Email Address</Label>
+                    <Input type="email" value={form.email} onChange={setF("email")} placeholder="you@example.com" className="h-12 bg-white rounded-xl" />
+                  </div>
+                </div>
+
+                <div className="space-y-2.5 md:col-span-2 mt-4">
+                  <Label className="text-[13px] font-bold text-muted-foreground">Trip Type</Label>
+                  <select value={form.tripType} onChange={setF("tripType")} className="w-full h-12 border border-input rounded-xl px-4 text-[15px] font-medium bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm">
+                    <option value="">Select the type of trip</option>
                     {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="space-y-1.5"><Label>From City</Label><AutocompleteInput value={form.fromCity} onChange={(v) => setForm(f => ({ ...f, fromCity: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Madurai" /></div>
-                <div className="space-y-1.5"><Label>To / Destination</Label><AutocompleteInput value={form.toDestination} onChange={(v) => setForm(f => ({ ...f, toDestination: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Rameshwaram" /></div>
-                <div className="space-y-1.5"><Label>Travel Date</Label><Input type="date" value={form.travelDate} onChange={setF("travelDate")} /></div>
-                <div className="space-y-1.5"><Label>Return Date</Label><Input type="date" value={form.returnDate} onChange={setF("returnDate")} /></div>
-                <div className="space-y-1.5">
-                  <Label>No. of Passengers</Label>
-                  <Input type="number" value={form.passengers} onChange={setF("passengers")} min="1" max="50" />
+
+                <div className="space-y-2.5">
+                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> From City</Label>
+                  <div className="[&>div>input]:h-12 [&>div>input]:rounded-xl [&>div>input]:shadow-sm">
+                    <AutocompleteInput value={form.fromCity} onChange={(v) => setForm(f => ({ ...f, fromCity: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Madurai" />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Vehicle Preference</Label>
-                  <select value={form.vehiclePreference} onChange={setF("vehiclePreference")} className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background">
+                
+                <div className="space-y-2.5">
+                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> To / Destination</Label>
+                  <div className="[&>div>input]:h-12 [&>div>input]:rounded-xl [&>div>input]:shadow-sm">
+                    <AutocompleteInput value={form.toDestination} onChange={(v) => setForm(f => ({ ...f, toDestination: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Rameshwaram" />
+                  </div>
+                </div>
+
+                <div className="space-y-2.5">
+                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Travel Date</Label>
+                  <Input type="date" value={form.travelDate} onChange={setF("travelDate")} className="h-12 rounded-xl shadow-sm" />
+                </div>
+                
+                <div className="space-y-2.5">
+                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Return Date</Label>
+                  <Input type="date" value={form.returnDate} onChange={setF("returnDate")} className="h-12 rounded-xl shadow-sm" />
+                </div>
+
+                <div className="space-y-2.5">
+                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> No. of Passengers</Label>
+                  <Input type="number" value={form.passengers} onChange={setF("passengers")} min="1" max="50" className="h-12 rounded-xl shadow-sm" />
+                </div>
+                
+                <div className="space-y-2.5">
+                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Car className="w-3.5 h-3.5" /> Vehicle Preference</Label>
+                  <select value={form.vehiclePreference} onChange={setF("vehiclePreference")} className="w-full h-12 border border-input rounded-xl px-4 text-[15px] font-medium bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm">
                     <option value="">Any vehicle</option>
                     <option>AC Innova</option>
                     <option>Crysta</option>
@@ -177,23 +281,38 @@ export default function PublicEnquiry() {
                     <option>SUV</option>
                   </select>
                 </div>
-                <div className="col-span-2 space-y-1.5">
-                  <Label>Budget Range (₹)</Label>
-                  <Input value={form.budget} onChange={setF("budget")} placeholder="e.g. ₹5,000 – ₹15,000 per person" />
+
+                <div className="md:col-span-2 space-y-2.5">
+                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5" /> Budget Range (₹)</Label>
+                  <Input value={form.budget} onChange={setF("budget")} placeholder="e.g. ₹5,000 – ₹15,000 per person" className="h-12 rounded-xl shadow-sm" />
                 </div>
-                <div className="col-span-2 space-y-1.5">
-                  <Label>Additional Requirements</Label>
-                  <textarea value={form.message} onChange={setF("message")} rows={3} placeholder="Any special requests, dietary requirements, hotel preferences…"
-                    className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring" />
+                
+                <div className="md:col-span-2 space-y-2.5 mt-2">
+                  <Label className="text-[13px] font-bold text-muted-foreground">Additional Requirements</Label>
+                  <textarea 
+                    value={form.message} 
+                    onChange={setF("message")} 
+                    rows={4} 
+                    placeholder="Any special requests, dietary requirements, hotel preferences, specific temples to visit..."
+                    className="w-full border border-input rounded-xl px-4 py-3 text-[15px] bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm" 
+                  />
                 </div>
               </div>
 
-              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                <Button type="submit" size="lg" className="w-full rounded-full gap-2" disabled={loading}>
-                  {loading ? <><div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Submitting…</> : <><Send className="h-4 w-4" />Send Enquiry</>}
-                </Button>
-              </motion.div>
-              <p className="text-xs text-muted-foreground text-center">We'll call you back within 30 minutes during business hours (7AM – 10PM)</p>
+              <div className="mt-10 pt-8 border-t border-border">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button type="submit" size="lg" className="w-full rounded-full gap-3 h-14 text-lg font-black shadow-lg shadow-primary/20" disabled={loading}>
+                    {loading ? (
+                      <><div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting Enquiry…</>
+                    ) : (
+                      <><Send className="h-5 w-5" /> Send Enquiry Request</>
+                    )}
+                  </Button>
+                </motion.div>
+                <p className="text-sm font-medium text-muted-foreground text-center mt-6 flex items-center justify-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" /> We'll call you back within 30 minutes (7AM – 10PM)
+                </p>
+              </div>
             </form>
           </motion.div>
         </div>

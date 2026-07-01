@@ -1,0 +1,32 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "XbNY1PPinYs7a5IUrtYM2"
+uri = "file://artifacts/travel-os/public/images/hero-1.png"
+type = "image"
+title = "Dravidian temple gopuram"
+
+[[generated]]
+id = "k3xfKCTkx5i5Z6cv9TguN"
+uri = "file://artifacts/travel-os/public/images/hero-2.png"
+type = "image"
+title = "Misty Kodaikanal tea gardens"
+
+[[generated]]
+id = "FqsJ_H61yCQPUu5zXQyVl"
+uri = "file://artifacts/travel-os/public/images/hero-3.png"
+type = "image"
+title = "Kerala backwaters houseboat"
+
+[[generated]]
+id = "KjgFL1X0JTg8jmMA3VyDw"
+uri = "file://artifacts/travel-os/public/images/hero-4.png"
+type = "image"
+title = "Coastal Rameshwaram scene"
+
+[[generated]]
+id = "GrzVHW3V0jLLUfSGkAxBF"
+uri = "file://artifacts/travel-os/public/images/hero-5.png"
+type = "image"
+title = "Travel sedan scenic highway"

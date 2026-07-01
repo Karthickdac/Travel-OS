@@ -1,1 +1,3 @@
 - [Multi-tenant scoping in API routes](multi-tenant-scoping.md) — invoice/finance endpoints leaked cross-tenant; every company-scoped CRUD must filter by req.user.companyId.
+- [Public site CMS-driven branding](public-site-cms-branding.md) — public customer pages must pull tenant name/contact from useGetPublicCmsSettings(domain), never hardcode.
+- [TravelOS frontend gotchas](travel-os-frontend-gotchas.md) — framer-motion ease needs `as const`; some Unsplash photo IDs 404 — screenshot-verify images.

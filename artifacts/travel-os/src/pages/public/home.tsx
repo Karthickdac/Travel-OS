@@ -52,10 +52,13 @@ export default function PublicHome() {
     <div className="flex flex-col overflow-x-hidden">
 
       {/* Scrolling Ticker */}
-      <div className="bg-primary text-primary-foreground py-2 overflow-hidden mt-16">
-        <div className="flex animate-[ticker_30s_linear_infinite] whitespace-nowrap gap-10">
-          {[...announcementItems, ...announcementItems].map((item, i) => (
-            <span key={i} className="text-xs font-semibold shrink-0 tracking-wide">{item}</span>
+      <div className="bg-primary text-primary-foreground py-2 overflow-hidden fixed top-[56px] md:top-[64px] left-0 right-0 z-40 shadow-sm border-b border-white/20">
+        <div className="flex animate-[ticker_40s_linear_infinite] whitespace-nowrap gap-12">
+          {[...announcementItems, ...announcementItems, ...announcementItems].map((item, i) => (
+            <span key={i} className="text-xs font-bold uppercase tracking-[0.15em] shrink-0 text-white flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-white/50" />
+              {item}
+            </span>
           ))}
         </div>
       </div>
@@ -73,6 +76,15 @@ export default function PublicHome() {
         stats={cmsStats}
       />
 
+      <WhySection
+        t={t}
+        tokens={tokens}
+        variant={layouts.whyUs}
+        heroPhone={heroPhone}
+        aboutTitle={aboutTitle}
+        aboutText={aboutText}
+      />
+
       {showDestinations && (
         <DestinationsSection t={t} tokens={tokens} variant={layouts.destinations} heroPhone={heroPhone} />
       )}
@@ -88,54 +100,45 @@ export default function PublicHome() {
         />
       )}
 
-      <WhySection
-        t={t}
-        tokens={tokens}
-        variant={layouts.whyUs}
-        heroPhone={heroPhone}
-        aboutTitle={aboutTitle}
-        aboutText={aboutText}
-      />
-
       {/* Services */}
-      <section className={`${tokens.sectionPadding} ${tokens.sectionBg}`}>
+      <section className={`py-24 bg-[#FAF8F5] relative`}>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         <div className="container mx-auto px-4">
           <motion.div
-            className="text-center mb-12 max-w-2xl mx-auto"
+            className="text-center mb-16 max-w-2xl mx-auto"
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.3 }}
             variants={staggerContainer(0.1)}
           >
-            <motion.p variants={fadeUp} className={`${tokens.eyebrowClass} mb-2`}>{t.services.eyebrow}</motion.p>
-            <motion.h2 variants={fadeUp} className={`${tokens.headingClass} mb-3`} style={tokens.headingFont ? { fontFamily: tokens.headingFont } : undefined}>{t.services.heading}</motion.h2>
-            <motion.p variants={fadeUp} className="text-muted-foreground max-w-md mx-auto">{t.services.sub}</motion.p>
+            <motion.p variants={fadeUp} className={`text-primary font-bold text-sm uppercase tracking-[0.2em] mb-3`}>{t.services.eyebrow}</motion.p>
+            <motion.h2 variants={fadeUp} className={`text-4xl md:text-5xl font-black mb-4 tracking-tight`} style={{ fontFamily: 'var(--app-font-serif)' }}>{t.services.heading}</motion.h2>
+            <motion.p variants={fadeUp} className="text-muted-foreground text-lg max-w-md mx-auto">{t.services.sub}</motion.p>
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-3 gap-5"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.1 }}
             variants={staggerContainer(0.08)}
           >
             {t.services.items.map(({ label, desc }, i) => {
-              const Icon = SERVICE_ICONS[i];
+              const Icon = SERVICE_ICONS[i % SERVICE_ICONS.length];
               return (
                 <motion.div
                   key={label}
                   variants={scaleIn}
-                  whileHover={{ y: -6, boxShadow: "0 16px 32px -8px rgba(0,0,0,0.12)", transition: { duration: 0.22 } }}
-                  className={`group p-6 ${tokens.cardRadius} ${tokens.cardClass} hover:border-primary/20 transition-colors duration-300`}
+                  whileHover={{ y: -6, boxShadow: "0 20px 40px -10px rgba(0,0,0,0.1)", transition: { duration: 0.3 } }}
+                  className={`group p-8 rounded-3xl bg-white border border-border/50 hover:border-primary/20 transition-all duration-300`}
                 >
                   <motion.div
-                    className="h-12 w-12 rounded-xl bg-primary/[0.08] flex items-center justify-center mb-4"
-                    whileHover={{ rotate: [0, -8, 8, 0], transition: { duration: 0.4 } }}
+                    className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white text-primary transition-colors duration-300"
                   >
-                    {Icon && <Icon className="h-6 w-6 text-primary" />}
+                    {Icon && <Icon className="h-6 w-6" />}
                   </motion.div>
-                  <p className="font-bold text-base mb-1">{label}</p>
-                  <p className="text-sm text-muted-foreground">{desc}</p>
+                  <p className="font-bold text-xl mb-2" style={{ fontFamily: 'var(--app-font-serif)' }}>{label}</p>
+                  <p className="text-[15px] text-muted-foreground leading-relaxed">{desc}</p>
                 </motion.div>
               );
             })}
@@ -144,15 +147,16 @@ export default function PublicHome() {
       </section>
 
       {/* CTA Banner */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative py-32 overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1561361058-c24e1d9bd0ac?w=1920&q=80&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=1920&q=80&auto=format&fit=crop"
           alt="CTA background"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: "brightness(0.2)" }}
-          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          style={{ filter: "brightness(0.3) contrast(1.1)" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-950/80 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-black/80 mix-blend-multiply" />
+        
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3" />
 
         <motion.div
           className="relative z-10 container mx-auto px-4 text-center text-white"
@@ -161,25 +165,25 @@ export default function PublicHome() {
           viewport={{ once: true, amount: 0.3 }}
           variants={staggerContainer(0.15)}
         >
-          <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 leading-tight whitespace-pre-line" style={tokens.headingFont ? { fontFamily: tokens.headingFont } : undefined}>{ctaTitle}</motion.h2>
-          <motion.p variants={fadeUp} className="text-white/80 text-lg mb-10 max-w-md mx-auto">{ctaSubtitle}</motion.p>
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+          <motion.h2 variants={fadeUp} className="text-4xl md:text-6xl font-black mb-6 leading-[1.1] whitespace-pre-line drop-shadow-lg" style={{ fontFamily: 'var(--app-font-serif)' }}>{ctaTitle}</motion.h2>
+          <motion.p variants={fadeUp} className="text-white/90 text-lg md:text-xl mb-12 max-w-2xl mx-auto drop-shadow">{ctaSubtitle}</motion.p>
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-5 justify-center">
             <a href={`tel:${heroPhone}`}>
-              <motion.div whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,255,255,0.2)" }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" className="h-16 px-12 rounded-full text-xl font-black bg-white text-orange-700 hover:bg-white/90 border-0 shadow-xl gap-3">
-                  <Phone className="h-6 w-6" /> {heroPhone}
+              <motion.div whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(255,255,255,0.3)" }} whileTap={{ scale: 0.97 }}>
+                <Button size="lg" className="h-16 px-12 rounded-full text-lg font-black bg-white text-primary hover:bg-white/90 border-0 shadow-2xl gap-3 w-full sm:w-auto">
+                  <Phone className="h-5 w-5" /> {heroPhone}
                 </Button>
               </motion.div>
             </a>
             <Link href="/enquiry">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-base font-bold border-white/50 text-white hover:bg-white/10 gap-2">
+                <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-base font-bold border-white/50 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 gap-2 w-full sm:w-auto">
                   {t.cta.enquire} <ArrowRight className="h-5 w-5" />
                 </Button>
               </motion.div>
             </Link>
           </motion.div>
-          <motion.p variants={fadeIn} className="mt-8 text-white/50 italic font-medium text-sm">{t.cta.tagline}</motion.p>
+          <motion.p variants={fadeIn} className="mt-12 text-white/60 italic font-serif text-[15px] tracking-wide">{t.cta.tagline}</motion.p>
         </motion.div>
       </section>
 

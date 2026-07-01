@@ -1,8 +1,18 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Phone, Menu, X } from "lucide-react";
+import { Phone, Menu, X, ChevronRight, MapPin, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLang } from "@/lib/lang-context";
+import { motion, AnimatePresence } from "framer-motion";
+import { useGetPublicCmsSettings } from "@workspace/api-client-react";
+
+const SITE_DOMAIN = typeof window !== "undefined" ? window.location.hostname : "";
+
+function logoAbbr(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const letters = parts.slice(0, 3).map((p) => p[0]).join("");
+  return (letters || name.slice(0, 3)).toUpperCase();
+}
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   const { lang, setLang, t } = useLang();
@@ -10,6 +20,13 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
   const isHome = location === "/";
+
+  const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
+  const brandName = cms?.companyDisplayName || "Madurai SMT Travels";
+  const brandAbbr = logoAbbr(brandName);
+  const phone = cms?.phone || "8110806339";
+  const email = cms?.email || "admin@maduraismt.com";
+  const address = cms?.address || "Madurai, Tamil Nadu";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -22,31 +39,30 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const transparent = isHome && !scrolled && !mobileOpen;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="min-h-[100dvh] flex flex-col bg-background font-sans">
 
       {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           transparent
-            ? "bg-black/50 backdrop-blur-sm border-b border-white/10"
-            : "bg-background/95 backdrop-blur-lg border-b border-border/50 shadow-sm"
+            ? "bg-transparent border-b border-white/10 py-3"
+            : "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm py-2"
         }`}
       >
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex h-16 md:h-18 items-center justify-between gap-4">
+          <div className="flex h-14 md:h-16 items-center justify-between gap-4">
 
             {/* Logo */}
             <Link href="/">
               <div className="flex items-center gap-3 cursor-pointer shrink-0 group">
-                <div className="relative h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg group-hover:shadow-primary/30 transition-shadow">
-                  <span className={`text-white font-black text-xs leading-none tracking-tight`}>SMT</span>
-                  <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-400 border-2 border-background animate-pulse" />
+                <div className={`relative h-11 w-11 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 ${transparent ? 'bg-white text-primary' : 'bg-primary text-white group-hover:shadow-primary/30'}`}>
+                  <span className="font-black text-sm leading-none tracking-tight">{brandAbbr}</span>
                 </div>
                 <div className="flex flex-col leading-none">
-                  <span className={`text-sm font-black tracking-tight transition-colors ${transparent ? "text-white" : "text-foreground"}`}>
-                    Madurai SMT Travels
+                  <span className={`text-lg font-black tracking-tight transition-colors ${transparent ? "text-white" : "text-foreground"}`}>
+                    {brandName}
                   </span>
-                  <span className={`text-[10px] font-medium transition-colors ${transparent ? "text-white/70" : "text-muted-foreground"}`}>
+                  <span className={`text-[11px] font-semibold tracking-wider uppercase mt-1 transition-colors ${transparent ? "text-white/80" : "text-primary"}`}>
                     {lang === "en" ? "Safe • Comfortable • Reliable" : "பாதுகாப்பான • வசதியான • நம்பகமான"}
                   </span>
                 </div>
@@ -54,17 +70,17 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-2">
               {[
                 { href: "/", label: t.nav.home },
                 { href: "/packages", label: t.nav.packages },
                 { href: "/enquiry", label: t.nav.contact },
               ].map(({ href, label }) => (
                 <Link key={href} href={href}>
-                  <span className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer hover:bg-white/10 ${
+                  <span className={`px-4 py-2.5 rounded-full text-[15px] font-semibold transition-all cursor-pointer ${
                     transparent
-                      ? "text-white/90 hover:text-white"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      ? "text-white/90 hover:text-white hover:bg-white/15"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                   }`}>
                     {label}
                   </span>
@@ -73,26 +89,26 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             </nav>
 
             {/* Right side */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {/* Language Toggle */}
               <button
                 onClick={() => setLang(lang === "en" ? "ta" : "en")}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all hover:scale-105 ${
+                className={`hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-bold transition-all hover:scale-105 ${
                   transparent
                     ? "border-white/30 text-white bg-white/10 hover:bg-white/20"
                     : "border-border text-foreground bg-muted hover:bg-muted/80"
                 }`}
               >
-                <span className={lang === "en" ? "opacity-100" : "opacity-40"}>EN</span>
+                <span className={lang === "en" ? "opacity-100 text-primary" : "opacity-50"}>EN</span>
                 <span className={`w-px h-3 ${transparent ? "bg-white/30" : "bg-border"}`} />
-                <span className={lang === "ta" ? "opacity-100" : "opacity-40"}>தமிழ்</span>
+                <span className={lang === "ta" ? "opacity-100 text-primary" : "opacity-50"}>தமிழ்</span>
               </button>
 
               {/* Phone */}
-              <a href="tel:8110806339" className={`hidden lg:flex items-center gap-1.5 text-sm font-bold transition-colors ${
-                transparent ? "text-white/90 hover:text-white" : "text-primary hover:text-primary/80"
+              <a href={`tel:${phone}`} className={`hidden md:flex items-center gap-2 text-[15px] font-bold transition-colors ${
+                transparent ? "text-white hover:text-white/80" : "text-primary hover:text-primary/80"
               }`}>
-                <Phone className="h-3.5 w-3.5" /> 8110806339
+                <Phone className="h-4 w-4" /> {phone}
               </a>
 
               {/* Admin */}
@@ -100,7 +116,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`hidden md:inline-flex text-xs font-semibold ${
+                  className={`hidden lg:inline-flex text-sm font-semibold rounded-full ${
                     transparent ? "text-white/80 hover:text-white hover:bg-white/10" : ""
                   }`}
                 >
@@ -108,124 +124,143 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 </Button>
               </Link>
 
-              {/* Book Now */}
-              <a href="tel:8110806339">
-                <Button
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 text-white border-0 rounded-full text-xs font-bold px-4 gap-1.5 shadow-lg shadow-primary/20"
-                >
-                  <Phone className="h-3 w-3" />
-                  <span className="hidden sm:inline">{t.nav.bookNow}</span>
-                  <span className="sm:hidden">Call</span>
-                </Button>
-              </a>
-
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className={`md:hidden p-2 rounded-lg transition-colors ${
-                  transparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
+                className={`lg:hidden p-2 rounded-full transition-colors ${
+                  transparent ? "text-white hover:bg-white/20" : "text-foreground hover:bg-muted"
                 }`}
               >
-                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </div>
           </div>
         </div>
 
         {/* Mobile Menu */}
-        {mobileOpen && (
-          <div className="md:hidden bg-background/98 backdrop-blur-xl border-t border-border/50 shadow-xl">
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
-              {[
-                { href: "/", label: t.nav.home },
-                { href: "/packages", label: t.nav.packages },
-                { href: "/enquiry", label: t.nav.contact },
-                { href: "/login", label: t.nav.admin },
-              ].map(({ href, label }) => (
-                <Link key={href} href={href}>
-                  <span className="block px-4 py-3 rounded-xl text-sm font-semibold text-foreground hover:bg-muted cursor-pointer transition-colors">
-                    {label}
-                  </span>
-                </Link>
-              ))}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="lg:hidden absolute top-full left-0 right-0 bg-background border-b border-border shadow-2xl overflow-hidden"
+            >
+              <div className="container mx-auto px-4 py-6 flex flex-col gap-2">
+                {[
+                  { href: "/", label: t.nav.home },
+                  { href: "/packages", label: t.nav.packages },
+                  { href: "/enquiry", label: t.nav.contact },
+                  { href: "/login", label: t.nav.admin },
+                ].map(({ href, label }) => (
+                  <Link key={href} href={href}>
+                    <span className="flex items-center justify-between px-5 py-4 rounded-2xl text-base font-bold text-foreground hover:bg-primary/5 hover:text-primary cursor-pointer transition-colors">
+                      {label}
+                      <ChevronRight className="h-5 w-5 opacity-50" />
+                    </span>
+                  </Link>
+                ))}
 
-              {/* Mobile Lang Toggle */}
-              <div className="flex items-center gap-3 px-4 py-3 mt-1 border-t border-border/50">
-                <span className="text-xs text-muted-foreground font-medium">Language:</span>
-                <button
-                  onClick={() => setLang(lang === "en" ? "ta" : "en")}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-muted text-xs font-bold"
-                >
-                  <span className={lang === "en" ? "text-primary font-black" : "text-muted-foreground"}>EN</span>
-                  <span className="text-muted-foreground">|</span>
-                  <span className={lang === "ta" ? "text-primary font-black" : "text-muted-foreground"}>தமிழ்</span>
-                </button>
+                {/* Mobile Lang Toggle */}
+                <div className="flex items-center justify-between px-5 py-4 mt-2 border-t border-border/50">
+                  <span className="text-sm text-muted-foreground font-semibold">Language</span>
+                  <div className="flex gap-2 bg-muted p-1 rounded-full">
+                    <button
+                      onClick={() => setLang("en")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${lang === "en" ? "bg-white text-primary shadow" : "text-muted-foreground"}`}
+                    >
+                      English
+                    </button>
+                    <button
+                      onClick={() => setLang("ta")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${lang === "ta" ? "bg-white text-primary shadow" : "text-muted-foreground"}`}
+                    >
+                      தமிழ்
+                    </button>
+                  </div>
+                </div>
+
+                <a href={`tel:${phone}`} className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl bg-primary text-white font-bold text-base mt-2 shadow-lg shadow-primary/20">
+                  <Phone className="h-5 w-5" /> {phone}
+                </a>
               </div>
-
-              <a href="tel:8110806339" className="flex items-center gap-2 px-4 py-3 rounded-xl bg-primary text-white font-bold text-sm mt-1">
-                <Phone className="h-4 w-4" /> 8110806339 — {lang === "en" ? "Call to Book" : "முன்பதிவு செய்யுங்கள்"}
-              </a>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Push content below fixed header only on non-home pages */}
-      {!isHome && <div className="h-16" />}
+      {!isHome && <div className="h-16 md:h-20" />}
 
       <main className="flex-1">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-muted/30 py-12 md:py-16">
-        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shadow">
-                <span className="text-white font-black text-xs leading-none">SMT</span>
+      <footer className="bg-[#111] text-white/80 pt-20 pb-10 border-t-4 border-primary">
+        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+          <div className="lg:pr-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+                <span className="text-white font-black text-sm leading-none">{brandAbbr}</span>
               </div>
-              <span className="text-base font-black tracking-tight">Madurai SMT Travels</span>
+              <span className="text-xl font-black text-white tracking-tight">{brandName}</span>
             </div>
-            <p className="text-sm text-muted-foreground max-w-xs mb-4 leading-relaxed">{t.footer.tagline}</p>
-            <a href="tel:8110806339" className="flex items-center gap-2 text-sm font-bold text-primary hover:underline">
-              <Phone className="h-4 w-4" /> 8110806339
-            </a>
+            <p className="text-sm leading-relaxed mb-6 font-medium text-white/60">{t.footer.tagline}</p>
+            <div className="space-y-4">
+              <a href={`tel:${phone}`} className="flex items-center gap-3 text-sm font-bold text-white hover:text-primary transition-colors group">
+                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
+                  <Phone className="h-4 w-4" />
+                </div>
+                {phone}
+              </a>
+              <div className="flex items-center gap-3 text-sm font-medium text-white/80 group">
+                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                {address}
+              </div>
+              <a href={`mailto:${email}`} className="flex items-center gap-3 text-sm font-medium text-white/80 hover:text-primary transition-colors group">
+                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
+                  <Mail className="h-4 w-4" />
+                </div>
+                {email}
+              </a>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-bold mb-4 text-foreground text-sm uppercase tracking-wider">{t.footer.destinations}</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h4 className="font-bold mb-6 text-white text-sm uppercase tracking-[0.2em]">{t.footer.destinations}</h4>
+            <ul className="space-y-3 text-sm">
               {t.footer.destItems.map((d) => (
-                <li key={d}><span className="hover:text-primary cursor-pointer transition-colors">{d}</span></li>
+                <li key={d}><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{d}</span></li>
               ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold mb-4 text-foreground text-sm uppercase tracking-wider">{t.footer.services}</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h4 className="font-bold mb-6 text-white text-sm uppercase tracking-[0.2em]">{t.footer.services}</h4>
+            <ul className="space-y-3 text-sm">
               {t.footer.serviceItems.map((s) => (
-                <li key={s}><span className="hover:text-primary cursor-pointer transition-colors">{s}</span></li>
+                <li key={s}><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{s}</span></li>
               ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold mb-4 text-foreground text-sm uppercase tracking-wider">{t.footer.quickLinks}</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.home}</span></Link></li>
-              <li><Link href="/packages"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.tourPackages}</span></Link></li>
-              <li><Link href="/enquiry"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.contactUs}</span></Link></li>
-              <li><Link href="/login"><span className="hover:text-primary cursor-pointer transition-colors">{t.footer.adminLogin}</span></Link></li>
+            <h4 className="font-bold mb-6 text-white text-sm uppercase tracking-[0.2em]">{t.footer.quickLinks}</h4>
+            <ul className="space-y-3 text-sm">
+              <li><Link href="/"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.home}</span></Link></li>
+              <li><Link href="/packages"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.tourPackages}</span></Link></li>
+              <li><Link href="/enquiry"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.contactUs}</span></Link></li>
+              <li><Link href="/login"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.adminLogin}</span></Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="container mx-auto px-4 mt-10 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
+        <div className="container mx-auto px-4 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-white/40">
           <span>© {new Date().getFullYear()} {t.footer.copyright}</span>
-          <span className="italic font-semibold text-foreground/60">{t.footer.footerTagline}</span>
+          <span className="italic font-serif text-[13px] text-white/50">{t.footer.footerTagline}</span>
         </div>
       </footer>
     </div>
