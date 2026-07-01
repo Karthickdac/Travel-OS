@@ -57,7 +57,14 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
     image: cms?.heroBgImage || undefined,
     address: { "@type": "PostalAddress", streetAddress: address, addressLocality: "Madurai", addressRegion: "Tamil Nadu", addressCountry: "IN" },
     url: `${window.location.origin}/`,
-    areaServed: ["Madurai", "Tamil Nadu", "Kodaikanal", "Rameshwaram", "Kanyakumari", "Kerala", "South India"],
+    areaServed: [
+      "Madurai", "Tamil Nadu", "South India", "Kerala",
+      "Chennai", "Coimbatore", "Tiruchirappalli", "Trichy", "Salem", "Tirunelveli",
+      "Erode", "Vellore", "Thoothukudi", "Tuticorin", "Dindigul", "Thanjavur",
+      "Karur", "Namakkal", "Theni", "Virudhunagar", "Sivaganga", "Pudukkottai",
+      "Kanyakumari", "Rameshwaram", "Kodaikanal", "Ooty", "Palani", "Velankanni",
+      "Kumbakonam", "Chidambaram", "Munnar", "Thekkady", "Pondicherry", "Bangalore",
+    ],
     keywords: cms?.metaKeywords || undefined,
     priceRange: "₹₹",
   };
