@@ -22,3 +22,4 @@ export * from "./cms_seo";
 export * from "./fleet_extended";
 export * from "./crm_extended";
 export * from "./company_settings";
+export * from "./gps";

@@ -55,6 +55,8 @@ import AdminCmsThemes from "@/pages/admin/cms/themes";
 import AdminFleetFuel from "@/pages/admin/fleet/fuel";
 import AdminFleetAccidents from "@/pages/admin/fleet/accidents";
 import AdminFleetAvailability from "@/pages/admin/fleet/availability";
+import AdminFleetTracking from "@/pages/admin/fleet/tracking";
+import AdminFleetDevices from "@/pages/admin/fleet/devices";
 import AdminDriversLeave from "@/pages/admin/drivers/leave";
 import AdminDriversBonusPenalty from "@/pages/admin/drivers/bonus-penalty";
 import AdminDriversPerformance from "@/pages/admin/drivers/performance";
@@ -142,6 +144,8 @@ function AdminRoutes() {
         <Route path="/admin/fleet/fuel" component={AdminFleetFuel} />
         <Route path="/admin/fleet/accidents" component={AdminFleetAccidents} />
         <Route path="/admin/fleet/availability" component={AdminFleetAvailability} />
+        <Route path="/admin/fleet/tracking" component={AdminFleetTracking} />
+        <Route path="/admin/fleet/devices" component={AdminFleetDevices} />
         <Route path="/admin/fleet" component={AdminFleet} />
         <Route path="/admin/drivers/leave" component={AdminDriversLeave} />
         <Route path="/admin/drivers/bonus-penalty"><AdminOnly component={AdminDriversBonusPenalty} /></Route>

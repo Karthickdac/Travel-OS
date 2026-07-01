@@ -29,6 +29,7 @@ import crmExtendedRouter from "./crm_extended";
 import companySettingsRouter from "./company_settings";
 import portalRouter from "./portal";
 import storageRouter from "./storage";
+import gpsRouter from "./gps";
 
 const router: IRouter = Router();
 
@@ -80,5 +81,6 @@ router.use(crmExtendedRouter);
 router.use(companySettingsRouter);
 router.use(portalRouter);
 router.use(storageRouter);
+router.use(gpsRouter);
 
 export default router;

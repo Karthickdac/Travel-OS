@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate, Navigation, Radio } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function PackageIcon(props: any) {
@@ -29,6 +29,8 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/fleet/fuel", label: "Fuel Logs", icon: Fuel },
       { href: "/admin/fleet/accidents", label: "Accidents", icon: AlertTriangle },
       { href: "/admin/fleet/availability", label: "Availability", icon: CalendarClock },
+      { href: "/admin/fleet/tracking", label: "Live Tracking", icon: Navigation },
+      { href: "/admin/fleet/devices", label: "GPS Devices", icon: Radio },
       { href: "/admin/drivers", label: "Drivers", icon: Contact },
       { href: "/admin/drivers/leave", label: "Driver Leave", icon: CalendarClock },
       { href: "/admin/drivers/bonus-penalty", label: "Bonus & Penalty", icon: Award, adminOnly: true },
