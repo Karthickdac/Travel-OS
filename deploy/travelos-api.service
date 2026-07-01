@@ -1,0 +1,24 @@
+# ─── systemd unit for the TravelOS API server ──────────────────────
+# Install to /etc/systemd/system/travelos-api.service then:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now travelos-api
+#   sudo systemctl status travelos-api
+#   journalctl -u travelos-api -f      # follow logs
+#
+# Adjust User, WorkingDirectory and the node path to match your VPS.
+
+[Unit]
+Description=TravelOS API Server
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/travelos
+EnvironmentFile=/var/www/travelos/.env
+ExecStart=/usr/bin/node --enable-source-maps artifacts/api-server/dist/index.mjs
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

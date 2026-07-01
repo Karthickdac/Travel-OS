@@ -1,0 +1,65 @@
+# ─── TravelOS nginx site config ────────────────────────────────────
+# Put this at /etc/nginx/sites-available/travelos and symlink into
+# sites-enabled, OR paste the location blocks into your panel's
+# "custom nginx config" box for the site.
+#
+# It does two jobs:
+#   1. Serves the built React frontend (static files) with SPA fallback.
+#   2. Reverse-proxies the API + per-tenant robots.txt / sitemap.xml to
+#      the Node API server on 127.0.0.1:8080.
+#
+# Multi-tenant: list EVERY domain you host (platform + each brand) in
+# server_name. The app picks the tenant from the incoming Host header,
+# so one server block serves all tenants.
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name www.kyro360.in kyro360.in
+                www.maduraisuccesstravels.com
+                www.maduraisupremetravels.com
+                www.maduraibesttravels.com
+                www.maduraimasstravels.com;
+                # add more tenant domains here as you onboard them
+
+    # Absolute path to the built frontend on your VPS.
+    root /var/www/travelos/artifacts/travel-os/dist/public;
+    index index.html;
+
+    # Pass real Host through so multi-tenant resolution works.
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host  $host;
+
+    # API → Node server
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+    }
+
+    # Per-tenant SEO files → Node server (NOT the static ones)
+    location = /robots.txt  { proxy_pass http://127.0.0.1:8080; }
+    location = /sitemap.xml { proxy_pass http://127.0.0.1:8080; }
+
+    # Cache hashed static assets aggressively
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # SPA fallback — every other path serves index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml application/xml;
+    gzip_min_length 1024;
+}
+
+# After this works on port 80, enable HTTPS via your panel's Let's Encrypt
+# button (or `certbot --nginx`). Certbot will add the listen 443 / ssl lines
+# and a http→https redirect automatically.

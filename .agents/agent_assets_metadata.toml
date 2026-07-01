@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "XbNY1PPinYs7a5IUrtYM2"
@@ -30,3 +29,9 @@ id = "GrzVHW3V0jLLUfSGkAxBF"
 uri = "file://artifacts/travel-os/public/images/hero-5.png"
 type = "image"
 title = "Travel sedan scenic highway"
+
+[[outputs]]
+id = "Vq1ArZf4EBicpfI3jkY_G"
+uri = "file://deploy/README.md"
+type = "text"
+title = "TravelOS VPS Deploy Guide"
