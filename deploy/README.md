@@ -197,22 +197,33 @@ sudo systemctl restart travelos-api                          # or: pm2 restart t
 
 ---
 
-## ⚠️ Known limitation — admin image uploads (object storage)
+## Admin image uploads (object storage)
 
-Admin image uploads (CMS images, logos) currently use **Replit Object
-Storage**, which only works on Replit. Everything else — the public sites,
-booking/CRM/fleet/finance modules, SEO, per-tenant layouts — works fully on
-your VPS without it.
+Admin image uploads (CMS images, logos) work on your VPS using **local disk
+storage** — no external service required. This is enabled by two variables in
+`.env` (already set in `deploy/.env.example`):
 
-Off Replit you have three choices:
-1. **Do nothing** — leave `PUBLIC_OBJECT_SEARCH_PATHS` / `PRIVATE_OBJECT_DIR`
-   unset. Uploads will error, but nothing else is affected. Use image URLs
-   (e.g. from a CDN) in the CMS instead.
-2. **Point at a GCS bucket** — set the two env vars to your bucket paths and
-   provide Google credentials (requires editing the storage client to use a
-   service-account key instead of the Replit sidecar).
-3. **Switch to local disk or S3-compatible storage (e.g. MinIO, Cloudflare R2,
-   Backblaze B2)** — a small code change to the storage adapter.
+```
+STORAGE_BACKEND=local
+LOCAL_STORAGE_DIR=/var/www/travelos/storage-data
+```
 
-I can implement option 2 or 3 for you as a follow-up if you want admin uploads
-to work on the VPS — just ask.
+Uploaded files are written under `LOCAL_STORAGE_DIR` and served back through the
+API at `/api/storage/objects/...` (already proxied by nginx). Make sure the
+directory is writable by the API's user and included in your backups:
+
+```bash
+sudo mkdir -p /var/www/travelos/storage-data
+sudo chown -R www-data:www-data /var/www/travelos/storage-data
+```
+
+How it works: the browser asks the API for an upload URL, then PUTs the file to
+that URL (same server). Uploads are restricted to images up to 10MB and
+authorized with a short-lived signature, so `SESSION_SECRET` must be set.
+
+> **On Replit** the app instead uses Replit Object Storage automatically (leave
+> `STORAGE_BACKEND` unset). The `local` backend is purely for self-hosting.
+
+Prefer a cloud bucket (S3 / Cloudflare R2 / Backblaze B2 / GCS) instead of local
+disk — e.g. for multiple servers or CDN delivery? That's a follow-up I can add;
+just ask.

@@ -5,22 +5,32 @@ import {
   RequestUploadUrlResponse,
 } from "@workspace/api-zod";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
-import { ObjectPermission } from "../lib/objectAcl";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
+
+/** Pipe a WHATWG Response (from the storage backend) to the Express response. */
+function pipeResponse(response: globalThis.Response, res: Response): void {
+  res.status(response.status);
+  response.headers.forEach((value, key) => res.setHeader(key, value));
+  if (response.body) {
+    Readable.fromWeb(response.body as ReadableStream<Uint8Array>).pipe(res);
+  } else {
+    res.end();
+  }
+}
+
 /**
  * POST /storage/uploads/request-url
  *
- * Request a presigned URL for file upload.
- * The client sends JSON metadata (name, size, contentType) — NOT the file.
- * Then uploads the file directly to the returned presigned URL.
+ * Request an upload URL for a file. The client sends JSON metadata (name, size,
+ * contentType) — NOT the file — then PUTs the bytes to the returned URL.
+ * On Replit the URL is a GCS presigned URL; on a self-hosted VPS
+ * (STORAGE_BACKEND=local) it points back at this server's upload-target route.
  */
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
-
 router.post("/storage/uploads/request-url", async (req: Request, res: Response) => {
-  // Only authenticated users may mint upload URLs (prevents anonymous abuse).
   const user = (req as any).user;
   if (!user) {
     res.status(401).json({ error: "Unauthorized" });
@@ -36,7 +46,6 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
   try {
     const { name, size, contentType } = parsed.data;
 
-    // Server-side constraints: images only, max 10MB.
     if (!contentType || !contentType.startsWith("image/")) {
       res.status(400).json({ error: "Only image uploads are allowed" });
       return;
@@ -46,8 +55,7 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
       return;
     }
 
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+    const { uploadURL, objectPath } = await objectStorageService.getUploadDescriptor(req);
 
     res.json(
       RequestUploadUrlResponse.parse({
@@ -63,33 +71,43 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
 });
 
 /**
+ * PUT /storage/upload-target/*
+ *
+ * Receives file bytes for the local filesystem backend (self-hosted VPS).
+ * Authorized by the short-lived HMAC signature minted in request-url.
+ * On the Replit/GCS backend this route is unused (uploads go straight to GCS).
+ */
+router.put("/storage/upload-target/*uploadPath", async (req: Request, res: Response) => {
+  try {
+    const raw = req.params.uploadPath;
+    const uploadPath = Array.isArray(raw) ? raw.join("/") : raw;
+    await objectStorageService.acceptUpload(uploadPath, req.query as Record<string, unknown>, req);
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    req.log.error({ err: error }, "Error accepting upload");
+    res.status(400).json({ error: (error as Error).message || "Upload failed" });
+  }
+});
+
+/**
  * GET /storage/public-objects/*
  *
- * Serve public assets from PUBLIC_OBJECT_SEARCH_PATHS.
- * These are unconditionally public — no authentication or ACL checks.
- * IMPORTANT: Always provide this endpoint when object storage is set up.
+ * Serve public assets. Unconditionally public — no authentication or ACL checks.
  */
 router.get("/storage/public-objects/*filePath", async (req: Request, res: Response) => {
   try {
     const raw = req.params.filePath;
     const filePath = Array.isArray(raw) ? raw.join("/") : raw;
-    const file = await objectStorageService.searchPublicObject(filePath);
-    if (!file) {
+    const response = await objectStorageService.servePublicObject(filePath);
+    if (!response) {
       res.status(404).json({ error: "File not found" });
       return;
     }
-
-    const response = await objectStorageService.downloadObject(file);
-
-    res.status(response.status);
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-
-    if (response.body) {
-      const nodeStream = Readable.fromWeb(response.body as ReadableStream<Uint8Array>);
-      nodeStream.pipe(res);
-    } else {
-      res.end();
-    }
+    pipeResponse(response, res);
   } catch (error) {
     req.log.error({ err: error }, "Error serving public object");
     res.status(500).json({ error: "Failed to serve public object" });
@@ -99,43 +117,14 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
 /**
  * GET /storage/objects/*
  *
- * Serve object entities from PRIVATE_OBJECT_DIR.
- * These are served from a separate path from /public-objects and can optionally
- * be protected with authentication or ACL checks based on the use case.
+ * Serve uploaded object entities.
  */
 router.get("/storage/objects/*path", async (req: Request, res: Response) => {
   try {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
-    const objectPath = `/objects/${wildcardPath}`;
-    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
-
-    // --- Protected route example (uncomment when using replit-auth) ---
-    // if (!req.isAuthenticated()) {
-    //   res.status(401).json({ error: "Unauthorized" });
-    //   return;
-    // }
-    // const canAccess = await objectStorageService.canAccessObjectEntity({
-    //   userId: req.user.id,
-    //   objectFile,
-    //   requestedPermission: ObjectPermission.READ,
-    // });
-    // if (!canAccess) {
-    //   res.status(403).json({ error: "Forbidden" });
-    //   return;
-    // }
-
-    const response = await objectStorageService.downloadObject(objectFile);
-
-    res.status(response.status);
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-
-    if (response.body) {
-      const nodeStream = Readable.fromWeb(response.body as ReadableStream<Uint8Array>);
-      nodeStream.pipe(res);
-    } else {
-      res.end();
-    }
+    const response = await objectStorageService.serveObjectEntity(`/objects/${wildcardPath}`);
+    pipeResponse(response, res);
   } catch (error) {
     if (error instanceof ObjectNotFoundError) {
       req.log.warn({ err: error }, "Object not found");
