@@ -9,8 +9,9 @@ import { useLang } from "@/lib/lang-context";
 import { AutocompleteInput } from "@/components/autocomplete-input";
 import { POPULAR_DESTINATIONS, fetchCitySuggestions } from "@/lib/cities";
 import { useGetPublicCmsSettings } from "@workspace/api-client-react";
+import { getSiteDomain } from "@/lib/site-domain";
 
-const SITE_DOMAIN = typeof window !== "undefined" ? window.location.hostname : "";
+const SITE_DOMAIN = getSiteDomain();
 
 const TRIP_TYPES = ["Pilgrimage Tour", "Family Tour", "Honeymoon Package", "Adventure Tour", "Corporate Trip", "Airport Transfer", "Outstation Cab", "Local Cab", "Custom Package"];
 
@@ -45,6 +46,7 @@ export default function PublicEnquiry() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(cms?.companyId ? { companyId: cms.companyId } : {}),
           name: form.name,
           phone: form.phone,
           ...(form.email ? { email: form.email } : {}),

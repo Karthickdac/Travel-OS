@@ -7,6 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, type Variants } from "framer-motion";
 import { MapPin, Clock, Star, Phone, ArrowRight, Search, Filter } from "lucide-react";
 import { useLang } from "@/lib/lang-context";
+import { getSiteDomain } from "@/lib/site-domain";
+
+const SITE_DOMAIN = getSiteDomain();
 
 const PACKAGE_TYPES = ["all", "pilgrimage", "family", "adventure", "honeymoon", "luxury", "corporate", "group"];
 
@@ -18,8 +21,8 @@ const fadeUp: Variants = {
 const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 export default function PublicPackages() {
-  const { data: packages, isLoading } = useGetPublicPackages({ domain: window.location.hostname });
-  const { data: cms } = useGetPublicCmsSettings({ domain: window.location.hostname });
+  const { data: packages, isLoading } = useGetPublicPackages({ domain: SITE_DOMAIN });
+  const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
   const contactPhone = cms?.phone || "8110806339";
   const { t } = useLang();
   const [search, setSearch] = useState("");

@@ -13,3 +13,17 @@ When a visitor hits a custom domain (e.g. www.maduraismt.com), the public API ro
 **Why:** Multi-tenant SaaS — each travel company gets their own public website, served from their own domain, all running on the same TravelOS app.
 
 **How to apply:** When adding new public endpoints that need company scoping, import `resolveCompanyIdByDomain` from `cms.ts` or duplicate the `normalizeHost` + lookup pattern from `tours.ts`. The skip-list for dev hostnames must stay in sync across both files.
+
+## Deterministic single-tenant fallback (required)
+
+Every public company-scoped endpoint MUST fall back to ONE tenant when the domain is unresolved (dev host / no match), selected by `orderBy(asc(companiesTable.id)).limit(1)` — the SAME ordering in `cms.ts`, `tours.ts` packages, and `tours.ts` enquiry.
+**Why:** an unordered `limit(1)` (or, worse, returning ALL rows like the old `/public/packages` `isActive`-only query) mixes tenants and makes preview inconsistent across CMS vs packages vs enquiry. A shared deterministic order makes the preview host always show the same tenant end-to-end.
+
+## Previewing custom-domain tenants on the Replit `.replit.dev` host
+
+The frontend resolves the tenant domain via `getSiteDomain()` (`lib/site-domain.ts`), NOT `window.location.hostname` directly. It reads a `?previewDomain=<domain>` query param, persists it to sessionStorage (survives wouter SPA nav), and falls back to hostname. Pass empty `?previewDomain=` to clear. Value is captured at module load, so switching preview tenants needs a full reload (acceptable for a preview-only tool).
+**How to apply:** any new public page that scopes by domain must import `getSiteDomain()` instead of reading the hostname.
+
+## Per-tenant accent colour on the public site
+
+CMS `primaryColor` is applied to the public site by `PublicLayout` via a `useEffect` that converts the hex to an `H S% L%` triplet (`hexToHslTriplet`) and sets `--primary` on `document.documentElement`, restoring the previous value on unmount. `index.css` wraps `--primary` in `hsl(...)`, so you must set the triplet, not the raw hex.

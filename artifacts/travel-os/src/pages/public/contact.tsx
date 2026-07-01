@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Phone, MapPin, Mail, Clock, MessageSquare, ArrowRight, Car, Star, Users } from "lucide-react";
 import { useGetPublicCmsSettings } from "@workspace/api-client-react";
+import { getSiteDomain } from "@/lib/site-domain";
 
-const SITE_DOMAIN = typeof window !== "undefined" ? window.location.hostname : "";
+const SITE_DOMAIN = getSiteDomain();
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },

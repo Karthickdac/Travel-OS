@@ -5,8 +5,9 @@ import { useState, useEffect } from "react";
 import { useLang } from "@/lib/lang-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetPublicCmsSettings } from "@workspace/api-client-react";
+import { getSiteDomain, hexToHslTriplet } from "@/lib/site-domain";
 
-const SITE_DOMAIN = typeof window !== "undefined" ? window.location.hostname : "";
+const SITE_DOMAIN = getSiteDomain();
 
 function logoAbbr(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -33,6 +34,20 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Apply the tenant's CMS accent colour to the public theme so each site
+  // renders in its own brand colour. Restores the default on unmount.
+  useEffect(() => {
+    const triplet = hexToHslTriplet(cms?.primaryColor);
+    if (!triplet) return;
+    const root = document.documentElement;
+    const prev = root.style.getPropertyValue("--primary");
+    root.style.setProperty("--primary", triplet);
+    return () => {
+      if (prev) root.style.setProperty("--primary", prev);
+      else root.style.removeProperty("--primary");
+    };
+  }, [cms?.primaryColor]);
 
   useEffect(() => setMobileOpen(false), [location]);
 

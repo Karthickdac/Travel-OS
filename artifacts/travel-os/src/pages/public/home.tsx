@@ -5,6 +5,7 @@ import { MapPin, ArrowRight, Phone, Shield, Users, HeadphonesIcon } from "lucide
 import { useLang } from "@/lib/lang-context";
 import { motion } from "framer-motion";
 import { getTemplate, resolveSectionLayouts } from "@/lib/homepage-templates";
+import { getSiteDomain } from "@/lib/site-domain";
 import { fadeUp, fadeIn, scaleIn, staggerContainer } from "./sections/_shared";
 import HeroSection from "./sections/hero-section";
 import DestinationsSection from "./sections/destinations-section";
@@ -14,7 +15,7 @@ import WhySection from "./sections/why-section";
 const HERO_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1920&q=85&auto=format&fit=crop";
 const SERVICE_ICONS = [Users, MapPin, Shield, HeadphonesIcon, Phone, ArrowRight];
 
-const SITE_DOMAIN = window.location.hostname;
+const SITE_DOMAIN = getSiteDomain();
 
 export default function PublicHome() {
   const { data: packages, isLoading } = useGetPublicPackages({ domain: SITE_DOMAIN });

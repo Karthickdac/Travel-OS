@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { db, destinationsTable, tourPackagesTable, leadsTable, companiesTable } from "@workspace/db";
 import {
   ListDestinationsResponse,
@@ -201,6 +201,16 @@ router.get("/v1/public/packages", async (req, res): Promise<void> => {
   if (!resolvedCompanyId && domain) {
     resolvedCompanyId = (await resolveCompanyIdByDomain(domain)) ?? undefined;
   }
+  // Deterministic single-tenant fallback (e.g. preview host that matches no
+  // custom domain) so the public catalog never mixes packages across tenants.
+  if (!resolvedCompanyId) {
+    const [firstCompany] = await db
+      .select({ id: companiesTable.id })
+      .from(companiesTable)
+      .orderBy(asc(companiesTable.id))
+      .limit(1);
+    resolvedCompanyId = firstCompany?.id;
+  }
   const whereClause = resolvedCompanyId
     ? and(eq(tourPackagesTable.isActive, true), eq(tourPackagesTable.companyId, resolvedCompanyId))
     : eq(tourPackagesTable.isActive, true);
@@ -217,7 +227,11 @@ router.post("/v1/public/enquiry", async (req, res): Promise<void> => {
 
   let resolvedCompanyId = parsed.data.companyId;
   if (!resolvedCompanyId) {
-    const [firstCompany] = await db.select({ id: companiesTable.id }).from(companiesTable).limit(1);
+    const [firstCompany] = await db
+      .select({ id: companiesTable.id })
+      .from(companiesTable)
+      .orderBy(asc(companiesTable.id))
+      .limit(1);
     resolvedCompanyId = firstCompany?.id;
   }
 
