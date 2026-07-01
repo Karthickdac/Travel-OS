@@ -1,0 +1,82 @@
+dist/public/index.html                     1.36 kB │ gzip:   0.54 kB
+dist/public/assets/index-DIxCSJV9.css    180.96 kB │ gzip:  31.08 kB
+dist/public/assets/index-jSa2WrVQ.js   1,961.91 kB │ gzip: 514.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 14.26s
+--- restarting API ---
+--- testing local API (bypasses nginx) ---
+{"error":"Unauthorized"}
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# echo "=== systemd unit ==="; systemctl cat travelos-api
+echo "=== status ==="; systemctl status travelos-api --no-pager | head -15
+echo "=== who owns port 2500 ==="; ss -ltnp | grep 2500
+echo "=== freshly built dist timestamp ==="; ls -la /home/travelos/htdocs/www.kyro360.in/artifacts/api-server/dist/index.mjs
+=== systemd unit ===
+# /etc/systemd/system/travelos-api.service
+[Unit]
+Description=TravelOS API Server
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=travelos
+WorkingDirectory=/home/travelos/htdocs/www.kyro360.in
+EnvironmentFile=/home/travelos/htdocs/www.kyro360.in/.env
+ExecStart=/usr/bin/node --enable-source-maps artifacts/api-server/dist/index.mjs
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+=== status ===
+● travelos-api.service - TravelOS API Server
+     Loaded: loaded (/etc/systemd/system/travelos-api.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Wed 2026-07-01 18:48:15 UTC; 217ms ago
+    Process: 2136198 ExecStart=/usr/bin/node --enable-source-maps artifacts/api-server/dist/index.mjs (code=exited, status=1/FAILURE)
+   Main PID: 2136198 (code=exited, status=1/FAILURE)
+        CPU: 649ms
+=== who owns port 2500 ===
+LISTEN 0      511                *:2500             *:*    users:(("node /home/trav",pid=2131403,fd=19))                                              
+=== freshly built dist timestamp ===
+-rw-rw-r-- 1 root root 2587997 Jul  1 18:46 /home/travelos/htdocs/www.kyro360.in/artifacts/api-server/dist/index.mjs
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# echo "=== crash log ==="; journalctl -u travelos-api -n 25 --no-pager
+echo "=== what is pid 2131403 ==="; ps -o pid,ppid,user,etime,cmd -p 2131403
+echo "=== pm2 present? ==="; command -v pm2 >/dev/null && pm2 list || echo "no pm2"
+=== crash log ===
+Jul 01 18:49:26 srv1286649 systemd[1]: travelos-api.service: Failed with result 'exit-code'.
+Jul 01 18:49:29 srv1286649 systemd[1]: travelos-api.service: Scheduled restart job, restart counter is at 166.
+Jul 01 18:49:29 srv1286649 systemd[1]: Started travelos-api.service - TravelOS API Server.
+Jul 01 18:49:30 srv1286649 node[2136476]: {"level":30,"time":1782931770170,"pid":2136476,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+Jul 01 18:49:30 srv1286649 node[2136476]: {"level":50,"time":1782931770173,"pid":2136476,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::2500","stack":"Error: listen EADDRINUSE: address already in use :::2500\n    at Server.setupListenHandle [as _listen2] (node:net:2009:16)\n    at listenInCluster (node:net:2066:12)\n    at Server.listen (node:net:2171:7)\n    at app2.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":2500},"msg":"Error listening on port"}
+Jul 01 18:49:30 srv1286649 systemd[1]: travelos-api.service: Main process exited, code=exited, status=1/FAILURE
+Jul 01 18:49:30 srv1286649 systemd[1]: travelos-api.service: Failed with result 'exit-code'.
+Jul 01 18:49:33 srv1286649 systemd[1]: travelos-api.service: Scheduled restart job, restart counter is at 167.
+Jul 01 18:49:33 srv1286649 systemd[1]: Started travelos-api.service - TravelOS API Server.
+Jul 01 18:49:33 srv1286649 node[2136490]: {"level":30,"time":1782931773956,"pid":2136490,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+Jul 01 18:49:34 srv1286649 node[2136490]: {"level":50,"time":1782931773958,"pid":2136490,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::2500","stack":"Error: listen EADDRINUSE: address already in use :::2500\n    at Server.setupListenHandle [as _listen2] (node:net:2009:16)\n    at listenInCluster (node:net:2066:12)\n    at Server.listen (node:net:2171:7)\n    at app2.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":2500},"msg":"Error listening on port"}
+Jul 01 18:49:34 srv1286649 systemd[1]: travelos-api.service: Main process exited, code=exited, status=1/FAILURE
+Jul 01 18:49:34 srv1286649 systemd[1]: travelos-api.service: Failed with result 'exit-code'.
+Jul 01 18:49:37 srv1286649 systemd[1]: travelos-api.service: Scheduled restart job, restart counter is at 168.
+Jul 01 18:49:37 srv1286649 systemd[1]: Started travelos-api.service - TravelOS API Server.
+Jul 01 18:49:37 srv1286649 node[2136503]: {"level":30,"time":1782931777676,"pid":2136503,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+Jul 01 18:49:37 srv1286649 node[2136503]: {"level":50,"time":1782931777678,"pid":2136503,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::2500","stack":"Error: listen EADDRINUSE: address already in use :::2500\n    at Server.setupListenHandle [as _listen2] (node:net:2009:16)\n    at listenInCluster (node:net:2066:12)\n    at Server.listen (node:net:2171:7)\n    at app2.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":2500},"msg":"Error listening on port"}
+Jul 01 18:49:37 srv1286649 systemd[1]: travelos-api.service: Main process exited, code=exited, status=1/FAILURE
+Jul 01 18:49:37 srv1286649 systemd[1]: travelos-api.service: Failed with result 'exit-code'.
+Jul 01 18:49:41 srv1286649 systemd[1]: travelos-api.service: Scheduled restart job, restart counter is at 169.
+Jul 01 18:49:41 srv1286649 systemd[1]: Started travelos-api.service - TravelOS API Server.
+Jul 01 18:49:41 srv1286649 node[2136518]: {"level":30,"time":1782931781453,"pid":2136518,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+Jul 01 18:49:41 srv1286649 node[2136518]: {"level":50,"time":1782931781455,"pid":2136518,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::2500","stack":"Error: listen EADDRINUSE: address already in use :::2500\n    at Server.setupListenHandle [as _listen2] (node:net:2009:16)\n    at listenInCluster (node:net:2066:12)\n    at Server.listen (node:net:2171:7)\n    at app2.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":2500},"msg":"Error listening on port"}
+Jul 01 18:49:41 srv1286649 systemd[1]: travelos-api.service: Main process exited, code=exited, status=1/FAILURE
+Jul 01 18:49:41 srv1286649 systemd[1]: travelos-api.service: Failed with result 'exit-code'.
+=== what is pid 2131403 ===
+    PID    PPID USER         ELAPSED CMD
+2131403  711161 root        01:08:25 node /home/travelos/htdocs/www.kyro360.in/artifacts/api-server/dist/index.mjs
+=== pm2 present? ===
+
+>>>> In-memory PM2 is out-of-date, do:
+>>>> $ pm2 update
+In memory PM2 version: 7.0.1
+Local PM2 version: 7.0.3
