@@ -1,0 +1,76 @@
+root@srv1286649:~# cd /home/travelos/htdocs/www.kyro360.in
+
+# install PM2 into your user folder (no root needed)
+npm config set prefix ~/.npm-global
+npm install -g pm2
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+export PATH=~/.npm-global/bin:$PATH
+
+# start the app with your env loaded
+set -a; . ./.env; set +a
+pm2 start artifacts/api-server/dist/index.mjs --name travelos-api --node-args="--enable-source-maps"
+pm2 save
+
+# survive reboots without root, via a user cron job
+( crontab -l 2>/dev/null; echo "@reboot ~/.npm-global/bin/pm2 resurrect" ) | crontab -
+
+# verify
+curl -s http://127.0.0.1:2500/api/healthz ; echo
+pm2 status
+
+added 77 packages in 12s
+
+8 packages are looking for funding
+  run `npm fund` for details
+
+>>>> In-memory PM2 is out-of-date, do:
+>>>> $ pm2 update
+In memory PM2 version: 7.0.1
+Local PM2 version: 7.0.3
+
+[PM2] Starting /home/travelos/htdocs/www.kyro360.in/artifacts/api-server/dist/index.mjs in fork_mode (1 instance)
+[PM2] Done.
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 21 │ dge-erp                 │ default     │ 0.0.0   │ fork    │ 715773   │ 39D    │ 0    │ online    │ 0%       │ 180.8mb  │ root     │ disabled │
+│ 1  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 711980   │ 39D    │ 2    │ online    │ 0%       │ 79.5mb   │ root     │ disabled │
+│ 2  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 712003   │ 39D    │ 2    │ online    │ 0%       │ 79.8mb   │ root     │ disabled │
+│ 4  │ fish-market-pro         │ default     │ 1.0.0   │ cluster │ 712023   │ 39D    │ 2    │ online    │ 0%       │ 112.3mb  │ root     │ disabled │
+│ 3  │ fitro360                │ default     │ 0.39.7  │ fork    │ 712011   │ 39D    │ 2    │ online    │ 0%       │ 62.3mb   │ root     │ disabled │
+│ 7  │ kuralai                 │ default     │ 1.0.0   │ fork    │ 712057   │ 39D    │ 2    │ online    │ 0%       │ 130.6mb  │ root     │ disabled │
+│ 5  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712033   │ 39D    │ 2    │ online    │ 0%       │ 110.5mb  │ root     │ disabled │
+│ 6  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712051   │ 39D    │ 2    │ online    │ 0%       │ 95.6mb   │ root     │ disabled │
+│ 22 │ nirmal-connect-api      │ default     │ 0.0.0   │ fork    │ 909064   │ 32D    │ 168  │ online    │ 0%       │ 228.2mb  │ root     │ disabled │
+│ 23 │ travelos-api            │ default     │ 0.0.0   │ fork    │ 2128881  │ 0s     │ 0    │ online    │ 0%       │ 25.8mb   │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+
+>>>> In-memory PM2 is out-of-date, do:
+>>>> $ pm2 update
+In memory PM2 version: 7.0.1
+Local PM2 version: 7.0.3
+
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+
+
+>>>> In-memory PM2 is out-of-date, do:
+>>>> $ pm2 update
+In memory PM2 version: 7.0.1
+Local PM2 version: 7.0.3
+
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 21 │ dge-erp                 │ default     │ 0.0.0   │ fork    │ 715773   │ 39D    │ 0    │ online    │ 0%       │ 180.8mb  │ root     │ disabled │
+│ 1  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 711980   │ 39D    │ 2    │ online    │ 0%       │ 79.5mb   │ root     │ disabled │
+│ 2  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 712003   │ 39D    │ 2    │ online    │ 0%       │ 79.8mb   │ root     │ disabled │
+│ 4  │ fish-market-pro         │ default     │ 1.0.0   │ cluster │ 712023   │ 39D    │ 2    │ online    │ 0%       │ 112.3mb  │ root     │ disabled │
+│ 3  │ fitro360                │ default     │ 0.39.7  │ fork    │ 712011   │ 39D    │ 2    │ online    │ 0%       │ 62.3mb   │ root     │ disabled │
+│ 7  │ kuralai                 │ default     │ 1.0.0   │ fork    │ 712057   │ 39D    │ 2    │ online    │ 0%       │ 130.2mb  │ root     │ disabled │
+│ 5  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712033   │ 39D    │ 2    │ online    │ 0%       │ 110.5mb  │ root     │ disabled │
+│ 6  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712051   │ 39D    │ 2    │ online    │ 0%       │ 95.6mb   │ root     │ disabled │
+│ 22 │ nirmal-connect-api      │ default     │ 0.0.0   │ fork    │ 909064   │ 32D    │ 168  │ online    │ 0%       │ 228.2mb  │ root     │ disabled │
+│ 23 │ travelos-api            │ default     │ 0.0.0   │ fork    │ 2128881  │ 0s     │ 0    │ online    │ 0%       │ 81.2mb   │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# 
