@@ -1187,3 +1187,8 @@ domain?: string;
 companyId?: string;
 };
 
+export type GetPublicDestinationsParams = {
+domain?: string;
+companyId?: string;
+};
+

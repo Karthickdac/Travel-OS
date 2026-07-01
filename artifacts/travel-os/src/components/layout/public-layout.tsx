@@ -145,6 +145,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               {[
                 { href: "/", label: t.nav.home },
                 { href: "/packages", label: t.nav.packages },
+                { href: "/destinations", label: t.nav.destinations },
                 { href: "/enquiry", label: t.nav.contact },
               ].map(({ href, label }) => (
                 <Link key={href} href={href}>
@@ -221,6 +222,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 {[
                   { href: "/", label: t.nav.home },
                   { href: "/packages", label: t.nav.packages },
+                  { href: "/destinations", label: t.nav.destinations },
                   { href: "/enquiry", label: t.nav.contact },
                   { href: "/login", label: t.nav.admin },
                 ].map(({ href, label }) => (

@@ -1773,6 +1773,32 @@ paths:
                 items:
                   $ref: "#/components/schemas/TourPackage"
 
+  /v1/public/destinations:
+    get:
+      operationId: getPublicDestinations
+      tags: [public]
+      summary: Get public destinations for customer website
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public destinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Destination"
+
   /v1/public/enquiry:
     post:
       operationId: submitEnquiry

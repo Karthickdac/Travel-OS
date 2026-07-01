@@ -7,6 +7,7 @@ export const translations = {
     nav: {
       home: "Home",
       packages: "Packages",
+      destinations: "Destinations",
       contact: "Contact",
       admin: "Admin",
       bookNow: "Book Now",
@@ -106,6 +107,7 @@ export const translations = {
     nav: {
       home: "முகப்பு",
       packages: "தொகுப்புகள்",
+      destinations: "இடங்கள்",
       contact: "தொடர்பு",
       admin: "நிர்வாகம்",
       bookNow: "முன்பதிவு",

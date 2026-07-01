@@ -16,6 +16,7 @@ import {
   UpdateTourPackageResponse,
   DeleteTourPackageParams,
   GetPublicPackagesResponse,
+  GetPublicDestinationsResponse,
   SubmitEnquiryBody,
   SubmitEnquiryResponse,
 } from "@workspace/api-zod";
@@ -216,6 +217,32 @@ router.get("/v1/public/packages", async (req, res): Promise<void> => {
     : eq(tourPackagesTable.isActive, true);
   const packages = await db.select().from(tourPackagesTable).where(whereClause);
   res.json(GetPublicPackagesResponse.parse(packages.map(mapPackage)));
+});
+
+router.get("/v1/public/destinations", async (req, res): Promise<void> => {
+  const companyId = req.query.companyId as string | undefined;
+  const domain = req.query.domain as string | undefined;
+  let resolvedCompanyId = companyId;
+  if (!resolvedCompanyId && domain) {
+    resolvedCompanyId = (await resolveCompanyIdByDomain(domain)) ?? undefined;
+  }
+  if (!resolvedCompanyId) {
+    const [firstCompany] = await db
+      .select({ id: companiesTable.id })
+      .from(companiesTable)
+      .orderBy(asc(companiesTable.id))
+      .limit(1);
+    resolvedCompanyId = firstCompany?.id;
+  }
+  const whereClause = resolvedCompanyId
+    ? eq(destinationsTable.companyId, resolvedCompanyId)
+    : undefined;
+  const rows = await db
+    .select()
+    .from(destinationsTable)
+    .where(whereClause)
+    .orderBy(asc(destinationsTable.name));
+  res.json(GetPublicDestinationsResponse.parse(rows.map(mapDestination)));
 });
 
 router.post("/v1/public/enquiry", async (req, res): Promise<void> => {

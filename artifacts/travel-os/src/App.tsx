@@ -72,6 +72,9 @@ import PortalSupport from "@/pages/portal/support";
 
 import PublicHome from "@/pages/public/home";
 import PublicPackages from "@/pages/public/packages";
+import PublicPackageDetail from "@/pages/public/package-detail";
+import PublicDestinations from "@/pages/public/destinations";
+import PublicDestinationDetail from "@/pages/public/destination-detail";
 import PublicEnquiry from "@/pages/public/enquiry";
 import PublicContact from "@/pages/public/contact";
 
@@ -210,6 +213,9 @@ function PublicRoutes() {
         <Switch>
           <Route path="/" component={PublicHome} />
           <Route path="/packages" component={PublicPackages} />
+          <Route path="/packages/:id" component={PublicPackageDetail} />
+          <Route path="/destinations" component={PublicDestinations} />
+          <Route path="/destinations/:id" component={PublicDestinationDetail} />
           <Route path="/enquiry" component={PublicEnquiry} />
           <Route path="/contact" component={PublicContact} />
           <Route component={NotFound} />

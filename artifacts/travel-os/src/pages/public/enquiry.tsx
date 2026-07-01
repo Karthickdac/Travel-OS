@@ -10,6 +10,7 @@ import { AutocompleteInput } from "@/components/autocomplete-input";
 import { POPULAR_DESTINATIONS, fetchCitySuggestions } from "@/lib/cities";
 import { useGetPublicCmsSettings } from "@workspace/api-client-react";
 import { getSiteDomain } from "@/lib/site-domain";
+import { useSearch } from "wouter";
 
 const SITE_DOMAIN = getSiteDomain();
 
@@ -28,9 +29,19 @@ export default function PublicEnquiry() {
   const contactEmail = cms?.email || "admin@maduraismt.com";
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    name: "", phone: "", email: "", tripType: "", fromCity: "", toDestination: "",
-    travelDate: "", returnDate: "", passengers: "2", vehiclePreference: "", budget: "", message: "",
+  const search = useSearch();
+  const [form, setForm] = useState(() => {
+    const params = new URLSearchParams(search);
+    const destination = params.get("destination") ?? "";
+    const pkg = params.get("package") ?? "";
+    const tripTypeParam = params.get("tripType") ?? "";
+    return {
+      name: "", phone: "", email: "",
+      tripType: TRIP_TYPES.includes(tripTypeParam) ? tripTypeParam : "",
+      fromCity: "", toDestination: destination,
+      travelDate: "", returnDate: "", passengers: "2", vehiclePreference: "", budget: "",
+      message: pkg ? `I'm interested in the "${pkg}" package. Please share availability and pricing.` : "",
+    };
   });
 
   const setF = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>

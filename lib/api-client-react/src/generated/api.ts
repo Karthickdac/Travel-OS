@@ -57,6 +57,7 @@ import type {
   FleetStats,
   GetFinanceSummaryParams,
   GetPublicCmsSettingsParams,
+  GetPublicDestinationsParams,
   GetPublicPackagesParams,
   GetRevenueTrendParams,
   HealthStatus,
@@ -7103,6 +7104,90 @@ export function useGetPublicPackages<TData = Awaited<ReturnType<typeof getPublic
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetPublicPackagesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetPublicDestinationsUrl = (params?: GetPublicDestinationsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/public/destinations?${stringifiedParams}` : `/api/v1/public/destinations`
+}
+
+/**
+ * @summary Get public destinations for customer website
+ */
+export const getPublicDestinations = async (params?: GetPublicDestinationsParams, options?: RequestInit): Promise<Destination[]> => {
+
+  return customFetch<Destination[]>(getGetPublicDestinationsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicDestinationsQueryKey = (params?: GetPublicDestinationsParams,) => {
+    return [
+    `/api/v1/public/destinations`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetPublicDestinationsQueryOptions = <TData = Awaited<ReturnType<typeof getPublicDestinations>>, TError = ErrorType<unknown>>(params?: GetPublicDestinationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicDestinations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicDestinationsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicDestinations>>> = ({ signal }) => getPublicDestinations(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicDestinations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicDestinationsQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicDestinations>>>
+export type GetPublicDestinationsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get public destinations for customer website
+ */
+
+export function useGetPublicDestinations<TData = Awaited<ReturnType<typeof getPublicDestinations>>, TError = ErrorType<unknown>>(
+ params?: GetPublicDestinationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicDestinations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicDestinationsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

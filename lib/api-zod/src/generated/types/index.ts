@@ -47,6 +47,7 @@ export * from './financeSummary';
 export * from './fleetStats';
 export * from './getFinanceSummaryParams';
 export * from './getPublicCmsSettingsParams';
+export * from './getPublicDestinationsParams';
 export * from './getPublicPackagesParams';
 export * from './getRevenueTrendParams';
 export * from './healthStatus';

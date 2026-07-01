@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useGetPublicPackages, useGetPublicCmsSettings } from "@workspace/api-client-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +25,7 @@ export default function PublicPackages() {
   const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
   const contactPhone = cms?.phone || "8110806339";
   const { t } = useLang();
+  const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -151,7 +152,8 @@ export default function PublicPackages() {
                 key={pkg.id}
                 variants={fadeUp}
                 whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.15)", transition: { duration: 0.3 } }}
-                className="group rounded-3xl overflow-hidden bg-white border border-border/50 flex flex-col h-full transition-all"
+                onClick={() => navigate(`/packages/${pkg.id}`)}
+                className="group rounded-3xl overflow-hidden bg-white border border-border/50 flex flex-col h-full transition-all cursor-pointer"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                   <img
@@ -196,13 +198,15 @@ export default function PublicPackages() {
                         )}
                       </div>
                     </div>
-                    <a href={`tel:${contactPhone}`}>
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white font-bold px-5 h-10 gap-2 shadow-md shadow-primary/20">
-                          <Phone className="h-4 w-4" /> Book
-                        </Button>
-                      </motion.div>
-                    </a>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/packages/${pkg.id}`); }}
+                        className="rounded-full bg-primary hover:bg-primary/90 text-white font-bold px-5 h-10 gap-2 shadow-md shadow-primary/20"
+                      >
+                        View Details <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
                   </div>
                 </div>
               </motion.div>

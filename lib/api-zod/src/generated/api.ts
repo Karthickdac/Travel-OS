@@ -2525,6 +2525,27 @@ export const GetPublicPackagesResponse = zod.array(GetPublicPackagesResponseItem
 
 
 /**
+ * @summary Get public destinations for customer website
+ */
+export const GetPublicDestinationsQueryParams = zod.object({
+  "domain": zod.coerce.string().optional(),
+  "companyId": zod.coerce.string().optional()
+})
+
+export const GetPublicDestinationsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "state": zod.string().nullish(),
+  "country": zod.string(),
+  "description": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "tags": zod.array(zod.string()).optional(),
+  "totalPackages": zod.number().optional()
+})
+export const GetPublicDestinationsResponse = zod.array(GetPublicDestinationsResponseItem)
+
+
+/**
  * @summary Submit booking enquiry from website
  */
 export const SubmitEnquiryBody = zod.object({

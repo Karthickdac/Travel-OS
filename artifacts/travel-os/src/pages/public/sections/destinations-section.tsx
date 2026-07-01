@@ -1,6 +1,11 @@
 import { ChevronRight, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
+import { useGetPublicDestinations } from "@workspace/api-client-react";
+import { getSiteDomain } from "@/lib/site-domain";
 import { type SectionCommon, fadeUp, scaleIn, staggerContainer, SectionHeading } from "./_shared";
+
+const SITE_DOMAIN = getSiteDomain();
 
 const DEST_IMAGES = [
   "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&q=80&auto=format&fit=crop", // Madurai
@@ -18,7 +23,8 @@ function DestCard({
   img,
   index,
   aspect = "aspect-[4/5]",
-  tokens
+  tokens,
+  href,
 }: {
   name: string;
   tagline: string;
@@ -26,8 +32,9 @@ function DestCard({
   index: number;
   aspect?: string;
   tokens: SectionCommon["tokens"];
+  href?: string;
 }) {
-  return (
+  const card = (
     <motion.div
       variants={scaleIn}
       whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3 } }}
@@ -61,9 +68,24 @@ function DestCard({
       </div>
     </motion.div>
   );
+
+  return href ? <Link href={href}>{card}</Link> : card;
 }
 
 export default function DestinationsSection({ t, tokens, variant }: SectionCommon) {
+  const { data: dbDestinations } = useGetPublicDestinations({ domain: SITE_DOMAIN });
+
+  // Map the curated static cards to real DB destinations by name so each card
+  // deep-links to its detail page. Falls back to the destinations listing when
+  // no matching DB row exists (e.g. a tenant that hasn't seeded that name).
+  const idByName = new Map(
+    (dbDestinations ?? []).map((d) => [d.name.trim().toLowerCase(), d.id] as const),
+  );
+  const hrefFor = (name: string): string => {
+    const id = idByName.get(name.trim().toLowerCase());
+    return id ? `/destinations/${id}` : "/destinations";
+  };
+
   const cards = t.destCards;
 
   /* ── Compact: dense square tiles ── */
@@ -80,7 +102,7 @@ export default function DestinationsSection({ t, tokens, variant }: SectionCommo
             variants={staggerContainer(0.08)}
           >
             {cards.map((dest, i) => (
-              <DestCard key={dest.name} name={dest.name} tagline={dest.tagline} img={DEST_IMAGES[i % DEST_IMAGES.length]} index={i} aspect="aspect-square" tokens={tokens} />
+              <DestCard key={dest.name} name={dest.name} tagline={dest.tagline} img={DEST_IMAGES[i % DEST_IMAGES.length]} index={i} aspect="aspect-square" tokens={tokens} href={hrefFor(dest.name)} />
             ))}
           </motion.div>
         </div>
@@ -104,11 +126,11 @@ export default function DestinationsSection({ t, tokens, variant }: SectionCommo
           >
             {first && (
               <div className="md:col-span-2 md:row-span-2">
-                <DestCard name={first.name} tagline={first.tagline} img={DEST_IMAGES[0]} index={0} aspect="h-full min-h-[400px] md:min-h-[500px]" tokens={tokens} />
+                <DestCard name={first.name} tagline={first.tagline} img={DEST_IMAGES[0]} index={0} aspect="h-full min-h-[400px] md:min-h-[500px]" tokens={tokens} href={hrefFor(first.name)} />
               </div>
             )}
             {rest.slice(0, 4).map((dest, i) => (
-              <DestCard key={dest.name} name={dest.name} tagline={dest.tagline} img={DEST_IMAGES[(i + 1) % DEST_IMAGES.length]} index={i + 1} aspect="aspect-[4/3] md:aspect-auto md:h-[240px]" tokens={tokens} />
+              <DestCard key={dest.name} name={dest.name} tagline={dest.tagline} img={DEST_IMAGES[(i + 1) % DEST_IMAGES.length]} index={i + 1} aspect="aspect-[4/3] md:aspect-auto md:h-[240px]" tokens={tokens} href={hrefFor(dest.name)} />
             ))}
           </motion.div>
         </div>
@@ -157,6 +179,7 @@ export default function DestinationsSection({ t, tokens, variant }: SectionCommo
                   index={i} 
                   aspect={aspect} 
                   tokens={tokens} 
+                  href={hrefFor(dest.name)}
                 />
               </div>
             );

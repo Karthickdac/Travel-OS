@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Clock, Phone, Star, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { type SectionCommon, fadeUp, scaleIn, staggerContainer, SectionHeading } from "./_shared";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export interface PublicPackage {
   id: string;
@@ -23,7 +23,8 @@ interface PackagesProps extends SectionCommon {
   isLoading: boolean;
 }
 
-function PriceRow({ pkg, t, heroPhone }: { pkg: PublicPackage; t: SectionCommon["t"]; heroPhone: string }) {
+function PriceRow({ pkg, t }: { pkg: PublicPackage; t: SectionCommon["t"] }) {
+  const [, navigate] = useLocation();
   return (
     <div className="flex items-center justify-between pt-4 border-t border-border/60">
       <div>
@@ -35,13 +36,15 @@ function PriceRow({ pkg, t, heroPhone }: { pkg: PublicPackage; t: SectionCommon[
           )}
         </div>
       </div>
-      <a href={`tel:${heroPhone}`}>
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-1.5 font-bold shadow-md shadow-primary/20">
-            <Phone className="h-3.5 w-3.5" /> {t.packages.book}
-          </Button>
-        </motion.div>
-      </a>
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Button
+          size="sm"
+          onClick={(e) => { e.stopPropagation(); navigate(`/packages/${pkg.id}`); }}
+          className="rounded-full bg-primary hover:bg-primary/90 text-white border-0 gap-1.5 font-bold shadow-md shadow-primary/20"
+        >
+          {t.packages.book} <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
+      </motion.div>
     </div>
   );
 }
@@ -49,19 +52,19 @@ function PriceRow({ pkg, t, heroPhone }: { pkg: PublicPackage; t: SectionCommon[
 function PackageCard({
   pkg,
   t,
-  heroPhone,
   tokens,
 }: {
   pkg: PublicPackage;
   t: SectionCommon["t"];
-  heroPhone: string;
   tokens: SectionCommon["tokens"];
 }) {
+  const [, navigate] = useLocation();
   return (
     <motion.div
       variants={fadeUp}
       whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.15)", transition: { duration: 0.3 } }}
-      className={`group ${tokens.cardRadius} overflow-hidden bg-card border border-border/40 flex flex-col h-full transition-all duration-300`}
+      onClick={() => navigate(`/packages/${pkg.id}`)}
+      className={`group ${tokens.cardRadius} overflow-hidden bg-card border border-border/40 flex flex-col h-full transition-all duration-300 cursor-pointer`}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
         <img
@@ -97,7 +100,7 @@ function PackageCard({
         <h3 className="font-bold text-xl mb-3 leading-snug group-hover:text-primary transition-colors line-clamp-2" style={{ fontFamily: tokens.headingFont || 'var(--app-font-serif)' }}>{pkg.title}</h3>
         <p className="text-[15px] text-muted-foreground line-clamp-2 mb-6 flex-1">{pkg.description}</p>
         <div className="mt-auto">
-          <PriceRow pkg={pkg} t={t} heroPhone={heroPhone} />
+          <PriceRow pkg={pkg} t={t} />
         </div>
       </div>
     </motion.div>
@@ -107,19 +110,19 @@ function PackageCard({
 function PackageListRow({
   pkg,
   t,
-  heroPhone,
   tokens,
 }: {
   pkg: PublicPackage;
   t: SectionCommon["t"];
-  heroPhone: string;
   tokens: SectionCommon["tokens"];
 }) {
+  const [, navigate] = useLocation();
   return (
     <motion.div
       variants={fadeUp}
       whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-      className={`group flex flex-col sm:flex-row overflow-hidden ${tokens.cardRadius} bg-card border border-border/50 shadow-sm hover:shadow-xl transition-all`}
+      onClick={() => navigate(`/packages/${pkg.id}`)}
+      className={`group flex flex-col sm:flex-row overflow-hidden ${tokens.cardRadius} bg-card border border-border/50 shadow-sm hover:shadow-xl transition-all cursor-pointer`}
     >
       <div className="relative sm:w-80 shrink-0 aspect-[16/10] sm:aspect-auto overflow-hidden bg-muted">
         <img
@@ -145,7 +148,7 @@ function PackageListRow({
         </div>
         <h3 className="font-bold text-2xl mb-3 leading-snug group-hover:text-primary transition-colors" style={{ fontFamily: tokens.headingFont || 'var(--app-font-serif)' }}>{pkg.title}</h3>
         <p className="text-[15px] text-muted-foreground line-clamp-2 mb-6 flex-1">{pkg.description}</p>
-        <PriceRow pkg={pkg} t={t} heroPhone={heroPhone} />
+        <PriceRow pkg={pkg} t={t} />
       </div>
     </motion.div>
   );
@@ -226,7 +229,7 @@ export default function PackagesSection({ t, tokens, variant, heroPhone, package
         variants={staggerContainer(0.1)}
       >
         {displayPackages.map((pkg) => (
-          <PackageListRow key={pkg.id} pkg={pkg} t={t} heroPhone={heroPhone} tokens={tokens} />
+          <PackageListRow key={pkg.id} pkg={pkg} t={t} tokens={tokens} />
         ))}
       </motion.div>
     );
@@ -241,7 +244,7 @@ export default function PackagesSection({ t, tokens, variant, heroPhone, package
       >
         {displayPackages.map((pkg) => (
           <div key={pkg.id} className="snap-start shrink-0 w-[320px] md:w-[400px]">
-            <PackageCard pkg={pkg} t={t} heroPhone={heroPhone} tokens={tokens} />
+            <PackageCard pkg={pkg} t={t} tokens={tokens} />
           </div>
         ))}
       </motion.div>
@@ -256,7 +259,7 @@ export default function PackagesSection({ t, tokens, variant, heroPhone, package
         variants={staggerContainer(0.1)}
       >
         {displayPackages.map((pkg) => (
-          <PackageCard key={pkg.id} pkg={pkg} t={t} heroPhone={heroPhone} tokens={tokens} />
+          <PackageCard key={pkg.id} pkg={pkg} t={t} tokens={tokens} />
         ))}
       </motion.div>
     );
