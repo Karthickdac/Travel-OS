@@ -1,0 +1,89 @@
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# dig +short www.kyro360.in
+dig +short kyro360.in
+89.116.23.220
+89.116.23.220
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# curl -sI https://www.kyro360.in/ | head -1
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# dig +short www.kyro360.in
+89.116.23.220
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# curl -s ifconfig.me ; echo
+2a02:4780:c:2c8f::1
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# curl -s -4 ifconfig.me ; echo
+hostname -I
+89.116.23.220
+89.116.23.220 2a02:4780:c:2c8f::1 
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# dig +short kyro360.in
+dig +short www.maduraisuccesstravels.com
+89.116.23.220
+89.116.23.220
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# curl -sI https://www.kyro360.in/ | head -1        # HTTP/1.1 200 OK
+curl -s  https://www.kyro360.in/api/healthz ; echo # JSON
+
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# curl -sI https://www.kyro360.in/ | head -1        # expect HTTP/1.1 200 OK
+curl -s  https://www.kyro360.in/api/healthz ; echo # expect JSON
+
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# curl -I https://www.kyro360.in/
+echo "----- local app -----"
+curl -sI http://127.0.0.1:2500/ | head -1
+curl -s  http://127.0.0.1:2500/api/healthz ; echo
+curl: (60) SSL certificate problem: self-signed certificate
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+----- local app -----
+
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# pm2 status
+echo "----- is anything listening on 2500? -----"
+ss -ltnp | grep -E ':2500' || echo "nothing on 2500"
+echo "----- app logs -----"
+pm2 logs travelos-api --lines 40 --nostream
+
+>>>> In-memory PM2 is out-of-date, do:
+>>>> $ pm2 update
+In memory PM2 version: 7.0.1
+Local PM2 version: 7.0.3
+
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 21 │ dge-erp                 │ default     │ 0.0.0   │ fork    │ 715773   │ 39D    │ 0    │ online    │ 0%       │ 180.6mb  │ root     │ disabled │
+│ 1  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 711980   │ 39D    │ 2    │ online    │ 0%       │ 79.2mb   │ root     │ disabled │
+│ 2  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 712003   │ 39D    │ 2    │ online    │ 0%       │ 79.5mb   │ root     │ disabled │
+│ 4  │ fish-market-pro         │ default     │ 1.0.0   │ cluster │ 712023   │ 39D    │ 2    │ online    │ 0%       │ 112.4mb  │ root     │ disabled │
+│ 3  │ fitro360                │ default     │ 0.39.7  │ fork    │ 712011   │ 39D    │ 2    │ online    │ 0%       │ 62.1mb   │ root     │ disabled │
+│ 7  │ kuralai                 │ default     │ 1.0.0   │ fork    │ 712057   │ 39D    │ 2    │ online    │ 0%       │ 130.0mb  │ root     │ disabled │
+│ 5  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712033   │ 39D    │ 2    │ online    │ 0%       │ 109.9mb  │ root     │ disabled │
+│ 6  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712051   │ 39D    │ 2    │ online    │ 0%       │ 96.1mb   │ root     │ disabled │
+│ 22 │ nirmal-connect-api      │ default     │ 0.0.0   │ fork    │ 909064   │ 32D    │ 168  │ online    │ 0%       │ 227.6mb  │ root     │ disabled │
+│ 23 │ travelos-api            │ default     │ 0.0.0   │ fork    │ 0        │ 0      │ 15   │ errored   │ 0%       │ 0b       │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+----- is anything listening on 2500? -----
+nothing on 2500
+----- app logs -----
+
+>>>> In-memory PM2 is out-of-date, do:
+>>>> $ pm2 update
+In memory PM2 version: 7.0.1
+Local PM2 version: 7.0.3
+
+[TAILING] Tailing last 40 lines for [travelos-api] process (change the value with --lines option)
+/root/.pm2/logs/travelos-api-error.log last 40 lines:
+/root/.pm2/logs/travelos-api-out.log last 40 lines:
+23|travelo | 7:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+23|travelo | {"level":30,"time":1782924450828,"pid":2128999,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+23|travelo | {"level":50,"time":1782924450830,"pid":2128999,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::8080","stack":"Error: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandle [as _listen2] (node:net:1908:16)\n    at listenInCluster (node:net:1965:12)\n    at Server.listen (node:net:2067:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+23|travelo | {"level":30,"time":1782924451399,"pid":2129010,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+23|travelo | {"level":50,"time":1782924451401,"pid":2129010,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::8080","stack":"Error: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandle [as _listen2] (node:net:1908:16)\n    at listenInCluster (node:net:1965:12)\n    at Server.listen (node:net:2067:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+23|travelo | {"level":30,"time":1782924452023,"pid":2129021,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+23|travelo | {"level":50,"time":1782924452026,"pid":2129021,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::8080","stack":"Error: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandle [as _listen2] (node:net:1908:16)\n    at listenInCluster (node:net:1965:12)\n    at Server.listen (node:net:2067:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+23|travelo | {"level":30,"time":1782924452612,"pid":2129032,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+23|travelo | {"level":50,"time":1782924452614,"pid":2129032,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::8080","stack":"Error: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandle [as _listen2] (node:net:1908:16)\n    at listenInCluster (node:net:1965:12)\n    at Server.listen (node:net:2067:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+23|travelo | {"level":30,"time":1782924453248,"pid":2129043,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+23|travelo | {"level":50,"time":1782924453250,"pid":2129043,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::8080","stack":"Error: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandle [as _listen2] (node:net:1908:16)\n    at listenInCluster (node:net:1965:12)\n    at Server.listen (node:net:2067:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+23|travelo | {"level":30,"time":1782924453856,"pid":2129054,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+23|travelo | {"level":50,"time":1782924453858,"pid":2129054,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::8080","stack":"Error: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandle [as _listen2] (node:net:1908:16)\n    at listenInCluster (node:net:1965:12)\n    at Server.listen (node:net:2067:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+23|travelo | {"level":30,"time":1782924454494,"pid":2129065,"hostname":"srv1286649","clientDist":"/home/travelos/htdocs/www.kyro360.in/artifacts/travel-os/dist/public","msg":"serving static client from CLIENT_DIST"}
+23|travelo | {"level":50,"time":1782924454496,"pid":2129065,"hostname":"srv1286649","err":{"type":"Error","message":"listen EADDRINUSE: address already in use :::8080","stack":"Error: listen EADDRINUSE: address already in use :::8080\n    at Server.setupListenHandle [as _listen2] (node:net:1908:16)\n    at listenInCluster (node:net:1965:12)\n    at Server.listen (node:net:2067:7)\n    at Function.listen (/home/travelos/htdocs/www.kyro360.in/node_modules/.pnpm/express@5.2.1/node_modules/express/lib/application.js:605:24)\n    at <anonymous> (/home/travelos/htdocs/www.kyro360.in/artifacts/api-server/src/index.ts:18:5)\n    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)","code":"EADDRINUSE","errno":-98,"syscall":"listen","address":"::","port":8080},"msg":"Error listening on port"}
+
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# 
