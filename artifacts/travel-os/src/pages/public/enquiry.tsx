@@ -151,10 +151,10 @@ export default function PublicEnquiry() {
         </motion.div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 max-w-6xl">
-        <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
+      <div className="container mx-auto px-4 py-10 md:py-16 max-w-6xl">
+        <div className="grid lg:grid-cols-3 gap-8 lg:gap-16">
           {/* Left info */}
-          <div className="space-y-10 lg:order-2">
+          <div className="space-y-8 order-2">
             <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
               <h2 className="text-2xl font-black mb-8 border-b border-border pb-4" style={{ fontFamily: 'var(--app-font-serif)' }}>Why Enquire with Us?</h2>
               <div className="space-y-6">
@@ -213,103 +213,111 @@ export default function PublicEnquiry() {
 
           {/* Enquiry form */}
           <motion.div
-            className="lg:col-span-2 lg:order-1"
+            className="lg:col-span-2 order-1"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
           >
-            <form onSubmit={handleSubmit} className="bg-white border border-border/60 rounded-[2.5rem] p-8 md:p-12 shadow-xl relative overflow-hidden">
+            <form onSubmit={handleSubmit} className="bg-white border border-border/60 rounded-3xl md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-xl relative overflow-hidden">
               {/* Decorative top border */}
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-orange-400 to-primary" />
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-orange-400 to-primary" />
               
-              <div className="mb-10">
-                <h3 className="text-3xl font-black mb-3" style={{ fontFamily: 'var(--app-font-serif)' }}>Enquiry Details</h3>
-                <p className="text-muted-foreground font-medium">Please provide as much detail as possible so we can tailor the perfect itinerary for you.</p>
+              <div className="mb-7 md:mb-8">
+                <h3 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'var(--app-font-serif)' }}>Enquiry Details</h3>
+                <p className="text-sm md:text-base text-muted-foreground font-medium">Share a few details and we'll tailor the perfect itinerary for you.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="space-y-5">
                 {/* Personal Info section */}
-                <div className="md:col-span-2 bg-muted/30 p-6 rounded-2xl border border-border/50 grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
-                  <div className="md:col-span-2 mb-2"><p className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Users className="w-4 h-4" /> Personal Information</p></div>
-                  <div className="space-y-2.5">
-                    <Label className="text-[13px] font-bold text-muted-foreground">Full Name <span className="text-primary">*</span></Label>
-                    <Input value={form.name} onChange={setF("name")} placeholder="Your name" required className="h-12 bg-white rounded-xl" />
+                <fieldset className="bg-muted/30 p-5 md:p-6 rounded-2xl border border-border/50">
+                  <legend className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2 px-1"><Users className="w-4 h-4" /> Personal Information</legend>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground">Full Name <span className="text-primary">*</span></Label>
+                      <Input value={form.name} onChange={setF("name")} placeholder="Your name" required className="h-12 bg-white rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground">Phone Number <span className="text-primary">*</span></Label>
+                      <Input value={form.phone} onChange={setF("phone")} placeholder="+91 98765 43210" required className="h-12 bg-white rounded-xl" />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground">Email Address</Label>
+                      <Input type="email" value={form.email} onChange={setF("email")} placeholder="you@example.com" className="h-12 bg-white rounded-xl" />
+                    </div>
                   </div>
-                  <div className="space-y-2.5">
-                    <Label className="text-[13px] font-bold text-muted-foreground">Phone Number <span className="text-primary">*</span></Label>
-                    <Input value={form.phone} onChange={setF("phone")} placeholder="+91 98765 43210" required className="h-12 bg-white rounded-xl" />
+                </fieldset>
+
+                {/* Trip Details section */}
+                <fieldset className="bg-muted/30 p-5 md:p-6 rounded-2xl border border-border/50">
+                  <legend className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2 px-1"><MapPin className="w-4 h-4" /> Trip Details</legend>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground">Trip Type</Label>
+                      <select value={form.tripType} onChange={setF("tripType")} className="w-full h-12 border border-input rounded-xl px-4 text-[15px] font-medium bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                        <option value="">Select the type of trip</option>
+                        {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> From City</Label>
+                      <div className="[&>div>input]:h-12 [&>div>input]:rounded-xl [&>div>input]:bg-white">
+                        <AutocompleteInput value={form.fromCity} onChange={(v) => setForm(f => ({ ...f, fromCity: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Madurai" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> To / Destination</Label>
+                      <div className="[&>div>input]:h-12 [&>div>input]:rounded-xl [&>div>input]:bg-white">
+                        <AutocompleteInput value={form.toDestination} onChange={(v) => setForm(f => ({ ...f, toDestination: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Rameshwaram" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Travel Date</Label>
+                      <Input type="date" value={form.travelDate} onChange={setF("travelDate")} className="h-12 rounded-xl bg-white" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Return Date</Label>
+                      <Input type="date" value={form.returnDate} onChange={setF("returnDate")} className="h-12 rounded-xl bg-white" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> No. of Passengers</Label>
+                      <Input type="number" value={form.passengers} onChange={setF("passengers")} min="1" max="50" className="h-12 rounded-xl bg-white" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Car className="w-3.5 h-3.5" /> Vehicle Preference</Label>
+                      <select value={form.vehiclePreference} onChange={setF("vehiclePreference")} className="w-full h-12 border border-input rounded-xl px-4 text-[15px] font-medium bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                        <option value="">Any vehicle</option>
+                        <option>AC Innova</option>
+                        <option>Crysta</option>
+                        <option>Tempo Traveller</option>
+                        <option>Mini Bus</option>
+                        <option>Sedan</option>
+                        <option>SUV</option>
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-2 space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5" /> Budget Range (₹)</Label>
+                      <Input value={form.budget} onChange={setF("budget")} placeholder="e.g. ₹5,000 – ₹15,000 per person" className="h-12 rounded-xl bg-white" />
+                    </div>
+
+                    <div className="md:col-span-2 space-y-2">
+                      <Label className="text-[13px] font-bold text-muted-foreground">Additional Requirements</Label>
+                      <textarea 
+                        value={form.message} 
+                        onChange={setF("message")} 
+                        rows={4} 
+                        placeholder="Any special requests, dietary requirements, hotel preferences, specific temples to visit..."
+                        className="w-full border border-input rounded-xl px-4 py-3 text-[15px] bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all" 
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2.5 md:col-span-2">
-                    <Label className="text-[13px] font-bold text-muted-foreground">Email Address</Label>
-                    <Input type="email" value={form.email} onChange={setF("email")} placeholder="you@example.com" className="h-12 bg-white rounded-xl" />
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 md:col-span-2 mt-4">
-                  <Label className="text-[13px] font-bold text-muted-foreground">Trip Type</Label>
-                  <select value={form.tripType} onChange={setF("tripType")} className="w-full h-12 border border-input rounded-xl px-4 text-[15px] font-medium bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm">
-                    <option value="">Select the type of trip</option>
-                    {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-
-                <div className="space-y-2.5">
-                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> From City</Label>
-                  <div className="[&>div>input]:h-12 [&>div>input]:rounded-xl [&>div>input]:shadow-sm">
-                    <AutocompleteInput value={form.fromCity} onChange={(v) => setForm(f => ({ ...f, fromCity: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Madurai" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2.5">
-                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> To / Destination</Label>
-                  <div className="[&>div>input]:h-12 [&>div>input]:rounded-xl [&>div>input]:shadow-sm">
-                    <AutocompleteInput value={form.toDestination} onChange={(v) => setForm(f => ({ ...f, toDestination: v }))} suggestions={POPULAR_DESTINATIONS} fetchSuggestions={fetchCitySuggestions} placeholder="e.g. Rameshwaram" />
-                  </div>
-                </div>
-
-                <div className="space-y-2.5">
-                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Travel Date</Label>
-                  <Input type="date" value={form.travelDate} onChange={setF("travelDate")} className="h-12 rounded-xl shadow-sm" />
-                </div>
-                
-                <div className="space-y-2.5">
-                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Return Date</Label>
-                  <Input type="date" value={form.returnDate} onChange={setF("returnDate")} className="h-12 rounded-xl shadow-sm" />
-                </div>
-
-                <div className="space-y-2.5">
-                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> No. of Passengers</Label>
-                  <Input type="number" value={form.passengers} onChange={setF("passengers")} min="1" max="50" className="h-12 rounded-xl shadow-sm" />
-                </div>
-                
-                <div className="space-y-2.5">
-                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Car className="w-3.5 h-3.5" /> Vehicle Preference</Label>
-                  <select value={form.vehiclePreference} onChange={setF("vehiclePreference")} className="w-full h-12 border border-input rounded-xl px-4 text-[15px] font-medium bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm">
-                    <option value="">Any vehicle</option>
-                    <option>AC Innova</option>
-                    <option>Crysta</option>
-                    <option>Tempo Traveller</option>
-                    <option>Mini Bus</option>
-                    <option>Sedan</option>
-                    <option>SUV</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2 space-y-2.5">
-                  <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5" /> Budget Range (₹)</Label>
-                  <Input value={form.budget} onChange={setF("budget")} placeholder="e.g. ₹5,000 – ₹15,000 per person" className="h-12 rounded-xl shadow-sm" />
-                </div>
-                
-                <div className="md:col-span-2 space-y-2.5 mt-2">
-                  <Label className="text-[13px] font-bold text-muted-foreground">Additional Requirements</Label>
-                  <textarea 
-                    value={form.message} 
-                    onChange={setF("message")} 
-                    rows={4} 
-                    placeholder="Any special requests, dietary requirements, hotel preferences, specific temples to visit..."
-                    className="w-full border border-input rounded-xl px-4 py-3 text-[15px] bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm" 
-                  />
-                </div>
+                </fieldset>
               </div>
 
               <div className="mt-10 pt-8 border-t border-border">
