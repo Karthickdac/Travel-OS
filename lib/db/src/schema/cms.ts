@@ -62,6 +62,7 @@ export const websiteSettingsTable = pgTable("website_settings", {
   // SEO
   metaTitle: text("meta_title").default("Madurai SMT Travels — Cab & Tour Packages"),
   metaDescription: text("meta_description").default("Book cab and tour packages across South India with Madurai SMT Travels. Best prices, trusted service, 24/7 support."),
+  metaKeywords: text("meta_keywords").default("madurai travels, madurai taxi, madurai cab booking, tamil nadu tour packages, madurai to kodaikanal cab, madurai tour operator, south india tour package, temple tour madurai, outstation cab madurai, airport taxi madurai"),
 
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),

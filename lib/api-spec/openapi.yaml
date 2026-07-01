@@ -3315,6 +3315,8 @@ components:
           type: ["string", "null"]
         metaDescription:
           type: ["string", "null"]
+        metaKeywords:
+          type: ["string", "null"]
         createdAt:
           type: string
         updatedAt:
@@ -3398,6 +3400,8 @@ components:
         metaTitle:
           type: string
         metaDescription:
+          type: string
+        metaKeywords:
           type: string
 
     # ── FASTag ─────────────────────────────────────────────────────────────

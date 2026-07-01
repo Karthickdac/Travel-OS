@@ -77,6 +77,8 @@ export interface WebsiteSettings {
   metaTitle?: string | null;
   /** @nullable */
   metaDescription?: string | null;
+  /** @nullable */
+  metaKeywords?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -995,6 +995,8 @@ export interface WebsiteSettings {
   metaTitle?: string | null;
   /** @nullable */
   metaDescription?: string | null;
+  /** @nullable */
+  metaKeywords?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -1038,6 +1040,7 @@ export interface WebsiteSettingsUpdate {
   sectionLayouts?: string;
   metaTitle?: string;
   metaDescription?: string;
+  metaKeywords?: string;
 }
 
 export interface Fastag {

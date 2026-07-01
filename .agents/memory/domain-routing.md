@@ -27,3 +27,9 @@ The frontend resolves the tenant domain via `getSiteDomain()` (`lib/site-domain.
 ## Per-tenant accent colour on the public site
 
 CMS `primaryColor` is applied to the public site by `PublicLayout` via a `useEffect` that converts the hex to an `H S% L%` triplet (`hexToHslTriplet`) and sets `--primary` on `document.documentElement`, restoring the previous value on unmount. `index.css` wraps `--primary` in `hsl(...)`, so you must set the triplet, not the raw hex.
+
+## Per-tenant SEO on the public site
+
+Public SEO is CMS-driven and injected client-side (SPA) via the `useSeo` hook (`lib/use-seo.ts`), called from `PublicLayout`. It upserts title/description/keywords/canonical/OG/Twitter tags + JSON-LD `TravelAgency` structured data into `<head>`. `metaKeywords` is a `website_settings` column exposed through `/public/cms` and editable in the admin CMS SEO tab. Home page uses CMS `metaTitle`/`metaDescription`; inner routes (/packages, /enquiry) get keyword-rich titles/descriptions templated from the CMS brand name + phone.
+**Why:** each tenant domain must rank for its own local Madurai travel keywords without hardcoding per tenant.
+**Constraints (multi-domain SPA):** a single static `sitemap.xml` CANNOT carry correct absolute URLs for every tenant domain, and `/sitemap.xml` routes to the Vite web artifact (not `/api`), so no dynamic per-host sitemap is possible without SSR. Therefore `public/robots.txt` intentionally has NO `Sitemap:` line — don't re-add one pointing at a nonexistent file (causes crawl warnings). The 3-4 public pages are discoverable via internal nav/footer links.

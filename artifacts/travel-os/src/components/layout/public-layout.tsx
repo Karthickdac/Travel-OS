@@ -6,6 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetPublicCmsSettings } from "@workspace/api-client-react";
 import { getSiteDomain, hexToHslTriplet } from "@/lib/site-domain";
+import { useSeo } from "@/lib/use-seo";
 
 const SITE_DOMAIN = getSiteDomain();
 
@@ -28,6 +29,44 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const phone = cms?.phone || "8110806339";
   const email = cms?.email || "admin@maduraismt.com";
   const address = cms?.address || "Madurai, Tamil Nadu";
+
+  // Per-tenant, per-page SEO (title, description, keywords, OG/Twitter,
+  // canonical + JSON-LD structured data). All values are CMS-driven.
+  const baseTitle = cms?.metaTitle || `${brandName} — Cab Booking & Tour Packages`;
+  const pageTitle =
+    location === "/packages"
+      ? `Tour Packages & Holiday Deals | ${brandName}`
+      : location === "/enquiry" || location === "/contact"
+        ? `Contact & Book a Trip | ${brandName}`
+        : baseTitle;
+  const pageDescription =
+    location === "/packages"
+      ? `Browse ${brandName} tour packages — Kodaikanal, Rameshwaram, Kanyakumari, Munnar & South India holiday deals. Best prices, AC cabs, expert drivers. Enquire now.`
+      : location === "/enquiry" || location === "/contact"
+        ? `Contact ${brandName} for cab booking, outstation taxi and custom tour packages across Tamil Nadu & South India. Call ${phone} or send an enquiry online.`
+        : cms?.metaDescription ||
+          "Book cabs and tour packages across South India. Best prices, trusted service, 24/7 support.";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TravelAgency",
+    name: brandName,
+    description: cms?.metaDescription || pageDescription,
+    telephone: phone,
+    email,
+    image: cms?.heroBgImage || undefined,
+    address: { "@type": "PostalAddress", streetAddress: address, addressLocality: "Madurai", addressRegion: "Tamil Nadu", addressCountry: "IN" },
+    url: `${window.location.origin}/`,
+    areaServed: ["Madurai", "Tamil Nadu", "Kodaikanal", "Rameshwaram", "Kanyakumari", "Kerala", "South India"],
+    keywords: cms?.metaKeywords || undefined,
+    priceRange: "₹₹",
+  };
+  useSeo({
+    title: pageTitle,
+    description: pageDescription,
+    keywords: cms?.metaKeywords || undefined,
+    image: cms?.heroBgImage || undefined,
+    jsonLd,
+  });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);

@@ -2330,6 +2330,7 @@ export const GetCmsSettingsResponse = zod.object({
   "sectionLayouts": zod.string().optional(),
   "metaTitle": zod.string().nullish(),
   "metaDescription": zod.string().nullish(),
+  "metaKeywords": zod.string().nullish(),
   "createdAt": zod.string().optional(),
   "updatedAt": zod.string().optional()
 })
@@ -2376,7 +2377,8 @@ export const UpdateCmsSettingsBody = zod.object({
   "homepageTemplate": zod.string().optional(),
   "sectionLayouts": zod.string().optional(),
   "metaTitle": zod.string().optional(),
-  "metaDescription": zod.string().optional()
+  "metaDescription": zod.string().optional(),
+  "metaKeywords": zod.string().optional()
 })
 
 export const UpdateCmsSettingsResponse = zod.object({
@@ -2420,6 +2422,7 @@ export const UpdateCmsSettingsResponse = zod.object({
   "sectionLayouts": zod.string().optional(),
   "metaTitle": zod.string().nullish(),
   "metaDescription": zod.string().nullish(),
+  "metaKeywords": zod.string().nullish(),
   "createdAt": zod.string().optional(),
   "updatedAt": zod.string().optional()
 })
@@ -2486,6 +2489,7 @@ export const GetPublicCmsSettingsResponse = zod.object({
   "sectionLayouts": zod.string().optional(),
   "metaTitle": zod.string().nullish(),
   "metaDescription": zod.string().nullish(),
+  "metaKeywords": zod.string().nullish(),
   "createdAt": zod.string().optional(),
   "updatedAt": zod.string().optional()
 })

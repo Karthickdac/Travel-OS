@@ -57,6 +57,7 @@ function mapSettings(s: typeof websiteSettingsTable.$inferSelect) {
     sectionLayouts: s.sectionLayouts,
     metaTitle: s.metaTitle,
     metaDescription: s.metaDescription,
+    metaKeywords: s.metaKeywords,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
   };
@@ -117,7 +118,7 @@ router.put("/v1/cms/settings", async (req, res): Promise<void> => {
     "phone","email","address","socialWhatsapp","socialFacebook","socialInstagram","socialYoutube",
     "stat1Value","stat1Label","stat2Value","stat2Label","stat3Value","stat3Label","stat4Value","stat4Label",
     "aboutTitle","aboutText","announcementBar","ctaTitle","ctaSubtitle",
-    "showPackages","showDestinations","showEnquiryForm","metaTitle","metaDescription",
+    "showPackages","showDestinations","showEnquiryForm","metaTitle","metaDescription","metaKeywords",
     "homepageTemplate","sectionLayouts",
   ] as const;
   for (const f of fields) {

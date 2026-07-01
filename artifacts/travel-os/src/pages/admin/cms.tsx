@@ -56,6 +56,7 @@ type CmsForm = {
   showEnquiryForm: boolean;
   metaTitle: string;
   metaDescription: string;
+  metaKeywords: string;
 };
 
 const EMPTY: CmsForm = {
@@ -67,7 +68,7 @@ const EMPTY: CmsForm = {
   stat3Value: "", stat3Label: "", stat4Value: "", stat4Label: "",
   aboutTitle: "", aboutText: "", announcementBar: "", ctaTitle: "", ctaSubtitle: "",
   showPackages: true, showDestinations: true, showEnquiryForm: true,
-  metaTitle: "", metaDescription: "",
+  metaTitle: "", metaDescription: "", metaKeywords: "",
 };
 
 /* ─── CMS Pages Tab ─────────────────────────────────────────── */
@@ -332,6 +333,7 @@ export default function AdminCms() {
       showEnquiryForm: settings.showEnquiryForm ?? true,
       metaTitle: settings.metaTitle ?? "",
       metaDescription: settings.metaDescription ?? "",
+      metaKeywords: settings.metaKeywords ?? "",
     });
     setDirty(false);
   }, [settings]);
@@ -668,6 +670,9 @@ export default function AdminCms() {
               <div className="mt-0.5 text-xs text-muted-foreground">
                 Character count: <span className={form.metaDescription.length > 155 ? "text-red-600 font-semibold" : "text-emerald-600 font-semibold"}>{form.metaDescription.length}/155</span>
               </div>
+              <FieldRow label="Keywords" hint="Comma-separated search terms your customers use (e.g. madurai taxi, kodaikanal tour package, outstation cab). Helps target local searches.">
+                <Textarea value={form.metaKeywords} onChange={setF("metaKeywords")} placeholder="madurai travels, madurai taxi, tamil nadu tour packages, madurai to kodaikanal cab…" rows={3} />
+              </FieldRow>
               {/* Google preview */}
               <div className="mt-2 p-4 rounded-lg border border-border bg-white">
                 <p className="text-xs text-muted-foreground font-semibold mb-2 uppercase tracking-wider">Google Preview</p>

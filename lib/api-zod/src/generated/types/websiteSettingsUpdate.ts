@@ -45,4 +45,5 @@ export interface WebsiteSettingsUpdate {
   sectionLayouts?: string;
   metaTitle?: string;
   metaDescription?: string;
+  metaKeywords?: string;
 }
