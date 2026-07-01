@@ -11,12 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Nfc, Plus, Trash2, Car, Copy, Radio, KeyRound, Pencil } from "lucide-react";
+import { Nfc, Plus, Trash2, Car, Copy, Radio, KeyRound, Pencil, Satellite, Link2 } from "lucide-react";
 
 type Vehicle = { id: string; registrationNumber: string; model?: string };
 type Device = {
   id: string;
   deviceId: string;
+  provider: string;
   label: string | null;
   simNumber: string | null;
   ingestKey: string;
@@ -28,6 +29,7 @@ type Device = {
   vehicleReg: string | null;
   vehicleModel: string | null;
 };
+type TbtrackConfig = { configured: boolean; url: string | null };
 
 const BLANK = { deviceId: "", label: "", simNumber: "", vehicleId: "", status: "active" };
 const UNASSIGNED = "__none__";
@@ -46,6 +48,10 @@ export default function AdminFleetDevices() {
   const { data: vehicles } = useQuery<Vehicle[]>({
     queryKey: ["/v1/fleet/vehicles"],
     queryFn: () => api.get("/fleet/vehicles"),
+  });
+  const { data: tbtrack } = useQuery<TbtrackConfig>({
+    queryKey: ["/v1/gps/tbtrack/config"],
+    queryFn: () => api.get("/gps/tbtrack/config"),
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["/v1/gps/devices"] });
@@ -89,6 +95,7 @@ export default function AdminFleetDevices() {
   };
 
   const copyKey = (k: string) => { navigator.clipboard?.writeText(k); toast({ title: "Ingest key copied" }); };
+  const copyUrl = (u: string) => { navigator.clipboard?.writeText(u); toast({ title: "TB Track URL copied" }); };
 
   const list = devices ?? [];
   const online = list.filter((d) => d.status === "active" && d.lastPingAt).length;
@@ -145,7 +152,12 @@ export default function AdminFleetDevices() {
                 {list.map((d) => (
                   <TableRow key={d.id}>
                     <TableCell>
-                      <div className="font-medium">{d.label || d.deviceId}</div>
+                      <div className="font-medium flex items-center gap-1.5">
+                        {d.label || d.deviceId}
+                        {d.provider === "tbtrack" && (
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">TB Track</Badge>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">{d.deviceId}{d.simNumber ? ` · SIM ${d.simNumber}` : ""}</div>
                     </TableCell>
                     <TableCell className="text-sm">{d.vehicleReg ?? <span className="text-muted-foreground">Unassigned</span>}</TableCell>
@@ -193,6 +205,42 @@ export default function AdminFleetDevices() {
   "bookingId": "<optional: trip being driven>"
 }`}</code></pre>
           <p>Positions appear instantly on the Live Tracking map. Distance for a trip accumulates automatically as pings arrive.</p>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm border-primary/30">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary/10 p-2 text-primary"><Satellite className="h-5 w-5" /></div>
+            <div>
+              <CardTitle className="text-base">TB Track (TrackoBit) integration</CardTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">Feed your TB Track / tbtrack.in trackers straight into TravelOS.</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3">
+          <p>
+            In your TB Track / TrackoBit portal, open the <span className="font-medium text-foreground">data forwarding / HTTP push</span> (integration)
+            settings and add the URL below as a destination. Each position your devices report will then flow into TravelOS automatically —
+            new trackers register themselves the first time they report, and appear on the Live Tracking map.
+          </p>
+          {tbtrack?.configured && tbtrack.url ? (
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-muted rounded-md p-3 text-xs break-all font-mono">{tbtrack.url}</code>
+              <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={() => copyUrl(tbtrack.url!)}>
+                <Link2 className="h-3.5 w-3.5" />Copy URL
+              </Button>
+            </div>
+          ) : (
+            <p className="text-amber-600">Webhook URL unavailable — the server signing key is not configured.</p>
+          )}
+          <p>
+            The endpoint accepts both <span className="font-mono text-xs">POST</span> (JSON) and <span className="font-mono text-xs">GET</span> (query
+            parameters), and understands the common TB Track / TrackoBit / Traccar field names:
+            <span className="font-mono text-xs"> imei</span>, <span className="font-mono text-xs">lat</span>, <span className="font-mono text-xs">lng/lon</span>,
+            <span className="font-mono text-xs"> speed</span>, <span className="font-mono text-xs">heading/course</span>, <span className="font-mono text-xs">timestamp</span>.
+          </p>
+          <p className="text-xs">Keep this URL private — it is unique to your company and lets your trackers post location data.</p>
         </CardContent>
       </Card>
 

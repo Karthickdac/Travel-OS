@@ -19,3 +19,10 @@ description: Durable design facts and data quirks for the GPS device + real-time
 
 ## Tenant scoping in shared helpers
 - `recordPing()` accumulates trip distance; its trip lookup MUST include `tripTrackingTable.companyId = cid` (not just bookingId+status), or a device-authenticated ingest with a guessed bookingId could touch another tenant's trip.
+
+## TB Track (TrackoBit) device integration
+- **tbtrack.in is a white-label of the TrackoBit platform** (login redirects to `tbtrack.trackobit.com`). TrackoBit's REST API is private (client-agreement only, not publicly documented), so you CANNOT reliably poll it. Do not build a poller against guessed TrackoBit endpoints.
+- **Integration model = push, not pull.** A per-company webhook `GET|POST /v1/gps/tbtrack/ingest?company=<id>&token=<hmac>` receives positions from the TB Track platform's data-forwarding (or the device / a forwarding app). Token is derived like the FASTag webhook (`HMAC-SHA256(SESSION_SECRET,"gps-tbtrack:"+companyId)`, fail-closed, timing-safe compare) — reuse that tenant-isolation pattern for any device/platform-facing ingest.
+- Ingest is exempt from the fleet role guard (matched by `req.path` in the `router.use`, same as `/v1/gps/ingest`) because it authenticates by token, not user session.
+- Parser is deliberately tolerant of field spellings (imei/id/deviceId, lat/latitude, lng/lon/longitude, speed, heading/course/angle, timestamp as unix-s/unix-ms/ISO) so most tracker/Traccar-OsmAnd feeds work unchanged. Unknown IMEIs auto-register as `provider='tbtrack'` devices scoped to the token's company.
+- **Known minor gap:** `gps_devices` has NO unique constraint on `(company_id, device_id)` despite the "unique per company" comment; a burst of first pings for a new IMEI can create duplicate device rows (non-corrupting — just two near-identical markers). If this ever matters, add a partial unique index (excluding `is_deleted`) + `onConflictDoNothing` + re-select.

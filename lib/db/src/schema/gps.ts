@@ -11,6 +11,7 @@ export const gpsDevicesTable = pgTable("gps_devices", {
   id: uuid("id").primaryKey().defaultRandom(),
   companyId: uuid("company_id").references(() => companiesTable.id),
   deviceId: text("device_id").notNull(), // IMEI / serial — unique per company
+  provider: text("provider").notNull().default("generic"), // generic | tbtrack — GPS vendor/protocol
   label: text("label"),
   simNumber: text("sim_number"),
   ingestKey: text("ingest_key").notNull(), // secret used by the device to authenticate pings

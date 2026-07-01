@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, desc, eq } from "drizzle-orm";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHmac, timingSafeEqual } from "node:crypto";
 import {
   db,
   gpsDevicesTable,
@@ -130,6 +130,9 @@ type LiveMarker = {
 // which authenticates via deviceId + ingestKey rather than a user session.
 router.use((req, res, next) => {
   if (req.path === "/v1/gps/ingest") { next(); return; }
+  // TB Track (TrackoBit) device/platform-facing ingest — authenticated per-company
+  // via a derived token in the query string, not a user session.
+  if (req.path === "/v1/gps/tbtrack/ingest") { next(); return; }
   if (!companyId(req)) { res.status(401).json({ error: "Unauthorized" }); return; }
   if (!isFleetUser(req)) { res.status(403).json({ error: "Forbidden" }); return; }
   next();
@@ -228,6 +231,149 @@ router.post("/v1/gps/ingest", async (req, res): Promise<void> => {
 
   await recordPing(device.companyId!, device.id, device.vehicleId, bookingId, lat, lng, speed, heading, recordedAt);
   res.status(201).json({ ok: true });
+});
+
+// ---------- TB Track (TrackoBit) integration ----------
+// tbtrack.in is a white-label of the TrackoBit platform. Its REST API is private
+// (client-agreement only), so instead of polling it we accept a data feed pushed
+// TO TravelOS: the TB Track platform's data-forwarding (or the device itself, or a
+// forwarding app) POSTs/GETs positions to a per-company webhook URL. The URL carries
+// ?company=<id>&token=<hmac>; the token is derived from SESSION_SECRET so each tenant
+// gets a distinct, unguessable token and the feed can only touch that tenant's data.
+
+// Signing secret for TB Track webhook tokens. Fail-closed: returns null if
+// SESSION_SECRET is missing/weak, so tokens are never derivable from an empty key.
+function tbtrackSecret(): string | null {
+  const s = process.env.SESSION_SECRET;
+  if (!s || s.length < 16) return null;
+  return s;
+}
+
+function tbtrackTokenFor(companyId: string, secret: string): string {
+  return createHmac("sha256", secret).update(`gps-tbtrack:${companyId}`).digest("hex");
+}
+
+function tokensMatch(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
+
+function firstNum(src: Record<string, unknown>, keys: string[]): number | null {
+  for (const k of keys) {
+    const v = src[k];
+    if (v === undefined || v === null || v === "") continue;
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+function firstStr(src: Record<string, unknown>, keys: string[]): string | null {
+  for (const k of keys) {
+    const v = src[k];
+    if (v === undefined || v === null) continue;
+    const s = String(v).trim();
+    if (s) return s;
+  }
+  return null;
+}
+
+// Tolerantly parse a TB Track / TrackoBit / Traccar (OsmAnd) style position payload.
+// Accepts many common field spellings so most tracker/platform feeds work unchanged.
+type TbtrackFix = { imei: string; lat: number; lng: number; speed: number | null; heading: number | null; recordedAt: Date };
+function parseTbtrackFix(src: Record<string, unknown>): TbtrackFix | null {
+  const imei = firstStr(src, ["imei", "IMEI", "id", "deviceId", "device_id", "deviceid", "device", "vehicleNo", "vehicle_no", "serial"]);
+  const lat = firstNum(src, ["lat", "latitude", "Lat", "Latitude"]);
+  const lng = firstNum(src, ["lng", "lon", "long", "longitude", "Lng", "Lon", "Longitude"]);
+  if (!imei || lat === null || lng === null) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  const speed = firstNum(src, ["speed", "spd", "Speed", "velocity"]);
+  const heading = firstNum(src, ["heading", "course", "angle", "bearing", "direction", "Course"]);
+  const tsRaw = firstStr(src, ["timestamp", "time", "gpsTime", "gps_time", "fixTime", "devicetime", "deviceTime", "dt"]);
+  let recordedAt = new Date();
+  if (tsRaw) {
+    // Support unix seconds, unix millis, or an ISO / parseable date string.
+    const asNum = Number(tsRaw);
+    if (Number.isFinite(asNum) && tsRaw.length >= 10 && /^\d+$/.test(tsRaw)) {
+      recordedAt = new Date(asNum < 1e12 ? asNum * 1000 : asNum);
+    } else {
+      const d = new Date(tsRaw);
+      if (!Number.isNaN(d.getTime())) recordedAt = d;
+    }
+  }
+  return { imei, lat, lng, speed, heading, recordedAt };
+}
+
+// GET + POST /v1/gps/tbtrack/ingest?company=..&token=.. — device/platform-facing.
+// Unauthenticated by user session; validated by the per-company token. Auto-registers
+// an unknown IMEI as a TB Track device so setup is plug-and-play.
+async function handleTbtrackIngest(req: any, res: any): Promise<void> {
+  const q = req.query as Record<string, unknown>;
+  const companyIdParam = firstStr(q, ["company"]) ?? (req.headers["x-tbtrack-company"] as string | undefined) ?? null;
+  const provided = firstStr(q, ["token"]) ?? (req.headers["x-tbtrack-token"] as string | undefined) ?? null;
+
+  const secret = tbtrackSecret();
+  if (!secret) {
+    req.log.error("TB Track ingest called but SESSION_SECRET is missing/weak");
+    res.status(500).json({ error: "Integration not configured" });
+    return;
+  }
+  if (!companyIdParam || !provided || !tokensMatch(provided, tbtrackTokenFor(companyIdParam, secret))) {
+    res.status(401).json({ error: "Invalid or missing TB Track credentials" });
+    return;
+  }
+
+  // Merge query + body so both GET (query params) and POST (JSON/form) feeds work.
+  const src: Record<string, unknown> = { ...(typeof req.body === "object" && req.body ? req.body : {}), ...q };
+  const fix = parseTbtrackFix(src);
+  if (!fix) {
+    res.status(400).json({ error: "Could not parse position (need imei + lat + lng)" });
+    return;
+  }
+
+  let [device] = await db
+    .select()
+    .from(gpsDevicesTable)
+    .where(and(eq(gpsDevicesTable.companyId, companyIdParam), eq(gpsDevicesTable.deviceId, fix.imei), eq(gpsDevicesTable.isDeleted, false)));
+
+  if (!device) {
+    [device] = await db
+      .insert(gpsDevicesTable)
+      .values({
+        companyId: companyIdParam,
+        deviceId: fix.imei,
+        provider: "tbtrack",
+        label: `TB Track ${fix.imei}`,
+        ingestKey: randomBytes(16).toString("hex"),
+        status: "active",
+      })
+      .returning();
+    req.log.info({ imei: fix.imei, companyId: companyIdParam }, "TB Track: auto-registered device");
+  }
+
+  await recordPing(device.companyId!, device.id, device.vehicleId, null, fix.lat, fix.lng, fix.speed, fix.heading, fix.recordedAt);
+  res.status(201).json({ ok: true, deviceId: device.id });
+}
+
+router.get("/v1/gps/tbtrack/ingest", handleTbtrackIngest);
+router.post("/v1/gps/tbtrack/ingest", handleTbtrackIngest);
+
+// GET /v1/gps/tbtrack/config — authenticated (fleet): returns the company-scoped
+// TB Track webhook URL to paste into the TB Track / TrackoBit data-forwarding setup.
+router.get("/v1/gps/tbtrack/config", (req, res): void => {
+  const cid = companyId(req);
+  if (!cid) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const secret = tbtrackSecret();
+  if (!secret) { res.json({ configured: false, url: null }); return; }
+  const token = tbtrackTokenFor(cid, secret);
+  const domain = (process.env.REPLIT_DOMAINS ?? "").split(",")[0]?.trim();
+  const origin = domain ? `https://${domain}` : `${req.protocol}://${req.get("host")}`;
+  res.json({
+    configured: true,
+    url: `${origin}/api/v1/gps/tbtrack/ingest?company=${cid}&token=${token}`,
+  });
 });
 
 // Insert a ping, update the device's last position, and accumulate trip distance.
