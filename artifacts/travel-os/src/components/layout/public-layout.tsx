@@ -109,8 +109,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           transparent
-            ? "bg-transparent border-b border-white/10 py-3"
-            : "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm py-2"
+            ? "bg-transparent border-b border-white/10"
+            : "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm"
         }`}
       >
         <div className="container mx-auto px-4 md:px-6">
