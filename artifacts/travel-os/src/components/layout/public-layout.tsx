@@ -6,6 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetPublicCmsSettings } from "@workspace/api-client-react";
 import { getSiteDomain, hexToHslTriplet } from "@/lib/site-domain";
+import { resolveSectionLayouts } from "@/lib/homepage-templates";
 import { useSeo } from "@/lib/use-seo";
 
 const SITE_DOMAIN = getSiteDomain();
@@ -90,7 +91,16 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => setMobileOpen(false), [location]);
 
-  const transparent = isHome && !scrolled && !mobileOpen;
+  // The transparent (white-text) navbar only reads well over the dark
+  // full-bleed "centered" hero. The "minimal" and "split" hero variants use a
+  // light background with dark text, so keep the navbar solid there — otherwise
+  // the white menu links become invisible on light-hero tenants.
+  // Wait for CMS before trusting the hero variant — otherwise a light-hero
+  // tenant would briefly flash a transparent white navbar (defaults resolve to
+  // the dark "centered" hero) on first paint.
+  const heroVariant = resolveSectionLayouts(cms?.homepageTemplate, cms?.sectionLayouts).hero;
+  const darkHero = !!cms && heroVariant === "centered";
+  const transparent = isHome && !scrolled && !mobileOpen && darkHero;
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background font-sans">
