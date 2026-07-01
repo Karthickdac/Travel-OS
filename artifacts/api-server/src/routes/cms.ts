@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { db, websiteSettingsTable, companiesTable } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -181,10 +181,10 @@ router.get("/v1/public/cms", async (req, res): Promise<void> => {
   if (resolvedCompanyId) {
     [settings] = await db.select().from(websiteSettingsTable).where(eq(websiteSettingsTable.companyId, resolvedCompanyId));
   } else {
-    [settings] = await db.select().from(websiteSettingsTable).limit(1);
+    [settings] = await db.select().from(websiteSettingsTable).orderBy(asc(websiteSettingsTable.companyId)).limit(1);
   }
   if (!settings) {
-    const [company] = await db.select().from(companiesTable).limit(1);
+    const [company] = await db.select().from(companiesTable).orderBy(asc(companiesTable.id)).limit(1);
     if (!company) { res.status(404).json({ error: "No settings found" }); return; }
     settings = await upsertDefaults(company.id);
   }
