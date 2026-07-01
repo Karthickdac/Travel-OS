@@ -1,0 +1,15 @@
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 21 │ dge-erp                 │ default     │ 0.0.0   │ fork    │ 715773   │ 39D    │ 0    │ online    │ 0%       │ 180.4mb  │ root     │ disabled │
+│ 1  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 711980   │ 39D    │ 2    │ online    │ 0%       │ 79.1mb   │ root     │ disabled │
+│ 2  │ dynamic-green-energy    │ default     │ 1.0.0   │ cluster │ 712003   │ 39D    │ 2    │ online    │ 0%       │ 79.3mb   │ root     │ disabled │
+│ 4  │ fish-market-pro         │ default     │ 1.0.0   │ cluster │ 712023   │ 39D    │ 2    │ online    │ 0%       │ 112.2mb  │ root     │ disabled │
+│ 3  │ fitro360                │ default     │ 0.39.7  │ fork    │ 712011   │ 39D    │ 2    │ online    │ 0%       │ 63.0mb   │ root     │ disabled │
+│ 7  │ kuralai                 │ default     │ 1.0.0   │ fork    │ 712057   │ 39D    │ 2    │ online    │ 0%       │ 130.4mb  │ root     │ disabled │
+│ 5  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712033   │ 39D    │ 2    │ online    │ 0%       │ 111.8mb  │ root     │ disabled │
+│ 6  │ kyro360                 │ default     │ 1.0.0   │ cluster │ 712051   │ 39D    │ 2    │ online    │ 0%       │ 96.9mb   │ root     │ disabled │
+│ 22 │ nirmal-connect-api      │ default     │ 0.0.0   │ fork    │ 909064   │ 32D    │ 168  │ online    │ 0%       │ 228.2mb  │ root     │ disabled │
+│ 23 │ travelos-api            │ default     │ 0.0.0   │ fork    │ 2131403  │ 70m    │ 19   │ online    │ 0%       │ 134.1mb  │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# 
