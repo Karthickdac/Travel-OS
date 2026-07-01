@@ -2967,11 +2967,49 @@ components:
           type: ["string", "null"]
         kmsTraveled:
           type: ["number", "null"]
+        startingKm:
+          type: ["number", "null"]
+        closingKm:
+          type: ["number", "null"]
         serviceDate:
           type: ["string", "null"]
         description:
           type: ["string", "null"]
+        hireHours:
+          type: number
+        hireHourRate:
+          type: number
+        hireKms:
+          type: number
+        hireKmRate:
+          type: number
+        rentDays:
+          type: number
+        rentDayRate:
+          type: number
+        fuelKms:
+          type: number
+        fuelKmRate:
+          type: number
+        battaQty:
+          type: number
+        battaRate:
+          type: number
+        hillsCharge:
+          type: number
+        permitCharge:
+          type: number
+        tollParking:
+          type: number
         taxRate:
+          type: number
+        sgstRate:
+          type: number
+        cgstRate:
+          type: number
+        sgstAmount:
+          type: number
+        cgstAmount:
           type: number
         amount:
           type: number
@@ -2990,6 +3028,23 @@ components:
           type: ["string", "null"]
         createdAt:
           type: string
+        company:
+          type: ["object", "null"]
+          properties:
+            name:
+              type: ["string", "null"]
+            phone:
+              type: ["string", "null"]
+            gstNumber:
+              type: ["string", "null"]
+            city:
+              type: ["string", "null"]
+            country:
+              type: ["string", "null"]
+            logo:
+              type: ["string", "null"]
+            email:
+              type: ["string", "null"]
 
     InvoiceInput:
       type: object
@@ -3013,11 +3068,45 @@ components:
           type: string
         kmsTraveled:
           type: number
+        startingKm:
+          type: number
+        closingKm:
+          type: number
         serviceDate:
           type: string
         description:
           type: string
+        hireHours:
+          type: number
+        hireHourRate:
+          type: number
+        hireKms:
+          type: number
+        hireKmRate:
+          type: number
+        rentDays:
+          type: number
+        rentDayRate:
+          type: number
+        fuelKms:
+          type: number
+        fuelKmRate:
+          type: number
+        battaQty:
+          type: number
+        battaRate:
+          type: number
+        hillsCharge:
+          type: number
+        permitCharge:
+          type: number
+        tollParking:
+          type: number
         taxRate:
+          type: number
+        sgstRate:
+          type: number
+        cgstRate:
           type: number
         amount:
           type: number

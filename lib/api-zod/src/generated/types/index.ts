@@ -51,6 +51,7 @@ export * from './getPublicPackagesParams';
 export * from './getRevenueTrendParams';
 export * from './healthStatus';
 export * from './invoice';
+export * from './invoiceCompany';
 export * from './invoiceInput';
 export * from './invoiceStatus';
 export * from './invoiceUpdate';

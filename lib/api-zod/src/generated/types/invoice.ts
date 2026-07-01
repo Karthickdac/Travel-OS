@@ -5,6 +5,7 @@
  * TravelOS – Multi-tenant Travel ERP SaaS API
  * OpenAPI spec version: 0.1.0
  */
+import type { InvoiceCompany } from './invoiceCompany';
 import type { InvoiceStatus } from './invoiceStatus';
 
 export interface Invoice {
@@ -28,10 +29,31 @@ export interface Invoice {
   /** @nullable */
   kmsTraveled?: number | null;
   /** @nullable */
+  startingKm?: number | null;
+  /** @nullable */
+  closingKm?: number | null;
+  /** @nullable */
   serviceDate?: string | null;
   /** @nullable */
   description?: string | null;
+  hireHours?: number;
+  hireHourRate?: number;
+  hireKms?: number;
+  hireKmRate?: number;
+  rentDays?: number;
+  rentDayRate?: number;
+  fuelKms?: number;
+  fuelKmRate?: number;
+  battaQty?: number;
+  battaRate?: number;
+  hillsCharge?: number;
+  permitCharge?: number;
+  tollParking?: number;
   taxRate?: number;
+  sgstRate?: number;
+  cgstRate?: number;
+  sgstAmount?: number;
+  cgstAmount?: number;
   amount: number;
   taxAmount?: number;
   /** @nullable */
@@ -43,4 +65,6 @@ export interface Invoice {
   /** @nullable */
   paymentMode?: string | null;
   createdAt?: string;
+  /** @nullable */
+  company?: InvoiceCompany;
 }

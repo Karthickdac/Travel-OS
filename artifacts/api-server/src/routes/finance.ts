@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, invoicesTable, expensesTable } from "@workspace/db";
+import { eq, and } from "drizzle-orm";
+import { db, invoicesTable, expensesTable, companiesTable } from "@workspace/db";
 import {
   ListInvoicesResponse,
   CreateInvoiceBody,
@@ -23,7 +23,10 @@ const router: IRouter = Router();
 
 let invoiceCounter = 1000;
 
-function mapInvoice(i: typeof invoicesTable.$inferSelect) {
+function mapInvoice(
+  i: typeof invoicesTable.$inferSelect,
+  company?: typeof companiesTable.$inferSelect | null,
+) {
   return {
     id: i.id,
     invoiceNumber: i.invoiceNumber,
@@ -36,9 +39,28 @@ function mapInvoice(i: typeof invoicesTable.$inferSelect) {
     tripFrom: i.tripFrom ?? null,
     tripTo: i.tripTo ?? null,
     kmsTraveled: i.kmsTraveled ?? null,
+    startingKm: i.startingKm ?? null,
+    closingKm: i.closingKm ?? null,
     serviceDate: i.serviceDate ?? null,
     description: i.description ?? null,
+    hireHours: Number(i.hireHours),
+    hireHourRate: Number(i.hireHourRate),
+    hireKms: i.hireKms,
+    hireKmRate: Number(i.hireKmRate),
+    rentDays: Number(i.rentDays),
+    rentDayRate: Number(i.rentDayRate),
+    fuelKms: i.fuelKms,
+    fuelKmRate: Number(i.fuelKmRate),
+    battaQty: Number(i.battaQty),
+    battaRate: Number(i.battaRate),
+    hillsCharge: Number(i.hillsCharge),
+    permitCharge: Number(i.permitCharge),
+    tollParking: Number(i.tollParking),
     taxRate: i.taxRate,
+    sgstRate: Number(i.sgstRate),
+    cgstRate: Number(i.cgstRate),
+    sgstAmount: Number(i.sgstAmount),
+    cgstAmount: Number(i.cgstAmount),
     amount: Number(i.amount),
     taxAmount: Number(i.taxAmount),
     notes: i.notes ?? null,
@@ -47,6 +69,17 @@ function mapInvoice(i: typeof invoicesTable.$inferSelect) {
     paidAt: i.paidAt?.toISOString() ?? null,
     paymentMode: i.paymentMode ?? null,
     createdAt: i.createdAt.toISOString(),
+    company: company
+      ? {
+          name: company.name ?? null,
+          phone: company.phone ?? null,
+          gstNumber: company.gstNumber ?? null,
+          city: company.city ?? null,
+          country: company.country ?? null,
+          logo: company.logo ?? null,
+          email: company.email ?? null,
+        }
+      : null,
   };
 }
 
@@ -68,12 +101,37 @@ function mapExpense(e: typeof expensesTable.$inferSelect) {
   };
 }
 
-router.get("/v1/finance/invoices", async (_req, res): Promise<void> => {
-  const invoices = await db.select().from(invoicesTable).where(eq(invoicesTable.isDeleted, false));
-  res.json(ListInvoicesResponse.parse(invoices.map(mapInvoice)));
+async function fetchCompany(companyId: string | null | undefined) {
+  if (!companyId) return null;
+  const [company] = await db.select().from(companiesTable).where(eq(companiesTable.id, companyId));
+  return company ?? null;
+}
+
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
+
+router.get("/v1/finance/invoices", async (req, res): Promise<void> => {
+  const cid = getCompanyId(req);
+  if (!cid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const rows = await db
+    .select()
+    .from(invoicesTable)
+    .leftJoin(companiesTable, eq(invoicesTable.companyId, companiesTable.id))
+    .where(and(eq(invoicesTable.isDeleted, false), eq(invoicesTable.companyId, cid)));
+  res.json(ListInvoicesResponse.parse(rows.map((r) => mapInvoice(r.invoices, r.companies))));
 });
 
 router.post("/v1/finance/invoices", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const parsed = CreateInvoiceBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -82,9 +140,27 @@ router.post("/v1/finance/invoices", async (req, res): Promise<void> => {
 
   invoiceCounter++;
   const d = parsed.data;
+
+  const lineTotal =
+    (d.hireHours ?? 0) * (d.hireHourRate ?? 0) +
+    (d.hireKms ?? 0) * (d.hireKmRate ?? 0) +
+    (d.rentDays ?? 0) * (d.rentDayRate ?? 0) +
+    (d.fuelKms ?? 0) * (d.fuelKmRate ?? 0) +
+    (d.battaQty ?? 0) * (d.battaRate ?? 0) +
+    (d.hillsCharge ?? 0) +
+    (d.permitCharge ?? 0) +
+    (d.tollParking ?? 0);
+  const subtotal = lineTotal > 0 ? lineTotal : d.amount ?? 0;
+  const sgstRate = d.sgstRate ?? 0;
+  const cgstRate = d.cgstRate ?? 0;
+  const sgstAmount = Math.round(subtotal * sgstRate) / 100;
+  const cgstAmount = Math.round(subtotal * cgstRate) / 100;
+  const taxAmount = Math.round((sgstAmount + cgstAmount) * 100) / 100;
+
   const [invoice] = await db
     .insert(invoicesTable)
     .values({
+      companyId,
       invoiceNumber: `INV${invoiceCounter}`,
       customerName: d.customerName,
       customerPhone: d.customerPhone,
@@ -95,11 +171,30 @@ router.post("/v1/finance/invoices", async (req, res): Promise<void> => {
       tripFrom: d.tripFrom,
       tripTo: d.tripTo,
       kmsTraveled: d.kmsTraveled,
+      startingKm: d.startingKm,
+      closingKm: d.closingKm,
       serviceDate: d.serviceDate,
       description: d.description,
-      taxRate: d.taxRate ?? 18,
-      amount: String(d.amount),
-      taxAmount: String(d.taxAmount ?? 0),
+      hireHours: String(d.hireHours ?? 0),
+      hireHourRate: String(d.hireHourRate ?? 0),
+      hireKms: d.hireKms ?? 0,
+      hireKmRate: String(d.hireKmRate ?? 0),
+      rentDays: String(d.rentDays ?? 0),
+      rentDayRate: String(d.rentDayRate ?? 0),
+      fuelKms: d.fuelKms ?? 0,
+      fuelKmRate: String(d.fuelKmRate ?? 0),
+      battaQty: String(d.battaQty ?? 0),
+      battaRate: String(d.battaRate ?? 0),
+      hillsCharge: String(d.hillsCharge ?? 0),
+      permitCharge: String(d.permitCharge ?? 0),
+      tollParking: String(d.tollParking ?? 0),
+      taxRate: d.taxRate ?? Math.round(sgstRate + cgstRate),
+      sgstRate: String(sgstRate),
+      cgstRate: String(cgstRate),
+      sgstAmount: String(sgstAmount),
+      cgstAmount: String(cgstAmount),
+      amount: String(subtotal),
+      taxAmount: String(taxAmount),
       dueDate: d.dueDate,
       paymentMode: d.paymentMode,
       notes: d.notes,
@@ -107,26 +202,43 @@ router.post("/v1/finance/invoices", async (req, res): Promise<void> => {
     })
     .returning();
 
-  res.status(201).json(CreateInvoiceResponse.parse(mapInvoice(invoice)));
+  const company = await fetchCompany(invoice.companyId);
+  res.status(201).json(CreateInvoiceResponse.parse(mapInvoice(invoice, company)));
 });
 
 router.get("/v1/finance/invoices/:id", async (req, res): Promise<void> => {
+  const cid = getCompanyId(req);
+  if (!cid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = GetInvoiceParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [invoice] = await db.select().from(invoicesTable).where(eq(invoicesTable.id, params.data.id));
+  const [invoice] = await db
+    .select()
+    .from(invoicesTable)
+    .where(and(eq(invoicesTable.id, params.data.id), eq(invoicesTable.companyId, cid)));
   if (!invoice) {
     res.status(404).json({ error: "Invoice not found" });
     return;
   }
 
-  res.json(GetInvoiceResponse.parse(mapInvoice(invoice)));
+  const company = await fetchCompany(invoice.companyId);
+  res.json(GetInvoiceResponse.parse(mapInvoice(invoice, company)));
 });
 
 router.patch("/v1/finance/invoices/:id", async (req, res): Promise<void> => {
+  const cid = getCompanyId(req);
+  if (!cid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = UpdateInvoiceParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -148,7 +260,7 @@ router.patch("/v1/finance/invoices/:id", async (req, res): Promise<void> => {
   const [invoice] = await db
     .update(invoicesTable)
     .set(updateData)
-    .where(eq(invoicesTable.id, params.data.id))
+    .where(and(eq(invoicesTable.id, params.data.id), eq(invoicesTable.companyId, cid)))
     .returning();
 
   if (!invoice) {
@@ -156,7 +268,8 @@ router.patch("/v1/finance/invoices/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(UpdateInvoiceResponse.parse(mapInvoice(invoice)));
+  const company = await fetchCompany(invoice.companyId);
+  res.json(UpdateInvoiceResponse.parse(mapInvoice(invoice, company)));
 });
 
 router.get("/v1/finance/expenses", async (_req, res): Promise<void> => {

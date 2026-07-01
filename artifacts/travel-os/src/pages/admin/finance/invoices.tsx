@@ -26,113 +26,147 @@ const statusIcons: Record<string, any> = {
   draft: Clock, sent: FileText, paid: CheckCircle2, overdue: AlertCircle, cancelled: XCircle,
 };
 
+const n = (v: any) => Number(v ?? 0) || 0;
+const inr = (v: number) => `₹${v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+// Indian-system number-to-words (rupees)
+function amountInWords(num: number): string {
+  const rupees = Math.floor(num);
+  if (rupees === 0) return "Zero Rupees Only";
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  const twoDigits = (x: number): string => {
+    if (x < 20) return ones[x];
+    return `${tens[Math.floor(x / 10)]}${x % 10 ? " " + ones[x % 10] : ""}`;
+  };
+  const threeDigits = (x: number): string => {
+    const h = Math.floor(x / 100);
+    const rest = x % 100;
+    return `${h ? ones[h] + " Hundred" + (rest ? " " : "") : ""}${rest ? twoDigits(rest) : ""}`;
+  };
+  let result = "";
+  const crore = Math.floor(rupees / 10000000);
+  const lakh = Math.floor((rupees % 10000000) / 100000);
+  const thousand = Math.floor((rupees % 100000) / 1000);
+  const hundred = rupees % 1000;
+  if (crore) result += `${twoDigits(crore)} Crore `;
+  if (lakh) result += `${twoDigits(lakh)} Lakh `;
+  if (thousand) result += `${twoDigits(thousand)} Thousand `;
+  if (hundred) result += threeDigits(hundred);
+  return `${result.trim()} Rupees Only`;
+}
+
+// Compute the itemized line breakdown from an invoice-like object
+function lineItems(inv: any) {
+  return [
+    { label: `Hire Charge — ${n(inv.hireHours)} hrs @ ${inr(n(inv.hireHourRate))}/hr`, amount: n(inv.hireHours) * n(inv.hireHourRate) },
+    { label: `Hire Charge — ${n(inv.hireKms)} km @ ${inr(n(inv.hireKmRate))}/km`, amount: n(inv.hireKms) * n(inv.hireKmRate) },
+    { label: `Day Rent — ${n(inv.rentDays)} day @ ${inr(n(inv.rentDayRate))}/day`, amount: n(inv.rentDays) * n(inv.rentDayRate) },
+    { label: `Fuel Charge — ${n(inv.fuelKms)} km @ ${inr(n(inv.fuelKmRate))}/km`, amount: n(inv.fuelKms) * n(inv.fuelKmRate) },
+    { label: `Driver Batta — ${n(inv.battaQty)} day/hrs @ ${inr(n(inv.battaRate))}`, amount: n(inv.battaQty) * n(inv.battaRate) },
+    { label: "Hills Charge", amount: n(inv.hillsCharge) },
+    { label: "Inter State Permit Charge", amount: n(inv.permitCharge) },
+    { label: "Toll & Parking", amount: n(inv.tollParking) },
+  ].filter((l) => l.amount > 0);
+}
+
 function InvoicePrintView({ invoice }: { invoice: any }) {
-  const total = Number(invoice.amount ?? 0) + Number(invoice.taxAmount ?? 0);
+  const c = invoice.company ?? {};
+  const companyName = c.name ?? "Your Company";
+  const companyAddress = [c.city, c.country].filter(Boolean).join(", ");
+  const items = lineItems(invoice);
+  const subtotal = n(invoice.amount);
+  const sgstAmount = n(invoice.sgstAmount);
+  const cgstAmount = n(invoice.cgstAmount);
+  const grandTotal = subtotal + n(invoice.taxAmount);
+
   return (
-    <div className="p-8 bg-white text-black min-h-[700px] font-sans" id="invoice-print">
+    <div className="p-8 bg-white text-black min-h-[700px] font-sans text-sm" id="invoice-print">
       {/* Header */}
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="text-2xl font-black text-orange-600">Madurai SMT Travels</h1>
-          <p className="text-sm text-gray-600">Madurai, Tamil Nadu</p>
-          <p className="text-sm text-gray-600">Ph: 8110806339</p>
-          <p className="text-sm text-gray-600">GST: 33AAAAA0000A1Z5</p>
+      <div className="border-2 border-orange-600 rounded-lg overflow-hidden">
+        <div className="flex justify-between items-start p-4 border-b-2 border-orange-600">
+          <div className="text-xs text-gray-700">
+            {c.gstNumber && <p><span className="font-semibold">GSTIN:</span> {c.gstNumber}</p>}
+            <p className="font-bold text-orange-700 mt-0.5">CASH / CREDIT BILL</p>
+          </div>
+          <div className="text-center flex-1">
+            {c.logo && <img src={c.logo} alt="" className="h-10 mx-auto mb-1 object-contain" />}
+            <h1 className="text-2xl font-black text-orange-600 uppercase tracking-tight">{companyName}</h1>
+            {companyAddress && <p className="text-xs text-gray-600">{companyAddress}</p>}
+          </div>
+          <div className="text-xs text-gray-700 text-right">
+            {c.phone && <p><span className="font-semibold">Mobile:</span> {c.phone}</p>}
+            {c.email && <p>{c.email}</p>}
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-3xl font-black text-gray-800">INVOICE</p>
-          <p className="text-sm text-gray-600 font-mono mt-1">#{invoice.invoiceNumber ?? invoice.id?.slice(0, 8).toUpperCase()}</p>
-          {invoice.serviceDate && (
-            <p className="text-sm text-gray-600">Service Date: {format(new Date(invoice.serviceDate), "dd MMM yyyy")}</p>
-          )}
-          {invoice.dueDate && (
-            <p className="text-sm text-gray-600">Due: {format(new Date(invoice.dueDate), "dd MMM yyyy")}</p>
-          )}
-        </div>
-      </div>
 
-      {/* Customer + Trip Info */}
-      <div className="grid grid-cols-2 gap-6 border-t border-gray-200 pt-6 mb-6">
-        <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Billed To</p>
-          <p className="font-semibold text-base">{invoice.customerName ?? "Customer"}</p>
-          {invoice.customerPhone && <p className="text-sm text-gray-600">📞 {invoice.customerPhone}</p>}
-          {invoice.customerAddress && <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">{invoice.customerAddress}</p>}
-        </div>
-        <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Trip Details</p>
-          {invoice.vehicleNumber && (
-            <p className="text-sm text-gray-700"><span className="font-semibold">Vehicle No:</span> {invoice.vehicleNumber}</p>
-          )}
-          {invoice.driverName && (
-            <p className="text-sm text-gray-700"><span className="font-semibold">Driver:</span> {invoice.driverName}</p>
-          )}
-          {(invoice.tripFrom || invoice.tripTo) && (
-            <p className="text-sm text-gray-700 mt-1">
-              <span className="font-semibold">Route:</span>{" "}
-              {[invoice.tripFrom, invoice.tripTo].filter(Boolean).join(" → ")}
-            </p>
-          )}
-          {invoice.kmsTraveled != null && (
-            <p className="text-sm text-gray-700"><span className="font-semibold">Distance:</span> {invoice.kmsTraveled} km</p>
+        {/* Meta */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1 p-4 border-b border-orange-300 text-sm">
+          <p><span className="font-semibold text-gray-600">Bill No:</span> {invoice.invoiceNumber ?? invoice.id?.slice(0, 8).toUpperCase()}</p>
+          <p className="text-right"><span className="font-semibold text-gray-600">Date:</span> {invoice.serviceDate ? format(new Date(invoice.serviceDate), "dd MMM yyyy") : "-"}</p>
+          <p className="col-span-2"><span className="font-semibold text-gray-600">Guest Name:</span> {invoice.customerName}{invoice.customerPhone ? ` (${invoice.customerPhone})` : ""}</p>
+          <p><span className="font-semibold text-gray-600">From:</span> {invoice.tripFrom ?? "-"}</p>
+          <p><span className="font-semibold text-gray-600">To:</span> {invoice.tripTo ?? "-"}</p>
+          <p><span className="font-semibold text-gray-600">Vehicle No:</span> {invoice.vehicleNumber ?? "-"}</p>
+          <p className="text-right"><span className="font-semibold text-gray-600">Driver:</span> {invoice.driverName ?? "-"}</p>
+          {(invoice.startingKm != null || invoice.closingKm != null) && (
+            <>
+              <p><span className="font-semibold text-gray-600">Starting Km:</span> {invoice.startingKm ?? "-"}</p>
+              <p className="text-right"><span className="font-semibold text-gray-600">Closing Km:</span> {invoice.closingKm ?? "-"}</p>
+            </>
           )}
         </div>
-      </div>
 
-      {/* Description */}
-      {invoice.description && (
-        <div className="mb-4 p-3 bg-gray-50 rounded text-sm text-gray-700">
-          <span className="font-semibold">Description: </span>{invoice.description}
-        </div>
-      )}
-
-      {/* Line items table */}
-      <table className="w-full mb-2 text-sm">
-        <thead>
-          <tr className="border-b-2 border-gray-300">
-            <th className="text-left py-2 text-gray-600 font-semibold">Description</th>
-            <th className="text-right py-2 text-gray-600 font-semibold w-32">Amount (₹)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="border-b border-gray-100">
-            <td className="py-3">
-              {invoice.description ?? "Travel Service"}
-              {invoice.kmsTraveled != null && ` — ${invoice.kmsTraveled} km`}
-              {(invoice.tripFrom || invoice.tripTo) && (
-                <span className="text-gray-500 text-xs block">{[invoice.tripFrom, invoice.tripTo].filter(Boolean).join(" → ")}</span>
-              )}
-            </td>
-            <td className="py-3 text-right font-medium">₹{Number(invoice.amount ?? 0).toLocaleString()}</td>
-          </tr>
-          {Number(invoice.taxAmount) > 0 && (
-            <tr className="border-b border-gray-100">
-              <td className="py-2 text-gray-500">GST @ {invoice.taxRate ?? 18}%</td>
-              <td className="py-2 text-right">₹{Number(invoice.taxAmount).toLocaleString()}</td>
+        {/* Charges table */}
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-orange-300 bg-orange-50">
+              <th className="text-left py-2 px-4 text-gray-700 font-semibold">Particulars</th>
+              <th className="text-right py-2 px-4 text-gray-700 font-semibold w-40">Amount (₹)</th>
             </tr>
-          )}
-        </tbody>
-        <tfoot>
-          <tr className="border-t-2 border-gray-300">
-            <td className="py-3 font-bold text-base">Total Amount</td>
-            <td className="py-3 text-right font-black text-xl text-orange-600">₹{total.toLocaleString()}</td>
-          </tr>
-        </tfoot>
-      </table>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr className="border-b border-gray-100"><td className="py-3 px-4 text-gray-500" colSpan={2}>No itemized charges</td></tr>
+            ) : items.map((l, idx) => (
+              <tr key={idx} className="border-b border-gray-100">
+                <td className="py-2 px-4">{l.label}</td>
+                <td className="py-2 px-4 text-right font-medium">{inr(l.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      {/* Payment info */}
-      <div className="border-t border-gray-200 pt-4 mt-4 flex justify-between items-end">
-        <div className="space-y-1">
-          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Payment Status</p>
-          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${invoice.status === "paid" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-            {invoice.status?.toUpperCase() ?? "PENDING"}
-          </span>
-          {invoice.paymentMode && <p className="text-xs text-gray-500 mt-1">Mode: {invoice.paymentMode}</p>}
-          {invoice.paidAt && <p className="text-xs text-gray-500">Paid on: {format(new Date(invoice.paidAt), "dd MMM yyyy")}</p>}
+        {/* Totals */}
+        <div className="flex justify-between items-start p-4 border-t border-orange-300">
+          <div className="text-xs text-gray-700 max-w-[55%]">
+            <p className="font-semibold text-gray-600 mb-1">Rupees (in words):</p>
+            <p className="italic">{amountInWords(grandTotal)}</p>
+            {invoice.notes && <p className="mt-3 text-gray-500">{invoice.notes}</p>}
+          </div>
+          <div className="w-64 space-y-1 text-sm">
+            <div className="flex justify-between"><span className="text-gray-600">Sub Total</span><span className="font-medium">{inr(subtotal)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-600">SGST {n(invoice.sgstRate)}%</span><span>{inr(sgstAmount)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-600">CGST {n(invoice.cgstRate)}%</span><span>{inr(cgstAmount)}</span></div>
+            <div className="flex justify-between border-t-2 border-orange-600 pt-2 mt-1">
+              <span className="font-bold text-base">Grand Total</span>
+              <span className="font-black text-lg text-orange-600">{inr(grandTotal)}</span>
+            </div>
+          </div>
         </div>
-        <div className="text-right text-xs text-gray-500">
-          {invoice.notes && <p className="text-gray-600 mb-2 italic max-w-48 text-right">{invoice.notes}</p>}
-          <p>Thank you for choosing Madurai SMT Travels!</p>
-          <p className="mt-1">📞 8110806339</p>
+
+        {/* Footer */}
+        <div className="flex justify-between items-end p-4 border-t border-orange-300">
+          <div>
+            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${invoice.status === "paid" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+              {invoice.status?.toUpperCase() ?? "PENDING"}
+            </span>
+            {invoice.paymentMode && <p className="text-xs text-gray-500 mt-1">Mode: {invoice.paymentMode}</p>}
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-semibold text-gray-700">For {companyName}</p>
+            <p className="text-xs text-gray-400 mt-6">Authorised Signatory</p>
+          </div>
         </div>
       </div>
     </div>
@@ -142,9 +176,12 @@ function InvoicePrintView({ invoice }: { invoice: any }) {
 const EMPTY_FORM = {
   customerName: "", customerPhone: "", customerAddress: "",
   vehicleNumber: "", driverName: "",
-  tripFrom: "", tripTo: "", kmsTraveled: "",
+  tripFrom: "", tripTo: "", kmsTraveled: "", startingKm: "", closingKm: "",
   serviceDate: "", description: "",
-  taxRate: "18", amount: "", taxAmount: "", dueDate: "",
+  hireHours: "", hireHourRate: "", hireKms: "", hireKmRate: "",
+  rentDays: "", rentDayRate: "", fuelKms: "", fuelKmRate: "",
+  battaQty: "", battaRate: "", hillsCharge: "", permitCharge: "", tollParking: "",
+  sgstRate: "2.5", cgstRate: "2.5", dueDate: "",
   paymentMode: "", notes: "",
 };
 
@@ -172,17 +209,23 @@ export default function AdminFinanceInvoices() {
     return matchSearch && matchStatus;
   });
 
-  const totalPaid = invoices?.filter(i => i.status === "paid").reduce((s, i) => s + Number(i.amount ?? 0), 0) ?? 0;
-  const totalPending = invoices?.filter(i => i.status !== "paid" && i.status !== "cancelled").reduce((s, i) => s + Number(i.amount ?? 0), 0) ?? 0;
+  const totalPaid = invoices?.filter(i => i.status === "paid").reduce((s, i) => s + n(i.amount) + n(i.taxAmount), 0) ?? 0;
+  const totalPending = invoices?.filter(i => i.status !== "paid" && i.status !== "cancelled").reduce((s, i) => s + n(i.amount) + n(i.taxAmount), 0) ?? 0;
 
   const setF = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const autoTax = () => {
-    const base = Number(form.amount) || 0;
-    const rate = Number(form.taxRate) || 18;
-    setForm(f => ({ ...f, taxAmount: ((base * rate) / 100).toFixed(2) }));
-  };
+  // Live totals for the form
+  const formSubtotal =
+    n(form.hireHours) * n(form.hireHourRate) +
+    n(form.hireKms) * n(form.hireKmRate) +
+    n(form.rentDays) * n(form.rentDayRate) +
+    n(form.fuelKms) * n(form.fuelKmRate) +
+    n(form.battaQty) * n(form.battaRate) +
+    n(form.hillsCharge) + n(form.permitCharge) + n(form.tollParking);
+  const formSgst = Math.round(formSubtotal * n(form.sgstRate)) / 100;
+  const formCgst = Math.round(formSubtotal * n(form.cgstRate)) / 100;
+  const formGrand = formSubtotal + formSgst + formCgst;
 
   const handleCreate = async () => {
     try {
@@ -196,11 +239,26 @@ export default function AdminFinanceInvoices() {
           tripFrom: form.tripFrom || undefined,
           tripTo: form.tripTo || undefined,
           kmsTraveled: form.kmsTraveled ? Number(form.kmsTraveled) : undefined,
+          startingKm: form.startingKm ? Number(form.startingKm) : undefined,
+          closingKm: form.closingKm ? Number(form.closingKm) : undefined,
           serviceDate: form.serviceDate || undefined,
           description: form.description || undefined,
-          taxRate: Number(form.taxRate) || 18,
-          amount: Number(form.amount),
-          taxAmount: Number(form.taxAmount) || 0,
+          hireHours: n(form.hireHours),
+          hireHourRate: n(form.hireHourRate),
+          hireKms: n(form.hireKms),
+          hireKmRate: n(form.hireKmRate),
+          rentDays: n(form.rentDays),
+          rentDayRate: n(form.rentDayRate),
+          fuelKms: n(form.fuelKms),
+          fuelKmRate: n(form.fuelKmRate),
+          battaQty: n(form.battaQty),
+          battaRate: n(form.battaRate),
+          hillsCharge: n(form.hillsCharge),
+          permitCharge: n(form.permitCharge),
+          tollParking: n(form.tollParking),
+          sgstRate: n(form.sgstRate),
+          cgstRate: n(form.cgstRate),
+          amount: formSubtotal,
           dueDate: form.dueDate,
           paymentMode: form.paymentMode || undefined,
           notes: form.notes || undefined,
@@ -221,6 +279,22 @@ export default function AdminFinanceInvoices() {
     refresh();
   };
 
+  const chargeRow = (label: string, qtyKey: string, qtyPh: string, rateKey: string, ratePh: string) => (
+    <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2">
+      <Label className="text-sm">{label}</Label>
+      <Input className="w-20" type="number" value={(form as any)[qtyKey]} onChange={setF(qtyKey)} placeholder={qtyPh} />
+      <Input className="w-24" type="number" value={(form as any)[rateKey]} onChange={setF(rateKey)} placeholder={ratePh} />
+      <span className="w-24 text-right text-sm font-medium text-muted-foreground">{inr(n((form as any)[qtyKey]) * n((form as any)[rateKey]))}</span>
+    </div>
+  );
+
+  const flatRow = (label: string, key: string) => (
+    <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+      <Label className="text-sm">{label}</Label>
+      <Input className="w-24" type="number" value={(form as any)[key]} onChange={setF(key)} placeholder="0" />
+    </div>
+  );
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
@@ -233,8 +307,8 @@ export default function AdminFinanceInvoices() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total Invoices</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{invoices?.length ?? 0}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Paid</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold text-emerald-600">₹{totalPaid.toLocaleString()}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Pending</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold text-amber-600">₹{totalPending.toLocaleString()}</p></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Paid</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold text-emerald-600">₹{totalPaid.toLocaleString("en-IN")}</p></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Pending</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold text-amber-600">₹{totalPending.toLocaleString("en-IN")}</p></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Overdue</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold text-red-600">{invoices?.filter(i => i.status === "overdue").length ?? 0}</p></CardContent></Card>
       </div>
 
@@ -255,7 +329,7 @@ export default function AdminFinanceInvoices() {
         <div className="space-y-3">
           {filtered.map(inv => {
             const StatusIcon = statusIcons[inv.status ?? "draft"] ?? FileText;
-            const total = Number(inv.amount ?? 0) + Number(inv.taxAmount ?? 0);
+            const total = n(inv.amount) + n(inv.taxAmount);
             return (
               <Card key={inv.id} className="shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
@@ -296,9 +370,9 @@ export default function AdminFinanceInvoices() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-black text-lg text-primary">₹{total.toLocaleString()}</p>
-                      {Number(inv.taxAmount) > 0 && (
-                        <p className="text-xs text-muted-foreground">Incl. GST ₹{Number(inv.taxAmount).toLocaleString()}</p>
+                      <p className="font-black text-lg text-primary">₹{total.toLocaleString("en-IN")}</p>
+                      {n(inv.taxAmount) > 0 && (
+                        <p className="text-xs text-muted-foreground">Incl. GST ₹{n(inv.taxAmount).toLocaleString("en-IN")}</p>
                       )}
                       {inv.dueDate && <p className="text-xs text-muted-foreground">Due {format(new Date(inv.dueDate), "dd MMM")}</p>}
                     </div>
@@ -327,7 +401,7 @@ export default function AdminFinanceInvoices() {
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Customer Details</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5 col-span-2"><Label>Customer Name *</Label><Input value={form.customerName} onChange={setF("customerName")} placeholder="Customer name" /></div>
+                <div className="space-y-1.5 col-span-2"><Label>Guest Name *</Label><Input value={form.customerName} onChange={setF("customerName")} placeholder="Customer name" /></div>
                 <div className="space-y-1.5"><Label>Phone</Label><Input value={form.customerPhone} onChange={setF("customerPhone")} placeholder="+91 XXXXX XXXXX" /></div>
                 <div className="space-y-1.5"><Label>Address</Label><Input value={form.customerAddress} onChange={setF("customerAddress")} placeholder="City, State" /></div>
               </div>
@@ -342,7 +416,6 @@ export default function AdminFinanceInvoices() {
                   <Select value={form.vehicleNumber} onValueChange={v => setForm(f => ({ ...f, vehicleNumber: v }))}>
                     <SelectTrigger><SelectValue placeholder="Select vehicle" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
                       {(vehicles ?? []).map(v => (
                         <SelectItem key={v.id} value={v.registrationNumber}>
                           {v.registrationNumber} — {v.make} {v.model}
@@ -356,7 +429,6 @@ export default function AdminFinanceInvoices() {
                   <Select value={form.driverName} onValueChange={v => setForm(f => ({ ...f, driverName: v }))}>
                     <SelectTrigger><SelectValue placeholder="Select driver" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
                       {(drivers ?? []).map(d => (
                         <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
                       ))}
@@ -372,38 +444,46 @@ export default function AdminFinanceInvoices() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5"><Label>From</Label><Input value={form.tripFrom} onChange={setF("tripFrom")} placeholder="Pickup location" /></div>
                 <div className="space-y-1.5"><Label>To</Label><Input value={form.tripTo} onChange={setF("tripTo")} placeholder="Drop location" /></div>
-                <div className="space-y-1.5"><Label>KMs Traveled</Label><Input type="number" value={form.kmsTraveled} onChange={setF("kmsTraveled")} placeholder="0" /></div>
+                <div className="space-y-1.5"><Label>Starting Km</Label><Input type="number" value={form.startingKm} onChange={setF("startingKm")} placeholder="0" /></div>
+                <div className="space-y-1.5"><Label>Closing Km</Label><Input type="number" value={form.closingKm} onChange={setF("closingKm")} placeholder="0" /></div>
+                <div className="space-y-1.5"><Label>Total KMs</Label><Input type="number" value={form.kmsTraveled} onChange={setF("kmsTraveled")} placeholder="0" /></div>
                 <div className="space-y-1.5"><Label>Service Date</Label><Input type="date" value={form.serviceDate} onChange={setF("serviceDate")} /></div>
                 <div className="space-y-1.5 col-span-2"><Label>Description</Label><Input value={form.description} onChange={setF("description")} placeholder="e.g. Airport pickup, Outstation tour…" /></div>
               </div>
             </div>
 
-            {/* Billing */}
+            {/* Charges */}
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Billing</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Charges</p>
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                <span>Particulars</span><span className="w-20 text-center">Qty</span><span className="w-24 text-center">Rate</span><span className="w-24 text-right">Amount</span>
+              </div>
+              <div className="space-y-2">
+                {chargeRow("Hire (per hour)", "hireHours", "hrs", "hireHourRate", "₹/hr")}
+                {chargeRow("Hire (per km)", "hireKms", "km", "hireKmRate", "₹/km")}
+                {chargeRow("Day Rent", "rentDays", "days", "rentDayRate", "₹/day")}
+                {chargeRow("Fuel Charge", "fuelKms", "km", "fuelKmRate", "₹/km")}
+                {chargeRow("Driver Batta", "battaQty", "day/hr", "battaRate", "₹")}
+              </div>
+              <div className="space-y-2 mt-3 pt-3 border-t">
+                {flatRow("Hills Charge", "hillsCharge")}
+                {flatRow("Inter State Permit Charge", "permitCharge")}
+                {flatRow("Toll & Parking", "tollParking")}
+              </div>
+            </div>
+
+            {/* Tax & totals */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Tax & Total</p>
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Amount (₹) *</Label>
-                  <Input type="number" value={form.amount} onChange={setF("amount")} onBlur={autoTax} placeholder="0" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>GST Rate (%)</Label>
-                  <Input type="number" value={form.taxRate} onChange={setF("taxRate")} onBlur={autoTax} placeholder="18" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Tax Amount (₹)</Label>
-                  <Input type="number" value={form.taxAmount} onChange={setF("taxAmount")} placeholder="Auto-calculated" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Due Date</Label>
-                  <Input type="date" value={form.dueDate} onChange={setF("dueDate")} />
-                </div>
+                <div className="space-y-1.5"><Label>SGST (%)</Label><Input type="number" value={form.sgstRate} onChange={setF("sgstRate")} placeholder="2.5" /></div>
+                <div className="space-y-1.5"><Label>CGST (%)</Label><Input type="number" value={form.cgstRate} onChange={setF("cgstRate")} placeholder="2.5" /></div>
+                <div className="space-y-1.5"><Label>Due Date</Label><Input type="date" value={form.dueDate} onChange={setF("dueDate")} /></div>
                 <div className="space-y-1.5">
                   <Label>Payment Mode</Label>
                   <Select value={form.paymentMode} onValueChange={v => setForm(f => ({ ...f, paymentMode: v }))}>
                     <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not set</SelectItem>
                       <SelectItem value="cash">Cash</SelectItem>
                       <SelectItem value="upi">UPI</SelectItem>
                       <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
@@ -412,12 +492,13 @@ export default function AdminFinanceInvoices() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Total</Label>
-                  <div className="h-9 flex items-center px-3 rounded-md border bg-muted text-sm font-bold text-primary">
-                    ₹{(Number(form.amount || 0) + Number(form.taxAmount || 0)).toLocaleString()}
-                  </div>
-                </div>
+              </div>
+              <div className="mt-4 rounded-md border bg-muted/50 p-3 space-y-1 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Sub Total</span><span className="font-medium">{inr(formSubtotal)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">SGST {n(form.sgstRate)}%</span><span>{inr(formSgst)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">CGST {n(form.cgstRate)}%</span><span>{inr(formCgst)}</span></div>
+                <div className="flex justify-between border-t pt-1.5 mt-1"><span className="font-bold">Grand Total</span><span className="font-black text-primary">{inr(formGrand)}</span></div>
+                <p className="text-xs text-muted-foreground italic pt-1">{amountInWords(formGrand)}</p>
               </div>
             </div>
 
@@ -429,7 +510,7 @@ export default function AdminFinanceInvoices() {
 
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-              <Button onClick={handleCreate} disabled={!form.customerName || !form.amount || createInvoice.isPending}>
+              <Button onClick={handleCreate} disabled={!form.customerName || formSubtotal <= 0 || createInvoice.isPending}>
                 Create Invoice
               </Button>
             </div>

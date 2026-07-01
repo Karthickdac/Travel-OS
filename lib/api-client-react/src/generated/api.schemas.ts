@@ -740,6 +740,26 @@ export const InvoiceStatus = {
   cancelled: 'cancelled',
 } as const;
 
+/**
+ * @nullable
+ */
+export type InvoiceCompany = {
+  /** @nullable */
+  name?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  gstNumber?: string | null;
+  /** @nullable */
+  city?: string | null;
+  /** @nullable */
+  country?: string | null;
+  /** @nullable */
+  logo?: string | null;
+  /** @nullable */
+  email?: string | null;
+} | null;
+
 export interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -761,10 +781,31 @@ export interface Invoice {
   /** @nullable */
   kmsTraveled?: number | null;
   /** @nullable */
+  startingKm?: number | null;
+  /** @nullable */
+  closingKm?: number | null;
+  /** @nullable */
   serviceDate?: string | null;
   /** @nullable */
   description?: string | null;
+  hireHours?: number;
+  hireHourRate?: number;
+  hireKms?: number;
+  hireKmRate?: number;
+  rentDays?: number;
+  rentDayRate?: number;
+  fuelKms?: number;
+  fuelKmRate?: number;
+  battaQty?: number;
+  battaRate?: number;
+  hillsCharge?: number;
+  permitCharge?: number;
+  tollParking?: number;
   taxRate?: number;
+  sgstRate?: number;
+  cgstRate?: number;
+  sgstAmount?: number;
+  cgstAmount?: number;
   amount: number;
   taxAmount?: number;
   /** @nullable */
@@ -776,6 +817,8 @@ export interface Invoice {
   /** @nullable */
   paymentMode?: string | null;
   createdAt?: string;
+  /** @nullable */
+  company?: InvoiceCompany;
 }
 
 export interface InvoiceInput {
@@ -788,9 +831,26 @@ export interface InvoiceInput {
   tripFrom?: string;
   tripTo?: string;
   kmsTraveled?: number;
+  startingKm?: number;
+  closingKm?: number;
   serviceDate?: string;
   description?: string;
+  hireHours?: number;
+  hireHourRate?: number;
+  hireKms?: number;
+  hireKmRate?: number;
+  rentDays?: number;
+  rentDayRate?: number;
+  fuelKms?: number;
+  fuelKmRate?: number;
+  battaQty?: number;
+  battaRate?: number;
+  hillsCharge?: number;
+  permitCharge?: number;
+  tollParking?: number;
   taxRate?: number;
+  sgstRate?: number;
+  cgstRate?: number;
   amount: number;
   taxAmount?: number;
   dueDate: string;
