@@ -35,3 +35,9 @@ id = "Vq1ArZf4EBicpfI3jkY_G"
 uri = "file://deploy/README.md"
 type = "text"
 title = "TravelOS VPS Deploy Guide"
+
+[[outputs]]
+id = "txkRyhi4N7hS0LODUHNe0"
+uri = "file://migration_tmp/travelos_dump.sql.gz"
+type = "unspecified"
+title = "TravelOS database export (restore on your VPS)"
