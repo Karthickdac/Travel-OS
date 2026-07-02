@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { MapPin, ArrowLeft, ArrowRight, Clock, Tag, Sparkles } from "lucide-react";
 import { getSiteDomain } from "@/lib/site-domain";
+import { useSeo } from "@/lib/use-seo";
 
 const SITE_DOMAIN = getSiteDomain();
 
@@ -31,6 +32,28 @@ export default function PublicDestinationDetail() {
 
   const dest = (destinations ?? []).find((d) => d.id === id);
   const destIndex = (destinations ?? []).findIndex((d) => d.id === id);
+  const destSeoDescription = dest
+    ? (dest.description?.slice(0, 155) ||
+        `Explore ${dest.name}${dest.state ? `, ${dest.state}` : ""} — tour packages, cabs and travel info. Plan your ${dest.name} trip with a trusted local travel agency.`)
+    : undefined;
+  useSeo(
+    dest
+      ? {
+          title: `${dest.name}${dest.state ? `, ${dest.state}` : ""} — Tour Packages & Travel Guide`,
+          description: destSeoDescription,
+          image: dest.imageUrl || undefined,
+          jsonLdId: "seo-jsonld-page",
+          jsonLd: {
+            "@context": "https://schema.org",
+            "@type": "TouristDestination",
+            name: dest.name,
+            description: destSeoDescription,
+            image: dest.imageUrl || undefined,
+            address: { "@type": "PostalAddress", addressRegion: dest.state || undefined, addressCountry: dest.country || "India" },
+          },
+        }
+      : { jsonLdId: "seo-jsonld-page", jsonLd: null },
+  );
   const relatedPackages = (packages ?? []).filter(
     (p) => p.destinationId === id || (dest?.name && p.destinationName === dest.name),
   );

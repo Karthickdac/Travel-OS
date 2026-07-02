@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { MapPin, Clock, Star, Phone, ArrowLeft, ArrowRight, Check, X, Sparkles } from "lucide-react";
 import { getSiteDomain } from "@/lib/site-domain";
+import { useSeo } from "@/lib/use-seo";
 
 const SITE_DOMAIN = getSiteDomain();
 
@@ -21,6 +22,31 @@ export default function PublicPackageDetail() {
   const contactPhone = cms?.phone || "8110806339";
 
   const pkg = (packages ?? []).find((p) => p.id === id);
+  const brandName = cms?.companyDisplayName || "Madurai SMT Travels";
+  const seoDescription = pkg
+    ? (pkg.description?.slice(0, 155) ||
+        `Book ${pkg.title}${pkg.destinationName ? ` to ${pkg.destinationName}` : ""} with ${brandName}. ${pkg.duration ? `${pkg.duration}, ` : ""}best price guaranteed. Enquire now.`)
+    : undefined;
+  useSeo(
+    pkg
+      ? {
+          title: `${pkg.title}${pkg.destinationName ? ` — ${pkg.destinationName} Tour Package` : " — Tour Package"} | ${brandName}`,
+          description: seoDescription,
+          image: pkg.imageUrl || undefined,
+          jsonLdId: "seo-jsonld-page",
+          jsonLd: {
+            "@context": "https://schema.org",
+            "@type": "TouristTrip",
+            name: pkg.title,
+            description: seoDescription,
+            image: pkg.imageUrl || undefined,
+            touristType: "Leisure",
+            provider: { "@type": "TravelAgency", name: brandName },
+            offers: { "@type": "Offer", price: pkg.price, priceCurrency: "INR", availability: "https://schema.org/InStock" },
+          },
+        }
+      : { jsonLdId: "seo-jsonld-page", jsonLd: null },
+  );
   const related = (packages ?? [])
     .filter((p) => p.id !== id && p.destinationName && pkg?.destinationName && p.destinationName === pkg.destinationName)
     .slice(0, 3);

@@ -7,6 +7,8 @@ export interface SeoInput {
   image?: string;
   canonical?: string;
   jsonLd?: Record<string, unknown> | null;
+  /** Distinct id lets a page add its own JSON-LD block alongside the site-level one. */
+  jsonLdId?: string;
 }
 
 function upsertMeta(selector: string, attrs: Record<string, string>) {
@@ -36,7 +38,7 @@ function upsertLink(rel: string, href: string) {
  * Open Graph / Twitter cards, and JSON-LD structured data. Driven by CMS data,
  * never hardcoded per tenant.
  */
-export function useSeo({ title, description, keywords, image, canonical, jsonLd }: SeoInput) {
+export function useSeo({ title, description, keywords, image, canonical, jsonLd, jsonLdId }: SeoInput) {
   useEffect(() => {
     if (title) document.title = title;
 
@@ -61,8 +63,9 @@ export function useSeo({ title, description, keywords, image, canonical, jsonLd 
     if (description) upsertMeta('meta[name="twitter:description"]', { name: "twitter:description", content: description });
     if (image) upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: image });
 
-    // JSON-LD structured data
-    const LD_ID = "seo-jsonld";
+    // JSON-LD structured data. `undefined` means "not managed by this caller"
+    // (leave any existing block alone); `null` means "explicitly remove".
+    const LD_ID = jsonLdId || "seo-jsonld";
     let ld = document.getElementById(LD_ID);
     if (jsonLd) {
       if (!ld) {
@@ -72,8 +75,13 @@ export function useSeo({ title, description, keywords, image, canonical, jsonLd 
         document.head.appendChild(ld);
       }
       ld.textContent = JSON.stringify(jsonLd);
-    } else if (ld) {
+    } else if (jsonLd === null && ld) {
       ld.remove();
     }
-  }, [title, description, keywords, image, canonical, jsonLd]);
+    return () => {
+      // Remove only the block this caller owns, so navigating away from a
+      // page never leaves its structured data behind (or touches others').
+      if (jsonLd !== undefined) document.getElementById(LD_ID)?.remove();
+    };
+  }, [title, description, keywords, image, canonical, jsonLd, jsonLdId]);
 }

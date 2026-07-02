@@ -34,6 +34,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   // Per-tenant, per-page SEO (title, description, keywords, OG/Twitter,
   // canonical + JSON-LD structured data). All values are CMS-driven.
   const baseTitle = cms?.metaTitle || `${brandName} — Cab Booking & Tour Packages`;
+  // Detail pages own their title/description (set via their own useSeo call
+  // with item-specific content); the layout must not override them.
+  const isDetailPage = /^\/(packages|destinations)\/./.test(location);
   const pageTitle =
     location === "/packages"
       ? `Tour Packages & Holiday Deals | ${brandName}`
@@ -74,10 +77,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
     priceRange: "₹₹",
   };
   useSeo({
-    title: pageTitle,
-    description: pageDescription,
+    title: isDetailPage ? undefined : pageTitle,
+    description: isDetailPage ? undefined : pageDescription,
     keywords: cms?.metaKeywords || undefined,
-    image: cms?.heroBgImage || undefined,
+    image: isDetailPage ? undefined : cms?.heroBgImage || undefined,
     jsonLd,
   });
 
