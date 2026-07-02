@@ -47,6 +47,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         ? `Contact ${brandName} for cab booking, outstation taxi and custom tour packages across Tamil Nadu & South India. Call ${phone} or send an enquiry online.`
         : cms?.metaDescription ||
           "Book cabs and tour packages across South India. Best prices, trusted service, 24/7 support.";
+  const sameAs = [cms?.socialFacebook, cms?.socialInstagram, cms?.socialYoutube].filter(
+    (u): u is string => !!u && /^https?:\/\//.test(u),
+  );
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
@@ -55,7 +58,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
     telephone: phone,
     email,
     image: cms?.heroBgImage || undefined,
-    address: { "@type": "PostalAddress", streetAddress: address, addressLocality: "Madurai", addressRegion: "Tamil Nadu", addressCountry: "IN" },
+    logo: cms?.logoUrl || undefined,
+    sameAs: sameAs.length > 0 ? sameAs : undefined,
+    address: { "@type": "PostalAddress", streetAddress: address, addressCountry: "IN" },
     url: `${window.location.origin}/`,
     areaServed: [
       "Madurai", "Tamil Nadu", "South India", "Kerala",
