@@ -41,8 +41,17 @@ async function resolveCompanyIdByDomain(domain: string): Promise<string | null> 
   return match?.id ?? null;
 }
 
+// The x-forwarded-host header and the ?domain= override are client-spoofable,
+// so they are honored only inside the Replit workspace (REPL_ID set), where the
+// platform proxy controls them. On the VPS, nginx passes the real Host header.
+export function isTrustedProxyEnv(): boolean {
+  return !!process.env.REPL_ID;
+}
+
 function getRequestedHost(req: Request): string {
-  const fwd = (req.headers["x-forwarded-host"] as string | undefined)?.split(",")[0]?.trim();
+  const fwd = isTrustedProxyEnv()
+    ? (req.headers["x-forwarded-host"] as string | undefined)?.split(",")[0]?.trim()
+    : undefined;
   return fwd || req.headers.host || "";
 }
 
@@ -50,8 +59,9 @@ function getRequestedHost(req: Request): string {
 // tenant the URL is built from the DB-stored domain (authoritative, immune to
 // host-header spoofing). For unknown-but-valid hosts (e.g. the *.replit.app
 // deployment URL, or dev via ?domain=) the validated host is used as-is.
-async function resolveCanonical(req: Request): Promise<{ base: string; companyId: string | null } | null> {
-  const rawHost = ((req.query.domain as string | undefined) || getRequestedHost(req)).trim();
+export async function resolveCanonical(req: Request): Promise<{ base: string; companyId: string | null } | null> {
+  const domainOverride = isTrustedProxyEnv() ? (req.query.domain as string | undefined) : undefined;
+  const rawHost = (domainOverride || getRequestedHost(req)).trim();
   if (!rawHost || !isValidHost(rawHost)) return null;
 
   const companyId = await resolveCompanyIdByDomain(rawHost);
@@ -77,7 +87,7 @@ const PUBLIC_PATHS: { path: string; priority: string; changefreq: string }[] = [
 // Mirrors the public catalog endpoints' behavior: when the host maps to no
 // tenant, fall back to the first company so the sitemap lists exactly the
 // URLs the rendered site links to.
-async function resolveContentCompanyId(companyId: string | null): Promise<string | null> {
+export async function resolveContentCompanyId(companyId: string | null): Promise<string | null> {
   if (companyId) return companyId;
   const [firstCompany] = await db
     .select({ id: companiesTable.id })
