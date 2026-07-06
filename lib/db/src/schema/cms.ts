@@ -22,6 +22,7 @@ export const websiteSettingsTable = pgTable("website_settings", {
 
   // Contact & Socials
   phone: text("phone").default("8110806339"),
+  phoneSecondary: text("phone_secondary"),
   email: text("email"),
   address: text("address").default("Madurai, Tamil Nadu"),
   socialWhatsapp: text("social_whatsapp"),

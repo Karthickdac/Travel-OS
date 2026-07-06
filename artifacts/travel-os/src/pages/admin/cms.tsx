@@ -36,6 +36,7 @@ type CmsForm = {
   faviconUrl: string;
   primaryColor: string;
   phone: string;
+  phoneSecondary: string;
   email: string;
   address: string;
   socialWhatsapp: string;
@@ -62,7 +63,7 @@ type CmsForm = {
 const EMPTY: CmsForm = {
   heroTitle: "", heroSubtitle: "", heroDesc: "", heroCtaText: "", heroCtaPhone: "", heroBgImage: "",
   companyDisplayName: "", tagline: "", logoUrl: "", faviconUrl: "", primaryColor: "#f97316",
-  phone: "", email: "", address: "",
+  phone: "", phoneSecondary: "", email: "", address: "",
   socialWhatsapp: "", socialFacebook: "", socialInstagram: "", socialYoutube: "",
   stat1Value: "", stat1Label: "", stat2Value: "", stat2Label: "",
   stat3Value: "", stat3Label: "", stat4Value: "", stat4Label: "",
@@ -313,6 +314,7 @@ export default function AdminCms() {
       faviconUrl: settings.faviconUrl ?? "",
       primaryColor: settings.primaryColor ?? "#f97316",
       phone: settings.phone ?? "",
+      phoneSecondary: settings.phoneSecondary ?? "",
       email: settings.email ?? "",
       address: settings.address ?? "",
       socialWhatsapp: settings.socialWhatsapp ?? "",
@@ -543,7 +545,8 @@ export default function AdminCms() {
             <CardContent className="space-y-4">
               <SectionBadge icon={Phone} label="Contact Details" />
               <div className="grid md:grid-cols-2 gap-4">
-                <FRow label="Phone Number" k="phone" form={form} setF={setFInput} placeholder="8110806339" />
+                <FRow label="Primary Phone Number" k="phone" form={form} setF={setFInput} placeholder="8110806339" />
+                <FRow label="Secondary Phone Number" k="phoneSecondary" form={form} setF={setFInput} placeholder="7845890005" hint="Optional — shown alongside the primary number" />
                 <FRow label="Email Address" k="email" form={form} setF={setFInput} placeholder="info@maduraismt.com" type="email" />
               </div>
               <FieldRow label="Address / Location">

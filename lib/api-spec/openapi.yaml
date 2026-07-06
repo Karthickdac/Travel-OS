@@ -3289,6 +3289,8 @@ components:
           type: ["string", "null"]
         phone:
           type: ["string", "null"]
+        phoneSecondary:
+          type: ["string", "null"]
         email:
           type: ["string", "null"]
         address:
@@ -3374,6 +3376,8 @@ components:
         primaryColor:
           type: string
         phone:
+          type: string
+        phoneSecondary:
           type: string
         email:
           type: string

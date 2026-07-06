@@ -30,5 +30,8 @@ sudo systemctl restart travelos-api
 - 4 live domains: www.maduraibesttravels.com, www.maduraisuccesstravels.com, www.maduraisupremetravels.com, www.maduraimasstravels.com (mapped via `companies.domain`).
 - Kerala Voyages has NO domain (user chose to skip a public site for it for now).
 
+## Applying tenant DATA changes to live sites
+Schema/code changes deploy via the standard deploy block (git pull + build + restart). But per-tenant DATA (phone numbers, CMS text) lives in the VPS Postgres and must be set with SQL on the VPS DB (`postgresql://travelos:travelos@127.0.0.1:5432/travelos`), OR the user can edit it in the Company Admin → Website/CMS editor. Dev DB edits do NOT propagate to the VPS. Always give the user a `psql` heredoc scoped by `companies.domain` for data changes, and remind them a schema change (new column) requires `pnpm --filter @workspace/db run push` equivalent — on VPS there's no pnpm, so new columns need the deploy to include a migration or manual `ALTER TABLE`.
+
 **Why:** these facts are not discoverable from the codebase; wrong assumptions (pnpm, Replit DB URL, direct ports) have broken deploys before.
 **How to apply:** any time the user asks to deploy/fix/verify the live tenant sites.

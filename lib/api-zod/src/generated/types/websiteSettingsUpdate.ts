@@ -19,6 +19,7 @@ export interface WebsiteSettingsUpdate {
   faviconUrl?: string;
   primaryColor?: string;
   phone?: string;
+  phoneSecondary?: string;
   email?: string;
   address?: string;
   socialWhatsapp?: string;

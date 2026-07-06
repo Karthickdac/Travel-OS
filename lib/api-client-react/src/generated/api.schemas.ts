@@ -949,6 +949,8 @@ export interface WebsiteSettings {
   /** @nullable */
   phone?: string | null;
   /** @nullable */
+  phoneSecondary?: string | null;
+  /** @nullable */
   email?: string | null;
   /** @nullable */
   address?: string | null;
@@ -1014,6 +1016,7 @@ export interface WebsiteSettingsUpdate {
   faviconUrl?: string;
   primaryColor?: string;
   phone?: string;
+  phoneSecondary?: string;
   email?: string;
   address?: string;
   socialWhatsapp?: string;

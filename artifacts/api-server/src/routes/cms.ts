@@ -31,6 +31,7 @@ function mapSettings(s: typeof websiteSettingsTable.$inferSelect) {
     faviconUrl: s.faviconUrl,
     primaryColor: s.primaryColor,
     phone: s.phone,
+    phoneSecondary: s.phoneSecondary,
     email: s.email,
     address: s.address,
     socialWhatsapp: s.socialWhatsapp,
@@ -115,7 +116,7 @@ router.put("/v1/cms/settings", async (req, res): Promise<void> => {
   const fields = [
     "heroTitle","heroSubtitle","heroDesc","heroCtaText","heroCtaPhone","heroBgImage",
     "companyDisplayName","tagline","logoUrl","faviconUrl","primaryColor",
-    "phone","email","address","socialWhatsapp","socialFacebook","socialInstagram","socialYoutube",
+    "phone","phoneSecondary","email","address","socialWhatsapp","socialFacebook","socialInstagram","socialYoutube",
     "stat1Value","stat1Label","stat2Value","stat2Label","stat3Value","stat3Label","stat4Value","stat4Label",
     "aboutTitle","aboutText","announcementBar","ctaTitle","ctaSubtitle",
     "showPackages","showDestinations","showEnquiryForm","metaTitle","metaDescription","metaKeywords",

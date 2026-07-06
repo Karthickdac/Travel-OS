@@ -17,6 +17,7 @@ const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: 0
 export default function PublicContact() {
   const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
   const phone = cms?.phone || "8110806339";
+  const phoneSecondary = cms?.phoneSecondary || "";
   const email = cms?.email || "admin@maduraismt.com";
   const address = cms?.address || "Madurai, Tamil Nadu";
   return (
@@ -61,7 +62,7 @@ export default function PublicContact() {
                 {[
                   {
                     icon: Phone, title: "Call / WhatsApp", color: "bg-primary/10 text-primary",
-                    content: <><a href={`tel:${phone}`} className="text-2xl font-black text-foreground hover:text-primary transition-colors block mb-1">{phone}</a><p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Available 7AM – 10PM, 7 days a week</p></>
+                    content: <><a href={`tel:${phone}`} className="text-2xl font-black text-foreground hover:text-primary transition-colors block mb-1">{phone}</a>{phoneSecondary && <a href={`tel:${phoneSecondary}`} className="text-2xl font-black text-foreground hover:text-primary transition-colors block mb-1">{phoneSecondary}</a>}<p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Available 7AM – 10PM, 7 days a week</p></>
                   },
                   {
                     icon: MapPin, title: "Our Office", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",

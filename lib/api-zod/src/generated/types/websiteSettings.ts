@@ -31,6 +31,8 @@ export interface WebsiteSettings {
   /** @nullable */
   phone?: string | null;
   /** @nullable */
+  phoneSecondary?: string | null;
+  /** @nullable */
   email?: string | null;
   /** @nullable */
   address?: string | null;

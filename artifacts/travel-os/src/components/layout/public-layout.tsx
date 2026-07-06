@@ -28,6 +28,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const brandName = cms?.companyDisplayName || "Madurai SMT Travels";
   const brandAbbr = logoAbbr(brandName);
   const phone = cms?.phone || "8110806339";
+  const phoneSecondary = cms?.phoneSecondary || "";
   const email = cms?.email || "admin@maduraismt.com";
   const address = cms?.address || "Madurai, Tamil Nadu";
 
@@ -295,6 +296,14 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 </div>
                 {phone}
               </a>
+              {phoneSecondary && (
+                <a href={`tel:${phoneSecondary}`} className="flex items-center gap-3 text-sm font-bold text-white hover:text-primary transition-colors group">
+                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  {phoneSecondary}
+                </a>
+              )}
               <div className="flex items-center gap-3 text-sm font-medium text-white/80 group">
                 <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
                   <MapPin className="h-4 w-4" />
