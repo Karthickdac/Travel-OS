@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, vendorsTable } from "@workspace/db";
 import {
   ListVendorsResponse,
@@ -14,6 +14,10 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
 
 function mapVendor(v: typeof vendorsTable.$inferSelect) {
   return {
@@ -31,12 +35,19 @@ function mapVendor(v: typeof vendorsTable.$inferSelect) {
   };
 }
 
-router.get("/v1/vendors", async (_req, res): Promise<void> => {
-  const vendors = await db.select().from(vendorsTable).where(eq(vendorsTable.isDeleted, false));
+router.get("/v1/vendors", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const vendors = await db
+    .select()
+    .from(vendorsTable)
+    .where(and(eq(vendorsTable.isDeleted, false), eq(vendorsTable.companyId, companyId)));
   res.json(ListVendorsResponse.parse(vendors.map(mapVendor)));
 });
 
 router.post("/v1/vendors", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const parsed = CreateVendorBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -46,6 +57,7 @@ router.post("/v1/vendors", async (req, res): Promise<void> => {
   const [vendor] = await db
     .insert(vendorsTable)
     .values({
+      companyId,
       name: parsed.data.name,
       contactName: parsed.data.contactName,
       phone: parsed.data.phone,
@@ -59,13 +71,18 @@ router.post("/v1/vendors", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/vendors/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = GetVendorParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [vendor] = await db.select().from(vendorsTable).where(eq(vendorsTable.id, params.data.id));
+  const [vendor] = await db
+    .select()
+    .from(vendorsTable)
+    .where(and(eq(vendorsTable.id, params.data.id), eq(vendorsTable.companyId, companyId)));
   if (!vendor) {
     res.status(404).json({ error: "Vendor not found" });
     return;
@@ -75,6 +92,8 @@ router.get("/v1/vendors/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/vendors/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = UpdateVendorParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -96,7 +115,7 @@ router.patch("/v1/vendors/:id", async (req, res): Promise<void> => {
   const [vendor] = await db
     .update(vendorsTable)
     .set(updateData)
-    .where(eq(vendorsTable.id, params.data.id))
+    .where(and(eq(vendorsTable.id, params.data.id), eq(vendorsTable.companyId, companyId)))
     .returning();
 
   if (!vendor) {
@@ -108,13 +127,18 @@ router.patch("/v1/vendors/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/vendors/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = DeleteVendorParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.update(vendorsTable).set({ isDeleted: true }).where(eq(vendorsTable.id, params.data.id));
+  await db
+    .update(vendorsTable)
+    .set({ isDeleted: true })
+    .where(and(eq(vendorsTable.id, params.data.id), eq(vendorsTable.companyId, companyId)));
   res.sendStatus(204);
 });
 

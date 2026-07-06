@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, customersTable } from "@workspace/db";
 import {
   ListCustomersQueryParams,
@@ -15,6 +15,10 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
 
 function mapCustomer(c: typeof customersTable.$inferSelect) {
   return {
@@ -32,12 +36,19 @@ function mapCustomer(c: typeof customersTable.$inferSelect) {
   };
 }
 
-router.get("/v1/customers", async (_req, res): Promise<void> => {
-  const customers = await db.select().from(customersTable).where(eq(customersTable.isDeleted, false));
+router.get("/v1/customers", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const customers = await db
+    .select()
+    .from(customersTable)
+    .where(and(eq(customersTable.isDeleted, false), eq(customersTable.companyId, companyId)));
   res.json(ListCustomersResponse.parse(customers.map(mapCustomer)));
 });
 
 router.post("/v1/customers", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const parsed = CreateCustomerBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -47,6 +58,7 @@ router.post("/v1/customers", async (req, res): Promise<void> => {
   const [customer] = await db
     .insert(customersTable)
     .values({
+      companyId,
       name: parsed.data.name,
       phone: parsed.data.phone,
       email: parsed.data.email,
@@ -58,13 +70,18 @@ router.post("/v1/customers", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/customers/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = GetCustomerParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [customer] = await db.select().from(customersTable).where(eq(customersTable.id, params.data.id));
+  const [customer] = await db
+    .select()
+    .from(customersTable)
+    .where(and(eq(customersTable.id, params.data.id), eq(customersTable.companyId, companyId)));
   if (!customer) {
     res.status(404).json({ error: "Customer not found" });
     return;
@@ -74,6 +91,8 @@ router.get("/v1/customers/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/customers/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = UpdateCustomerParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -94,7 +113,7 @@ router.patch("/v1/customers/:id", async (req, res): Promise<void> => {
   const [customer] = await db
     .update(customersTable)
     .set(updateData)
-    .where(eq(customersTable.id, params.data.id))
+    .where(and(eq(customersTable.id, params.data.id), eq(customersTable.companyId, companyId)))
     .returning();
 
   if (!customer) {
@@ -106,13 +125,18 @@ router.patch("/v1/customers/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/customers/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = DeleteCustomerParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.update(customersTable).set({ isDeleted: true }).where(eq(customersTable.id, params.data.id));
+  await db
+    .update(customersTable)
+    .set({ isDeleted: true })
+    .where(and(eq(customersTable.id, params.data.id), eq(customersTable.companyId, companyId)));
   res.sendStatus(204);
 });
 

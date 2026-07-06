@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, count } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import { db, leadsTable, quotationsTable, bookingsTable } from "@workspace/db";
 import {
   ListLeadsQueryParams,
@@ -31,6 +31,10 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
 
 class ConvertConflict extends Error {}
 
@@ -75,11 +79,23 @@ function mapQuotation(q: typeof quotationsTable.$inferSelect) {
 
 // Leads
 router.get("/v1/crm/leads", async (req, res): Promise<void> => {
-  const leads = await db.select().from(leadsTable).where(eq(leadsTable.isDeleted, false));
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const leads = await db.select().from(leadsTable).where(and(eq(leadsTable.isDeleted, false), eq(leadsTable.companyId, companyId)));
   res.json(ListLeadsResponse.parse(leads.map(mapLead)));
 });
 
 router.post("/v1/crm/leads", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const parsed = CreateLeadBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -89,6 +105,7 @@ router.post("/v1/crm/leads", async (req, res): Promise<void> => {
   const [lead] = await db
     .insert(leadsTable)
     .values({
+      companyId,
       name: parsed.data.name,
       phone: parsed.data.phone,
       email: parsed.data.email,
@@ -105,12 +122,18 @@ router.post("/v1/crm/leads", async (req, res): Promise<void> => {
   res.status(201).json(CreateLeadResponse.parse(mapLead(lead)));
 });
 
-router.get("/v1/crm/pipeline", async (_req, res): Promise<void> => {
+router.get("/v1/crm/pipeline", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const statuses = ["new", "contacted", "qualified", "quotation_sent", "won", "lost"];
   const counts: Record<string, number> = {};
 
   for (const status of statuses) {
-    const [result] = await db.select({ total: count() }).from(leadsTable).where(eq(leadsTable.status, status));
+    const [result] = await db.select({ total: count() }).from(leadsTable).where(and(eq(leadsTable.status, status), eq(leadsTable.companyId, companyId)));
     counts[status] = result.total;
   }
 
@@ -127,13 +150,19 @@ router.get("/v1/crm/pipeline", async (_req, res): Promise<void> => {
 });
 
 router.get("/v1/crm/leads/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = GetLeadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [lead] = await db.select().from(leadsTable).where(eq(leadsTable.id, params.data.id));
+  const [lead] = await db.select().from(leadsTable).where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.companyId, companyId)));
   if (!lead) {
     res.status(404).json({ error: "Lead not found" });
     return;
@@ -143,6 +172,12 @@ router.get("/v1/crm/leads/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/crm/leads/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = UpdateLeadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -164,7 +199,7 @@ router.patch("/v1/crm/leads/:id", async (req, res): Promise<void> => {
   const [lead] = await db
     .update(leadsTable)
     .set(updateData)
-    .where(eq(leadsTable.id, params.data.id))
+    .where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.companyId, companyId)))
     .returning();
 
   if (!lead) {
@@ -176,23 +211,41 @@ router.patch("/v1/crm/leads/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/crm/leads/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = DeleteLeadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.update(leadsTable).set({ isDeleted: true }).where(eq(leadsTable.id, params.data.id));
+  await db.update(leadsTable).set({ isDeleted: true }).where(and(eq(leadsTable.id, params.data.id), eq(leadsTable.companyId, companyId)));
   res.sendStatus(204);
 });
 
 // Quotations
-router.get("/v1/crm/quotations", async (_req, res): Promise<void> => {
-  const quotations = await db.select().from(quotationsTable).where(eq(quotationsTable.isDeleted, false));
+router.get("/v1/crm/quotations", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const quotations = await db.select().from(quotationsTable).where(and(eq(quotationsTable.isDeleted, false), eq(quotationsTable.companyId, companyId)));
   res.json(ListQuotationsResponse.parse(quotations.map(mapQuotation)));
 });
 
 router.post("/v1/crm/quotations", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const parsed = CreateQuotationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -206,6 +259,7 @@ router.post("/v1/crm/quotations", async (req, res): Promise<void> => {
   const [quotation] = await db
     .insert(quotationsTable)
     .values({
+      companyId,
       quotationNumber: `QT${quotationCounter}`,
       leadId: parsed.data.leadId,
       customerName: parsed.data.customerName,
@@ -222,13 +276,19 @@ router.post("/v1/crm/quotations", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = GetQuotationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [quotation] = await db.select().from(quotationsTable).where(eq(quotationsTable.id, params.data.id));
+  const [quotation] = await db.select().from(quotationsTable).where(and(eq(quotationsTable.id, params.data.id), eq(quotationsTable.companyId, companyId)));
   if (!quotation) {
     res.status(404).json({ error: "Quotation not found" });
     return;
@@ -238,6 +298,12 @@ router.get("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = UpdateQuotationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -258,7 +324,7 @@ router.patch("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
   const [quotation] = await db
     .update(quotationsTable)
     .set(updateData)
-    .where(eq(quotationsTable.id, params.data.id))
+    .where(and(eq(quotationsTable.id, params.data.id), eq(quotationsTable.companyId, companyId)))
     .returning();
 
   if (!quotation) {
@@ -270,24 +336,36 @@ router.patch("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = DeleteQuotationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.update(quotationsTable).set({ isDeleted: true }).where(eq(quotationsTable.id, params.data.id));
+  await db.update(quotationsTable).set({ isDeleted: true }).where(and(eq(quotationsTable.id, params.data.id), eq(quotationsTable.companyId, companyId)));
   res.sendStatus(204);
 });
 
 router.post("/v1/crm/quotations/:id/convert", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = ConvertQuotationToBookingParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [quotation] = await db.select().from(quotationsTable).where(eq(quotationsTable.id, params.data.id));
+  const [quotation] = await db.select().from(quotationsTable).where(and(eq(quotationsTable.id, params.data.id), eq(quotationsTable.companyId, companyId)));
   if (!quotation) {
     res.status(404).json({ error: "Quotation not found" });
     return;
@@ -297,6 +375,7 @@ router.post("/v1/crm/quotations/:id/convert", async (req, res): Promise<void> =>
   const [booking] = await db
     .insert(bookingsTable)
     .values({
+      companyId,
       bookingNumber: `BK${bookingCounter}`,
       type: "tour",
       status: "confirmed",
@@ -309,7 +388,7 @@ router.post("/v1/crm/quotations/:id/convert", async (req, res): Promise<void> =>
     })
     .returning();
 
-  await db.update(quotationsTable).set({ status: "converted" }).where(eq(quotationsTable.id, params.data.id));
+  await db.update(quotationsTable).set({ status: "converted" }).where(and(eq(quotationsTable.id, params.data.id), eq(quotationsTable.companyId, companyId)));
 
   const mapped = {
     id: booking.id,

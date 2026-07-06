@@ -272,12 +272,26 @@ router.patch("/v1/finance/invoices/:id", async (req, res): Promise<void> => {
   res.json(UpdateInvoiceResponse.parse(mapInvoice(invoice, company)));
 });
 
-router.get("/v1/finance/expenses", async (_req, res): Promise<void> => {
-  const expenses = await db.select().from(expensesTable).where(eq(expensesTable.isDeleted, false));
+router.get("/v1/finance/expenses", async (req, res): Promise<void> => {
+  const cid = getCompanyId(req);
+  if (!cid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const expenses = await db
+    .select()
+    .from(expensesTable)
+    .where(and(eq(expensesTable.isDeleted, false), eq(expensesTable.companyId, cid)));
   res.json(ListExpensesResponse.parse(expenses.map(mapExpense)));
 });
 
 router.post("/v1/finance/expenses", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const parsed = CreateExpenseBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -288,6 +302,7 @@ router.post("/v1/finance/expenses", async (req, res): Promise<void> => {
   const [expense] = await db
     .insert(expensesTable)
     .values({
+      companyId,
       category: d.category,
       amount: String(d.amount),
       date: d.date,
@@ -305,6 +320,11 @@ router.post("/v1/finance/expenses", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
+  const cid = getCompanyId(req);
+  if (!cid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = UpdateExpenseParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -329,7 +349,7 @@ router.patch("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
   const [expense] = await db
     .update(expensesTable)
     .set(updateData)
-    .where(eq(expensesTable.id, params.data.id))
+    .where(and(eq(expensesTable.id, params.data.id), eq(expensesTable.companyId, cid)))
     .returning();
   if (!expense) {
     res.status(404).json({ error: "Expense not found" });
@@ -339,6 +359,11 @@ router.patch("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
+  const cid = getCompanyId(req);
+  if (!cid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = DeleteExpenseParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -347,13 +372,24 @@ router.delete("/v1/finance/expenses/:id", async (req, res): Promise<void> => {
   await db
     .update(expensesTable)
     .set({ isDeleted: true })
-    .where(eq(expensesTable.id, params.data.id));
+    .where(and(eq(expensesTable.id, params.data.id), eq(expensesTable.companyId, cid)));
   res.status(204).send();
 });
 
-router.get("/v1/finance/summary", async (_req, res): Promise<void> => {
-  const invoices = await db.select().from(invoicesTable).where(eq(invoicesTable.isDeleted, false));
-  const expenses = await db.select().from(expensesTable).where(eq(expensesTable.isDeleted, false));
+router.get("/v1/finance/summary", async (req, res): Promise<void> => {
+  const cid = getCompanyId(req);
+  if (!cid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const invoices = await db
+    .select()
+    .from(invoicesTable)
+    .where(and(eq(invoicesTable.isDeleted, false), eq(invoicesTable.companyId, cid)));
+  const expenses = await db
+    .select()
+    .from(expensesTable)
+    .where(and(eq(expensesTable.isDeleted, false), eq(expensesTable.companyId, cid)));
 
   const paidInvoices = invoices.filter((i) => i.status === "paid");
   const pendingInvoices = invoices.filter((i) => i.status === "sent" || i.status === "draft");

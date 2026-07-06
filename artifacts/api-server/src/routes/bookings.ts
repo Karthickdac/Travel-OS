@@ -22,6 +22,10 @@ import {
 
 const router: IRouter = Router();
 
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
+
 let bookingCounter = 1000;
 
 function mapBooking(b: typeof bookingsTable.$inferSelect) {
@@ -45,12 +49,23 @@ function mapBooking(b: typeof bookingsTable.$inferSelect) {
   };
 }
 
-router.get("/v1/dashboard/recent-bookings", async (_req, res): Promise<void> => {
-  const bookings = await db.select().from(bookingsTable).orderBy(desc(bookingsTable.createdAt)).limit(10);
+router.get("/v1/dashboard/recent-bookings", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const bookings = await db
+    .select()
+    .from(bookingsTable)
+    .where(eq(bookingsTable.companyId, companyId))
+    .orderBy(desc(bookingsTable.createdAt))
+    .limit(10);
   res.json(GetRecentBookingsResponse.parse(bookings.map(mapBooking)));
 });
 
 router.get("/v1/bookings", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
   const query = ListBookingsQueryParams.safeParse(req.query);
   const page = query.success ? (query.data.page ?? 1) : 1;
   const limit = query.success ? (query.data.limit ?? 20) : 20;
@@ -59,12 +74,15 @@ router.get("/v1/bookings", async (req, res): Promise<void> => {
   const bookings = await db
     .select()
     .from(bookingsTable)
-    .where(eq(bookingsTable.isDeleted, false))
+    .where(and(eq(bookingsTable.isDeleted, false), eq(bookingsTable.companyId, companyId)))
     .orderBy(desc(bookingsTable.createdAt))
     .limit(limit)
     .offset(offset);
 
-  const [totalResult] = await db.select({ total: count() }).from(bookingsTable).where(eq(bookingsTable.isDeleted, false));
+  const [totalResult] = await db
+    .select({ total: count() })
+    .from(bookingsTable)
+    .where(and(eq(bookingsTable.isDeleted, false), eq(bookingsTable.companyId, companyId)));
 
   res.json(
     ListBookingsResponse.parse({
@@ -77,6 +95,9 @@ router.get("/v1/bookings", async (req, res): Promise<void> => {
 });
 
 router.post("/v1/bookings", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
   const parsed = CreateBookingBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -87,6 +108,7 @@ router.post("/v1/bookings", async (req, res): Promise<void> => {
   const [booking] = await db
     .insert(bookingsTable)
     .values({
+      companyId,
       bookingNumber: `BK${bookingCounter}`,
       type: parsed.data.type,
       status: "enquiry",
@@ -105,13 +127,19 @@ router.post("/v1/bookings", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/bookings/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
   const params = GetBookingParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [booking] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, params.data.id));
+  const [booking] = await db
+    .select()
+    .from(bookingsTable)
+    .where(and(eq(bookingsTable.id, params.data.id), eq(bookingsTable.companyId, companyId)));
   if (!booking) {
     res.status(404).json({ error: "Booking not found" });
     return;
@@ -121,6 +149,9 @@ router.get("/v1/bookings/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/bookings/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
   const params = UpdateBookingParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -142,7 +173,7 @@ router.patch("/v1/bookings/:id", async (req, res): Promise<void> => {
   const [booking] = await db
     .update(bookingsTable)
     .set(updateData)
-    .where(eq(bookingsTable.id, params.data.id))
+    .where(and(eq(bookingsTable.id, params.data.id), eq(bookingsTable.companyId, companyId)))
     .returning();
 
   if (!booking) {
@@ -154,17 +185,26 @@ router.patch("/v1/bookings/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/bookings/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
   const params = GetBookingParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.update(bookingsTable).set({ isDeleted: true }).where(eq(bookingsTable.id, params.data.id));
+  await db
+    .update(bookingsTable)
+    .set({ isDeleted: true })
+    .where(and(eq(bookingsTable.id, params.data.id), eq(bookingsTable.companyId, companyId)));
   res.sendStatus(204);
 });
 
 router.post("/v1/bookings/:id/assign", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
   const params = AssignBookingParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -177,8 +217,14 @@ router.post("/v1/bookings/:id/assign", async (req, res): Promise<void> => {
     return;
   }
 
-  const [driver] = await db.select().from(driversTable).where(eq(driversTable.id, parsed.data.driverId));
-  const [vehicle] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, parsed.data.vehicleId));
+  const [driver] = await db
+    .select()
+    .from(driversTable)
+    .where(and(eq(driversTable.id, parsed.data.driverId), eq(driversTable.companyId, companyId)));
+  const [vehicle] = await db
+    .select()
+    .from(vehiclesTable)
+    .where(and(eq(vehiclesTable.id, parsed.data.vehicleId), eq(vehiclesTable.companyId, companyId)));
 
   const [booking] = await db
     .update(bookingsTable)
@@ -190,7 +236,7 @@ router.post("/v1/bookings/:id/assign", async (req, res): Promise<void> => {
       vehicleCategory: vehicle?.category,
       status: "assigned",
     })
-    .where(eq(bookingsTable.id, params.data.id))
+    .where(and(eq(bookingsTable.id, params.data.id), eq(bookingsTable.companyId, companyId)))
     .returning();
 
   if (!booking) {
@@ -202,6 +248,9 @@ router.post("/v1/bookings/:id/assign", async (req, res): Promise<void> => {
 });
 
 router.post("/v1/bookings/:id/cancel", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
   const params = CancelBookingParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -211,7 +260,7 @@ router.post("/v1/bookings/:id/cancel", async (req, res): Promise<void> => {
   const [booking] = await db
     .update(bookingsTable)
     .set({ status: "cancelled" })
-    .where(eq(bookingsTable.id, params.data.id))
+    .where(and(eq(bookingsTable.id, params.data.id), eq(bookingsTable.companyId, companyId)))
     .returning();
 
   if (!booking) {

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, count } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import { db, vehiclesTable, vehicleCategoriesTable } from "@workspace/db";
 import {
   ListVehiclesQueryParams,
@@ -19,6 +19,10 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
 
 function mapVehicle(v: typeof vehiclesTable.$inferSelect) {
   return {
@@ -51,12 +55,18 @@ function mapCategory(c: typeof vehicleCategoriesTable.$inferSelect) {
   };
 }
 
-router.get("/v1/fleet/stats", async (_req, res): Promise<void> => {
-  const [total] = await db.select({ total: count() }).from(vehiclesTable).where(eq(vehiclesTable.isDeleted, false));
-  const [available] = await db.select({ total: count() }).from(vehiclesTable).where(eq(vehiclesTable.status, "available"));
-  const [onTrip] = await db.select({ total: count() }).from(vehiclesTable).where(eq(vehiclesTable.status, "on_trip"));
-  const [maintenance] = await db.select({ total: count() }).from(vehiclesTable).where(eq(vehiclesTable.status, "maintenance"));
-  const [offRoad] = await db.select({ total: count() }).from(vehiclesTable).where(eq(vehiclesTable.status, "off_road"));
+router.get("/v1/fleet/stats", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const [total] = await db.select({ total: count() }).from(vehiclesTable).where(and(eq(vehiclesTable.isDeleted, false), eq(vehiclesTable.companyId, companyId)));
+  const [available] = await db.select({ total: count() }).from(vehiclesTable).where(and(eq(vehiclesTable.status, "available"), eq(vehiclesTable.companyId, companyId)));
+  const [onTrip] = await db.select({ total: count() }).from(vehiclesTable).where(and(eq(vehiclesTable.status, "on_trip"), eq(vehiclesTable.companyId, companyId)));
+  const [maintenance] = await db.select({ total: count() }).from(vehiclesTable).where(and(eq(vehiclesTable.status, "maintenance"), eq(vehiclesTable.companyId, companyId)));
+  const [offRoad] = await db.select({ total: count() }).from(vehiclesTable).where(and(eq(vehiclesTable.status, "off_road"), eq(vehiclesTable.companyId, companyId)));
 
   const utilizationRate = total.total > 0 ? Math.round((onTrip.total / total.total) * 100) : 0;
 
@@ -73,11 +83,23 @@ router.get("/v1/fleet/stats", async (_req, res): Promise<void> => {
 });
 
 router.get("/v1/fleet/vehicles", async (req, res): Promise<void> => {
-  const vehicles = await db.select().from(vehiclesTable).where(eq(vehiclesTable.isDeleted, false));
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const vehicles = await db.select().from(vehiclesTable).where(and(eq(vehiclesTable.isDeleted, false), eq(vehiclesTable.companyId, companyId)));
   res.json(ListVehiclesResponse.parse(vehicles.map(mapVehicle)));
 });
 
 router.post("/v1/fleet/vehicles", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const parsed = CreateVehicleBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -87,6 +109,7 @@ router.post("/v1/fleet/vehicles", async (req, res): Promise<void> => {
   const [vehicle] = await db
     .insert(vehiclesTable)
     .values({
+      companyId,
       registrationNumber: parsed.data.registrationNumber,
       make: parsed.data.make,
       model: parsed.data.model,
@@ -104,13 +127,19 @@ router.post("/v1/fleet/vehicles", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/fleet/vehicles/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = GetVehicleParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [vehicle] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, params.data.id));
+  const [vehicle] = await db.select().from(vehiclesTable).where(and(eq(vehiclesTable.id, params.data.id), eq(vehiclesTable.companyId, companyId)));
   if (!vehicle) {
     res.status(404).json({ error: "Vehicle not found" });
     return;
@@ -120,6 +149,12 @@ router.get("/v1/fleet/vehicles/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/fleet/vehicles/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = UpdateVehicleParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -142,7 +177,7 @@ router.patch("/v1/fleet/vehicles/:id", async (req, res): Promise<void> => {
   const [vehicle] = await db
     .update(vehiclesTable)
     .set(updateData)
-    .where(eq(vehiclesTable.id, params.data.id))
+    .where(and(eq(vehiclesTable.id, params.data.id), eq(vehiclesTable.companyId, companyId)))
     .returning();
 
   if (!vehicle) {
@@ -154,22 +189,40 @@ router.patch("/v1/fleet/vehicles/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/fleet/vehicles/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const params = DeleteVehicleParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.update(vehiclesTable).set({ isDeleted: true }).where(eq(vehiclesTable.id, params.data.id));
+  await db.update(vehiclesTable).set({ isDeleted: true }).where(and(eq(vehiclesTable.id, params.data.id), eq(vehiclesTable.companyId, companyId)));
   res.sendStatus(204);
 });
 
-router.get("/v1/fleet/categories", async (_req, res): Promise<void> => {
-  const categories = await db.select().from(vehicleCategoriesTable);
+router.get("/v1/fleet/categories", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const categories = await db.select().from(vehicleCategoriesTable).where(eq(vehicleCategoriesTable.companyId, companyId));
   res.json(ListVehicleCategoriesResponse.parse(categories.map(mapCategory)));
 });
 
 router.post("/v1/fleet/categories", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const parsed = CreateVehicleCategoryBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -179,6 +232,7 @@ router.post("/v1/fleet/categories", async (req, res): Promise<void> => {
   const [category] = await db
     .insert(vehicleCategoriesTable)
     .values({
+      companyId,
       name: parsed.data.name,
       description: parsed.data.description,
       baseRate: parsed.data.baseRate !== undefined ? String(parsed.data.baseRate) : null,

@@ -23,6 +23,10 @@ import {
 
 const router: IRouter = Router();
 
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
+
 let leadCounter = 500;
 
 function normalizeHost(h: string): string {
@@ -77,12 +81,25 @@ function mapPackage(p: typeof tourPackagesTable.$inferSelect) {
   };
 }
 
-router.get("/v1/tours/destinations", async (_req, res): Promise<void> => {
-  const destinations = await db.select().from(destinationsTable);
+router.get("/v1/tours/destinations", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const destinations = await db
+    .select()
+    .from(destinationsTable)
+    .where(eq(destinationsTable.companyId, companyId));
   res.json(ListDestinationsResponse.parse(destinations.map(mapDestination)));
 });
 
 router.post("/v1/tours/destinations", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const parsed = CreateDestinationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -92,6 +109,7 @@ router.post("/v1/tours/destinations", async (req, res): Promise<void> => {
   const [destination] = await db
     .insert(destinationsTable)
     .values({
+      companyId,
       name: parsed.data.name,
       state: parsed.data.state,
       country: parsed.data.country,
@@ -104,11 +122,24 @@ router.post("/v1/tours/destinations", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/tours/packages", async (req, res): Promise<void> => {
-  const packages = await db.select().from(tourPackagesTable);
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const packages = await db
+    .select()
+    .from(tourPackagesTable)
+    .where(eq(tourPackagesTable.companyId, companyId));
   res.json(ListTourPackagesResponse.parse(packages.map(mapPackage)));
 });
 
 router.post("/v1/tours/packages", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const parsed = CreateTourPackageBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -118,6 +149,7 @@ router.post("/v1/tours/packages", async (req, res): Promise<void> => {
   const [pkg] = await db
     .insert(tourPackagesTable)
     .values({
+      companyId,
       title: parsed.data.title,
       description: parsed.data.description,
       duration: parsed.data.duration,
@@ -135,13 +167,21 @@ router.post("/v1/tours/packages", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/tours/packages/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = GetTourPackageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [pkg] = await db.select().from(tourPackagesTable).where(eq(tourPackagesTable.id, params.data.id));
+  const [pkg] = await db
+    .select()
+    .from(tourPackagesTable)
+    .where(and(eq(tourPackagesTable.id, params.data.id), eq(tourPackagesTable.companyId, companyId)));
   if (!pkg) {
     res.status(404).json({ error: "Tour package not found" });
     return;
@@ -151,6 +191,11 @@ router.get("/v1/tours/packages/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/tours/packages/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = UpdateTourPackageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -172,7 +217,7 @@ router.patch("/v1/tours/packages/:id", async (req, res): Promise<void> => {
   const [pkg] = await db
     .update(tourPackagesTable)
     .set(updateData)
-    .where(eq(tourPackagesTable.id, params.data.id))
+    .where(and(eq(tourPackagesTable.id, params.data.id), eq(tourPackagesTable.companyId, companyId)))
     .returning();
 
   if (!pkg) {
@@ -184,13 +229,20 @@ router.patch("/v1/tours/packages/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/tours/packages/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = DeleteTourPackageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.delete(tourPackagesTable).where(eq(tourPackagesTable.id, params.data.id));
+  await db
+    .delete(tourPackagesTable)
+    .where(and(eq(tourPackagesTable.id, params.data.id), eq(tourPackagesTable.companyId, companyId)));
   res.sendStatus(204);
 });
 

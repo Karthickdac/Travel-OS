@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import {
   ListUsersQueryParams,
@@ -17,6 +17,10 @@ import { hashPassword } from "./auth";
 
 const router: IRouter = Router();
 
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
+
 function mapUser(u: typeof usersTable.$inferSelect) {
   return {
     id: u.id,
@@ -32,12 +36,20 @@ function mapUser(u: typeof usersTable.$inferSelect) {
 }
 
 router.get("/v1/users", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const query = ListUsersQueryParams.safeParse(req.query);
-  const users = await db.select().from(usersTable).orderBy(usersTable.createdAt);
+  const users = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.companyId, companyId))
+    .orderBy(usersTable.createdAt);
   res.json(ListUsersResponse.parse(users.map(mapUser)));
 });
 
 router.post("/v1/users", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const parsed = CreateUserBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -47,6 +59,7 @@ router.post("/v1/users", async (req, res): Promise<void> => {
   const [user] = await db
     .insert(usersTable)
     .values({
+      companyId,
       email: parsed.data.email,
       name: parsed.data.name,
       role: parsed.data.role,
@@ -59,13 +72,18 @@ router.post("/v1/users", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/users/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = GetUserParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, params.data.id));
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.id, params.data.id), eq(usersTable.companyId, companyId)));
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
@@ -75,6 +93,8 @@ router.get("/v1/users/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/users/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = UpdateUserParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -96,7 +116,7 @@ router.patch("/v1/users/:id", async (req, res): Promise<void> => {
   const [user] = await db
     .update(usersTable)
     .set(updateData)
-    .where(eq(usersTable.id, params.data.id))
+    .where(and(eq(usersTable.id, params.data.id), eq(usersTable.companyId, companyId)))
     .returning();
 
   if (!user) {
@@ -108,13 +128,15 @@ router.patch("/v1/users/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/users/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = DeleteUserParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.delete(usersTable).where(eq(usersTable.id, params.data.id));
+  await db.delete(usersTable).where(and(eq(usersTable.id, params.data.id), eq(usersTable.companyId, companyId)));
   res.sendStatus(204);
 });
 

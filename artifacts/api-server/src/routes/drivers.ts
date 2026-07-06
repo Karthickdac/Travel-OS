@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, driversTable } from "@workspace/db";
 import {
   ListDriversQueryParams,
@@ -16,6 +16,10 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+function getCompanyId(req: any): string | null {
+  return req.user?.companyId ?? null;
+}
 
 function mapDriver(d: typeof driversTable.$inferSelect) {
   return {
@@ -35,8 +39,13 @@ function mapDriver(d: typeof driversTable.$inferSelect) {
   };
 }
 
-router.get("/v1/drivers/availability", async (_req, res): Promise<void> => {
-  const drivers = await db.select().from(driversTable).where(eq(driversTable.isDeleted, false));
+router.get("/v1/drivers/availability", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const drivers = await db
+    .select()
+    .from(driversTable)
+    .where(and(eq(driversTable.isDeleted, false), eq(driversTable.companyId, companyId)));
   res.json(
     GetDriverAvailabilityResponse.parse(
       drivers.map((d) => ({
@@ -51,12 +60,19 @@ router.get("/v1/drivers/availability", async (_req, res): Promise<void> => {
   );
 });
 
-router.get("/v1/drivers", async (_req, res): Promise<void> => {
-  const drivers = await db.select().from(driversTable).where(eq(driversTable.isDeleted, false));
+router.get("/v1/drivers", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const drivers = await db
+    .select()
+    .from(driversTable)
+    .where(and(eq(driversTable.isDeleted, false), eq(driversTable.companyId, companyId)));
   res.json(ListDriversResponse.parse(drivers.map(mapDriver)));
 });
 
 router.post("/v1/drivers", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const parsed = CreateDriverBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -66,6 +82,7 @@ router.post("/v1/drivers", async (req, res): Promise<void> => {
   const [driver] = await db
     .insert(driversTable)
     .values({
+      companyId,
       name: parsed.data.name,
       phone: parsed.data.phone,
       email: parsed.data.email,
@@ -80,13 +97,18 @@ router.post("/v1/drivers", async (req, res): Promise<void> => {
 });
 
 router.get("/v1/drivers/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = GetDriverParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [driver] = await db.select().from(driversTable).where(eq(driversTable.id, params.data.id));
+  const [driver] = await db
+    .select()
+    .from(driversTable)
+    .where(and(eq(driversTable.id, params.data.id), eq(driversTable.companyId, companyId)));
   if (!driver) {
     res.status(404).json({ error: "Driver not found" });
     return;
@@ -96,6 +118,8 @@ router.get("/v1/drivers/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/v1/drivers/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = UpdateDriverParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -116,7 +140,7 @@ router.patch("/v1/drivers/:id", async (req, res): Promise<void> => {
   const [driver] = await db
     .update(driversTable)
     .set(updateData)
-    .where(eq(driversTable.id, params.data.id))
+    .where(and(eq(driversTable.id, params.data.id), eq(driversTable.companyId, companyId)))
     .returning();
 
   if (!driver) {
@@ -128,13 +152,18 @@ router.patch("/v1/drivers/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/v1/drivers/:id", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) { res.status(401).json({ error: "Unauthorized" }); return; }
   const params = DeleteDriverParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  await db.update(driversTable).set({ isDeleted: true }).where(eq(driversTable.id, params.data.id));
+  await db
+    .update(driversTable)
+    .set({ isDeleted: true })
+    .where(and(eq(driversTable.id, params.data.id), eq(driversTable.companyId, companyId)));
   res.sendStatus(204);
 });
 
