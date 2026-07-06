@@ -1,0 +1,52 @@
+root@srv1286649:~# cd /home/travelos/htdocs/www.kyro360.in
+git checkout -- package.json && git pull
+cd artifacts/api-server && node ./build.mjs && cd ../..
+sudo systemctl restart travelos-api
+remote: Enumerating objects: 106, done.
+remote: Counting objects: 100% (106/106), done.
+remote: Compressing objects: 100% (18/18), done.
+remote: Total 58 (delta 40), reused 58 (delta 40), pack-reused 0 (from 0)
+Unpacking objects: 100% (58/58), 10.33 KiB | 192.00 KiB/s, done.
+From https://github.com/Karthickdac/Travel-OS
+   5516be1..cd717ed  main       -> origin/main
+Updating 5516be1..cd717ed
+Fast-forward
+ .agents/memory/MEMORY.md                                    |   3 ++-
+ .agents/memory/tenant-scoping.md                            |  29 +++++++++++++++++++++++++++++
+ .agents/memory/vps-deployment.md                            |   3 +++
+ artifacts/api-server/src/routes/bookings.ts                 |  71 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------
+ artifacts/api-server/src/routes/cms.ts                      |   3 ++-
+ artifacts/api-server/src/routes/crm.ts                      | 107 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+ artifacts/api-server/src/routes/customers.ts                |  36 ++++++++++++++++++++++++++++++------
+ artifacts/api-server/src/routes/dashboard.ts                |  32 ++++++++++++++++++++++----------
+ artifacts/api-server/src/routes/drivers.ts                  |  45 +++++++++++++++++++++++++++++++++++++--------
+ artifacts/api-server/src/routes/finance.ts                  |  50 +++++++++++++++++++++++++++++++++++++++++++-------
+ artifacts/api-server/src/routes/fleet.ts                    |  80 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------
+ artifacts/api-server/src/routes/tours.ts                    |  64 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+ artifacts/api-server/src/routes/users.ts                    |  32 +++++++++++++++++++++++++++-----
+ artifacts/api-server/src/routes/vendors.ts                  |  36 ++++++++++++++++++++++++++++++------
+ artifacts/travel-os/src/components/layout/public-layout.tsx |   9 +++++++++
+ artifacts/travel-os/src/pages/admin/cms.tsx                 |   7 +++++--
+ artifacts/travel-os/src/pages/public/contact.tsx            |   3 ++-
+ lib/api-client-react/src/generated/api.schemas.ts           |   3 +++
+ lib/api-spec/openapi.yaml                                   |   4 ++++
+ lib/api-zod/src/generated/api.ts                            |   4 ++++
+ lib/api-zod/src/generated/types/websiteSettings.ts          |   2 ++
+ lib/api-zod/src/generated/types/websiteSettingsUpdate.ts    |   1 +
+ lib/db/src/schema/cms.ts                                    |   1 +
+ 23 files changed, 534 insertions(+), 91 deletions(-)
+ create mode 100644 .agents/memory/tenant-scoping.md
+
+  dist/index.mjs                       2.5mb ⚠️
+  dist/pino-worker.mjs               153.4kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.6kb
+  dist/thread-stream-worker.mjs        7.3kb
+  dist/index.mjs.map                   4.4mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.1kb
+  dist/pino-pretty.mjs.map           204.0kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+
+⚡ Done in 530ms
+root@srv1286649:/home/travelos/htdocs/www.kyro360.in# 
