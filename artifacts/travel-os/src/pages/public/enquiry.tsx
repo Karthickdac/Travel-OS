@@ -35,12 +35,24 @@ export default function PublicEnquiry() {
     const destination = params.get("destination") ?? "";
     const pkg = params.get("package") ?? "";
     const tripTypeParam = params.get("tripType") ?? "";
+    let estimateMsg = "";
+    try {
+      const stored = sessionStorage.getItem("tripEstimate");
+      if (stored) {
+        estimateMsg = stored;
+        sessionStorage.removeItem("tripEstimate");
+      }
+    } catch {
+      /* ignore */
+    }
     return {
       name: "", phone: "", email: "",
       tripType: TRIP_TYPES.includes(tripTypeParam) ? tripTypeParam : "",
       fromCity: "", toDestination: destination,
       travelDate: "", returnDate: "", passengers: "2", vehiclePreference: "", budget: "",
-      message: pkg ? `I'm interested in the "${pkg}" package. Please share availability and pricing.` : "",
+      message: estimateMsg
+        ? estimateMsg
+        : pkg ? `I'm interested in the "${pkg}" package. Please share availability and pricing.` : "",
     };
   });
 

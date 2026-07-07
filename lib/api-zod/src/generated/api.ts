@@ -1787,6 +1787,186 @@ export const MarkAllNotificationsReadResponse = zod.void()
 
 
 /**
+ * @summary List trip rate cards for the company
+ */
+export const ListTripRatesResponseItem = zod.object({
+  "id": zod.string(),
+  "vehicleType": zod.string(),
+  "vehicleExamples": zod.string().nullish(),
+  "seats": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "ratePerKm": zod.number(),
+  "minKmPerDay": zod.number(),
+  "dayRate": zod.number(),
+  "kmIncludedPerDay": zod.number(),
+  "extraKmRate": zod.number(),
+  "driverBataPerDay": zod.number(),
+  "nightHaltCharge": zod.number(),
+  "notes": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+})
+export const ListTripRatesResponse = zod.array(ListTripRatesResponseItem)
+
+
+/**
+ * @summary Create a trip rate card
+ */
+export const CreateTripRateBody = zod.object({
+  "vehicleType": zod.string(),
+  "vehicleExamples": zod.string().optional(),
+  "seats": zod.number().optional(),
+  "imageUrl": zod.string().optional(),
+  "ratePerKm": zod.number().optional(),
+  "minKmPerDay": zod.number().optional(),
+  "dayRate": zod.number().optional(),
+  "kmIncludedPerDay": zod.number().optional(),
+  "extraKmRate": zod.number().optional(),
+  "driverBataPerDay": zod.number().optional(),
+  "nightHaltCharge": zod.number().optional(),
+  "notes": zod.string().optional(),
+  "isActive": zod.boolean().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const CreateTripRateResponse = zod.object({
+  "id": zod.string(),
+  "vehicleType": zod.string(),
+  "vehicleExamples": zod.string().nullish(),
+  "seats": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "ratePerKm": zod.number(),
+  "minKmPerDay": zod.number(),
+  "dayRate": zod.number(),
+  "kmIncludedPerDay": zod.number(),
+  "extraKmRate": zod.number(),
+  "driverBataPerDay": zod.number(),
+  "nightHaltCharge": zod.number(),
+  "notes": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+})
+
+
+/**
+ * @summary Get trip estimator general settings
+ */
+export const GetTripEstimatorSettingsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "gstPercent": zod.number(),
+  "tollNote": zod.string().nullish(),
+  "termsNote": zod.string().nullish()
+})
+
+
+/**
+ * @summary Upsert trip estimator general settings
+ */
+export const UpdateTripEstimatorSettingsBody = zod.object({
+  "enabled": zod.boolean().optional(),
+  "gstPercent": zod.number().optional(),
+  "tollNote": zod.string().optional(),
+  "termsNote": zod.string().optional()
+})
+
+export const UpdateTripEstimatorSettingsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "gstPercent": zod.number(),
+  "tollNote": zod.string().nullish(),
+  "termsNote": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update a trip rate card
+ */
+export const UpdateTripRateParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateTripRateBody = zod.object({
+  "vehicleType": zod.string().optional(),
+  "vehicleExamples": zod.string().optional(),
+  "seats": zod.number().optional(),
+  "imageUrl": zod.string().optional(),
+  "ratePerKm": zod.number().optional(),
+  "minKmPerDay": zod.number().optional(),
+  "dayRate": zod.number().optional(),
+  "kmIncludedPerDay": zod.number().optional(),
+  "extraKmRate": zod.number().optional(),
+  "driverBataPerDay": zod.number().optional(),
+  "nightHaltCharge": zod.number().optional(),
+  "notes": zod.string().optional(),
+  "isActive": zod.boolean().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const UpdateTripRateResponse = zod.object({
+  "id": zod.string(),
+  "vehicleType": zod.string(),
+  "vehicleExamples": zod.string().nullish(),
+  "seats": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "ratePerKm": zod.number(),
+  "minKmPerDay": zod.number(),
+  "dayRate": zod.number(),
+  "kmIncludedPerDay": zod.number(),
+  "extraKmRate": zod.number(),
+  "driverBataPerDay": zod.number(),
+  "nightHaltCharge": zod.number(),
+  "notes": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+})
+
+
+/**
+ * @summary Delete a trip rate card
+ */
+export const DeleteTripRateParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteTripRateResponse = zod.void()
+
+
+/**
+ * @summary Public trip estimator config for a site
+ */
+export const GetPublicTripRatesQueryParams = zod.object({
+  "domain": zod.coerce.string().optional(),
+  "companyId": zod.coerce.string().optional()
+})
+
+export const GetPublicTripRatesResponse = zod.object({
+  "companyName": zod.string(),
+  "settings": zod.object({
+  "enabled": zod.boolean(),
+  "gstPercent": zod.number(),
+  "tollNote": zod.string().nullish(),
+  "termsNote": zod.string().nullish()
+}),
+  "rates": zod.array(zod.object({
+  "id": zod.string(),
+  "vehicleType": zod.string(),
+  "vehicleExamples": zod.string().nullish(),
+  "seats": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "ratePerKm": zod.number(),
+  "minKmPerDay": zod.number(),
+  "dayRate": zod.number(),
+  "kmIncludedPerDay": zod.number(),
+  "extraKmRate": zod.number(),
+  "driverBataPerDay": zod.number(),
+  "nightHaltCharge": zod.number(),
+  "notes": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+}))
+})
+
+
+/**
  * @summary Convert lead to booking
  */
 export const ConvertLeadToBookingParams = zod.object({

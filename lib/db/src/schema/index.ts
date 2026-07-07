@@ -25,3 +25,4 @@ export * from "./crm_extended";
 export * from "./company_settings";
 export * from "./gps";
 export * from "./notifications";
+export * from "./trip_rates";

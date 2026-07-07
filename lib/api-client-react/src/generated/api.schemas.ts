@@ -693,6 +693,84 @@ export interface QuotationRespondInput {
   action: QuotationRespondInputAction;
 }
 
+export interface TripRate {
+  id: string;
+  vehicleType: string;
+  /** @nullable */
+  vehicleExamples?: string | null;
+  /** @nullable */
+  seats?: number | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  ratePerKm: number;
+  minKmPerDay: number;
+  dayRate: number;
+  kmIncludedPerDay: number;
+  extraKmRate: number;
+  driverBataPerDay: number;
+  nightHaltCharge: number;
+  /** @nullable */
+  notes?: string | null;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface TripRateInput {
+  vehicleType: string;
+  vehicleExamples?: string;
+  seats?: number;
+  imageUrl?: string;
+  ratePerKm?: number;
+  minKmPerDay?: number;
+  dayRate?: number;
+  kmIncludedPerDay?: number;
+  extraKmRate?: number;
+  driverBataPerDay?: number;
+  nightHaltCharge?: number;
+  notes?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export interface TripRateUpdate {
+  vehicleType?: string;
+  vehicleExamples?: string;
+  seats?: number;
+  imageUrl?: string;
+  ratePerKm?: number;
+  minKmPerDay?: number;
+  dayRate?: number;
+  kmIncludedPerDay?: number;
+  extraKmRate?: number;
+  driverBataPerDay?: number;
+  nightHaltCharge?: number;
+  notes?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export interface TripEstimatorSettings {
+  enabled: boolean;
+  gstPercent: number;
+  /** @nullable */
+  tollNote?: string | null;
+  /** @nullable */
+  termsNote?: string | null;
+}
+
+export interface TripEstimatorSettingsInput {
+  enabled?: boolean;
+  gstPercent?: number;
+  tollNote?: string;
+  termsNote?: string;
+}
+
+export interface PublicTripRates {
+  companyName: string;
+  settings: TripEstimatorSettings;
+  rates: TripRate[];
+}
+
 export interface Notification {
   id: string;
   type: string;
@@ -1249,6 +1327,11 @@ assignedTo?: string;
 
 export type ListQuotationsParams = {
 status?: string;
+};
+
+export type GetPublicTripRatesParams = {
+domain?: string;
+companyId?: string;
 };
 
 export type ListCustomersParams = {

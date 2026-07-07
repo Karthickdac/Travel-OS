@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate, Navigation, Radio, Check, Loader2 } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate, Navigation, Radio, Check, Loader2, Calculator } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListMyCompanies, useSwitchCompany } from "@workspace/api-client-react";
@@ -56,6 +56,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/crm/leads", label: "Leads Pipeline", icon: Users },
       { href: "/admin/crm/quotations", label: "Quotations", icon: FileText },
       { href: "/admin/crm/tasks", label: "Follow-up Tasks", icon: ListTodo },
+      { href: "/admin/trip-rates", label: "Trip Rates", icon: Calculator },
       { href: "/admin/customers", label: "Customers", icon: BookOpen },
       { href: "/admin/crm/customer-profile", label: "Customer 360", icon: Contact },
     ],

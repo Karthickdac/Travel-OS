@@ -27,6 +27,7 @@ import AdminDrivers from "@/pages/admin/drivers";
 import AdminUsers from "@/pages/admin/users";
 import AdminLeads from "@/pages/admin/crm/leads";
 import AdminQuotations from "@/pages/admin/crm/quotations";
+import AdminTripRates from "@/pages/admin/trip-rates";
 import AdminCustomers from "@/pages/admin/customers";
 import AdminDestinations from "@/pages/admin/tours/destinations";
 import AdminPackages from "@/pages/admin/tours/packages";
@@ -79,6 +80,7 @@ import PublicDestinationDetail from "@/pages/public/destination-detail";
 import PublicEnquiry from "@/pages/public/enquiry";
 import PublicContact from "@/pages/public/contact";
 import PublicQuote from "@/pages/public/quote";
+import PublicTripEstimator from "@/pages/public/trip-estimator";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -161,6 +163,7 @@ function AdminRoutes() {
         <Route path="/admin/crm/leads" component={AdminLeads} />
         <Route path="/admin/crm/quotations" component={AdminQuotations} />
         <Route path="/admin/crm/tasks" component={AdminCrmTasks} />
+        <Route path="/admin/trip-rates" component={AdminTripRates} />
         <Route path="/admin/crm/customer-profile" component={AdminCustomerProfile} />
         <Route path="/admin/customers" component={AdminCustomers} />
         <Route path="/admin/tours/destinations" component={AdminDestinations} />
@@ -219,6 +222,7 @@ function PublicRoutes() {
           <Route path="/packages/:id" component={PublicPackageDetail} />
           <Route path="/destinations" component={PublicDestinations} />
           <Route path="/destinations/:id" component={PublicDestinationDetail} />
+          <Route path="/trip-estimator" component={PublicTripEstimator} />
           <Route path="/enquiry" component={PublicEnquiry} />
           <Route path="/contact" component={PublicContact} />
           <Route component={NotFound} />

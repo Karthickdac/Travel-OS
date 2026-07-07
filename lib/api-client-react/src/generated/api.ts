@@ -60,6 +60,7 @@ import type {
   GetPublicCmsSettingsParams,
   GetPublicDestinationsParams,
   GetPublicPackagesParams,
+  GetPublicTripRatesParams,
   GetRevenueTrendParams,
   HealthStatus,
   Invoice,
@@ -84,6 +85,7 @@ import type {
   MasterUser,
   Notification,
   PublicQuotation,
+  PublicTripRates,
   Quotation,
   QuotationInput,
   QuotationRespondInput,
@@ -98,6 +100,11 @@ import type {
   TourPackage,
   TourPackageInput,
   TourPackageUpdate,
+  TripEstimatorSettings,
+  TripEstimatorSettingsInput,
+  TripRate,
+  TripRateInput,
+  TripRateUpdate,
   UploadUrlRequest,
   UploadUrlResponse,
   User,
@@ -5832,6 +5839,525 @@ export const useMarkAllNotificationsRead = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getMarkAllNotificationsReadMutationOptions(options));
     }
+
+export const getListTripRatesUrl = () => {
+
+
+
+
+  return `/api/v1/trip-rates`
+}
+
+/**
+ * @summary List trip rate cards for the company
+ */
+export const listTripRates = async ( options?: RequestInit): Promise<TripRate[]> => {
+
+  return customFetch<TripRate[]>(getListTripRatesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListTripRatesQueryKey = () => {
+    return [
+    `/api/v1/trip-rates`
+    ] as const;
+    }
+
+
+export const getListTripRatesQueryOptions = <TData = Awaited<ReturnType<typeof listTripRates>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTripRates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTripRatesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTripRates>>> = ({ signal }) => listTripRates({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTripRates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListTripRatesQueryResult = NonNullable<Awaited<ReturnType<typeof listTripRates>>>
+export type ListTripRatesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List trip rate cards for the company
+ */
+
+export function useListTripRates<TData = Awaited<ReturnType<typeof listTripRates>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTripRates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListTripRatesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateTripRateUrl = () => {
+
+
+
+
+  return `/api/v1/trip-rates`
+}
+
+/**
+ * @summary Create a trip rate card
+ */
+export const createTripRate = async (tripRateInput: TripRateInput, options?: RequestInit): Promise<TripRate> => {
+
+  return customFetch<TripRate>(getCreateTripRateUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(tripRateInput)
+  }
+);}
+
+
+
+
+export const getCreateTripRateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTripRate>>, TError,{data: BodyType<TripRateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTripRate>>, TError,{data: BodyType<TripRateInput>}, TContext> => {
+
+const mutationKey = ['createTripRate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTripRate>>, {data: BodyType<TripRateInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createTripRate(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTripRateMutationResult = NonNullable<Awaited<ReturnType<typeof createTripRate>>>
+    export type CreateTripRateMutationBody = BodyType<TripRateInput>
+    export type CreateTripRateMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a trip rate card
+ */
+export const useCreateTripRate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTripRate>>, TError,{data: BodyType<TripRateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTripRate>>,
+        TError,
+        {data: BodyType<TripRateInput>},
+        TContext
+      > => {
+      return useMutation(getCreateTripRateMutationOptions(options));
+    }
+
+export const getGetTripEstimatorSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/trip-rates/settings`
+}
+
+/**
+ * @summary Get trip estimator general settings
+ */
+export const getTripEstimatorSettings = async ( options?: RequestInit): Promise<TripEstimatorSettings> => {
+
+  return customFetch<TripEstimatorSettings>(getGetTripEstimatorSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTripEstimatorSettingsQueryKey = () => {
+    return [
+    `/api/v1/trip-rates/settings`
+    ] as const;
+    }
+
+
+export const getGetTripEstimatorSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getTripEstimatorSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTripEstimatorSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTripEstimatorSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTripEstimatorSettings>>> = ({ signal }) => getTripEstimatorSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTripEstimatorSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTripEstimatorSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getTripEstimatorSettings>>>
+export type GetTripEstimatorSettingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get trip estimator general settings
+ */
+
+export function useGetTripEstimatorSettings<TData = Awaited<ReturnType<typeof getTripEstimatorSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTripEstimatorSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTripEstimatorSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateTripEstimatorSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/trip-rates/settings`
+}
+
+/**
+ * @summary Upsert trip estimator general settings
+ */
+export const updateTripEstimatorSettings = async (tripEstimatorSettingsInput: TripEstimatorSettingsInput, options?: RequestInit): Promise<TripEstimatorSettings> => {
+
+  return customFetch<TripEstimatorSettings>(getUpdateTripEstimatorSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(tripEstimatorSettingsInput)
+  }
+);}
+
+
+
+
+export const getUpdateTripEstimatorSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTripEstimatorSettings>>, TError,{data: BodyType<TripEstimatorSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTripEstimatorSettings>>, TError,{data: BodyType<TripEstimatorSettingsInput>}, TContext> => {
+
+const mutationKey = ['updateTripEstimatorSettings'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTripEstimatorSettings>>, {data: BodyType<TripEstimatorSettingsInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateTripEstimatorSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTripEstimatorSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateTripEstimatorSettings>>>
+    export type UpdateTripEstimatorSettingsMutationBody = BodyType<TripEstimatorSettingsInput>
+    export type UpdateTripEstimatorSettingsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Upsert trip estimator general settings
+ */
+export const useUpdateTripEstimatorSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTripEstimatorSettings>>, TError,{data: BodyType<TripEstimatorSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateTripEstimatorSettings>>,
+        TError,
+        {data: BodyType<TripEstimatorSettingsInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateTripEstimatorSettingsMutationOptions(options));
+    }
+
+export const getUpdateTripRateUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/trip-rates/${id}`
+}
+
+/**
+ * @summary Update a trip rate card
+ */
+export const updateTripRate = async (id: string,
+    tripRateUpdate: TripRateUpdate, options?: RequestInit): Promise<TripRate> => {
+
+  return customFetch<TripRate>(getUpdateTripRateUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(tripRateUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateTripRateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTripRate>>, TError,{id: string;data: BodyType<TripRateUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTripRate>>, TError,{id: string;data: BodyType<TripRateUpdate>}, TContext> => {
+
+const mutationKey = ['updateTripRate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTripRate>>, {id: string;data: BodyType<TripRateUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateTripRate(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTripRateMutationResult = NonNullable<Awaited<ReturnType<typeof updateTripRate>>>
+    export type UpdateTripRateMutationBody = BodyType<TripRateUpdate>
+    export type UpdateTripRateMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a trip rate card
+ */
+export const useUpdateTripRate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTripRate>>, TError,{id: string;data: BodyType<TripRateUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateTripRate>>,
+        TError,
+        {id: string;data: BodyType<TripRateUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateTripRateMutationOptions(options));
+    }
+
+export const getDeleteTripRateUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/trip-rates/${id}`
+}
+
+/**
+ * @summary Delete a trip rate card
+ */
+export const deleteTripRate = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteTripRateUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteTripRateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTripRate>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTripRate>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteTripRate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTripRate>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteTripRate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTripRateMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTripRate>>>
+
+    export type DeleteTripRateMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a trip rate card
+ */
+export const useDeleteTripRate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTripRate>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTripRate>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteTripRateMutationOptions(options));
+    }
+
+export const getGetPublicTripRatesUrl = (params?: GetPublicTripRatesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/public/trip-rates?${stringifiedParams}` : `/api/v1/public/trip-rates`
+}
+
+/**
+ * @summary Public trip estimator config for a site
+ */
+export const getPublicTripRates = async (params?: GetPublicTripRatesParams, options?: RequestInit): Promise<PublicTripRates> => {
+
+  return customFetch<PublicTripRates>(getGetPublicTripRatesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicTripRatesQueryKey = (params?: GetPublicTripRatesParams,) => {
+    return [
+    `/api/v1/public/trip-rates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetPublicTripRatesQueryOptions = <TData = Awaited<ReturnType<typeof getPublicTripRates>>, TError = ErrorType<unknown>>(params?: GetPublicTripRatesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicTripRates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicTripRatesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicTripRates>>> = ({ signal }) => getPublicTripRates(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicTripRates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicTripRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicTripRates>>>
+export type GetPublicTripRatesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Public trip estimator config for a site
+ */
+
+export function useGetPublicTripRates<TData = Awaited<ReturnType<typeof getPublicTripRates>>, TError = ErrorType<unknown>>(
+ params?: GetPublicTripRatesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicTripRates>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicTripRatesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getConvertLeadToBookingUrl = (id: string,) => {
 

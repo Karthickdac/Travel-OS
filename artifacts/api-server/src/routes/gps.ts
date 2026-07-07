@@ -129,6 +129,7 @@ type LiveMarker = {
 // All GPS routes are fleet/admin-only EXCEPT the device-facing ingest endpoint,
 // which authenticates via deviceId + ingestKey rather than a user session.
 router.use((req, res, next) => {
+  if (!req.path.startsWith("/v1/gps")) { next(); return; }
   if (req.path === "/v1/gps/ingest") { next(); return; }
   // TB Track (TrackoBit) device/platform-facing ingest — authenticated per-company
   // via a derived token in the query string, not a user session.

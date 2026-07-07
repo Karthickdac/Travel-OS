@@ -1453,6 +1453,130 @@ paths:
         "204":
           description: All marked read
 
+  /v1/trip-rates:
+    get:
+      operationId: listTripRates
+      tags: [tripRates]
+      summary: List trip rate cards for the company
+      responses:
+        "200":
+          description: Trip rates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripRate"
+    post:
+      operationId: createTripRate
+      tags: [tripRates]
+      summary: Create a trip rate card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripRateInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripRate"
+
+  /v1/trip-rates/settings:
+    get:
+      operationId: getTripEstimatorSettings
+      tags: [tripRates]
+      summary: Get trip estimator general settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripEstimatorSettings"
+    put:
+      operationId: updateTripEstimatorSettings
+      tags: [tripRates]
+      summary: Upsert trip estimator general settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripEstimatorSettingsInput"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripEstimatorSettings"
+
+  /v1/trip-rates/{id}:
+    put:
+      operationId: updateTripRate
+      tags: [tripRates]
+      summary: Update a trip rate card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripRateUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripRate"
+    delete:
+      operationId: deleteTripRate
+      tags: [tripRates]
+      summary: Delete a trip rate card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /v1/public/trip-rates:
+    get:
+      operationId: getPublicTripRates
+      tags: [public]
+      summary: Public trip estimator config for a site
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Estimator config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicTripRates"
+
   /v1/crm/leads/{id}/convert:
     post:
       operationId: convertLeadToBooking
@@ -3089,6 +3213,145 @@ components:
         action:
           type: string
           enum: [approved, rejected]
+
+    # ── Trip Rates ─────────────────────────────────────────────────────────
+    TripRate:
+      type: object
+      required: [id, vehicleType, ratePerKm, minKmPerDay, dayRate, kmIncludedPerDay, extraKmRate, driverBataPerDay, nightHaltCharge, isActive, sortOrder]
+      properties:
+        id:
+          type: string
+        vehicleType:
+          type: string
+        vehicleExamples:
+          type: ["string", "null"]
+        seats:
+          type: ["integer", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        ratePerKm:
+          type: number
+        minKmPerDay:
+          type: integer
+        dayRate:
+          type: number
+        kmIncludedPerDay:
+          type: integer
+        extraKmRate:
+          type: number
+        driverBataPerDay:
+          type: number
+        nightHaltCharge:
+          type: number
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    TripRateInput:
+      type: object
+      required: [vehicleType]
+      properties:
+        vehicleType:
+          type: string
+        vehicleExamples:
+          type: string
+        seats:
+          type: integer
+        imageUrl:
+          type: string
+        ratePerKm:
+          type: number
+        minKmPerDay:
+          type: integer
+        dayRate:
+          type: number
+        kmIncludedPerDay:
+          type: integer
+        extraKmRate:
+          type: number
+        driverBataPerDay:
+          type: number
+        nightHaltCharge:
+          type: number
+        notes:
+          type: string
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    TripRateUpdate:
+      type: object
+      properties:
+        vehicleType:
+          type: string
+        vehicleExamples:
+          type: string
+        seats:
+          type: integer
+        imageUrl:
+          type: string
+        ratePerKm:
+          type: number
+        minKmPerDay:
+          type: integer
+        dayRate:
+          type: number
+        kmIncludedPerDay:
+          type: integer
+        extraKmRate:
+          type: number
+        driverBataPerDay:
+          type: number
+        nightHaltCharge:
+          type: number
+        notes:
+          type: string
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    TripEstimatorSettings:
+      type: object
+      required: [enabled, gstPercent]
+      properties:
+        enabled:
+          type: boolean
+        gstPercent:
+          type: number
+        tollNote:
+          type: ["string", "null"]
+        termsNote:
+          type: ["string", "null"]
+
+    TripEstimatorSettingsInput:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        gstPercent:
+          type: number
+        tollNote:
+          type: string
+        termsNote:
+          type: string
+
+    PublicTripRates:
+      type: object
+      required: [companyName, settings, rates]
+      properties:
+        companyName:
+          type: string
+        settings:
+          $ref: "#/components/schemas/TripEstimatorSettings"
+        rates:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripRate"
 
     # ── Notification ───────────────────────────────────────────────────────
     Notification:
