@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, count, desc, and } from "drizzle-orm";
 import { db, bookingsTable, driversTable, vehiclesTable } from "@workspace/db";
+import { createNotification } from "../lib/notify";
 import {
   ListBookingsQueryParams,
   ListBookingsResponse,
@@ -123,6 +124,14 @@ router.post("/v1/bookings", async (req, res): Promise<void> => {
     })
     .returning();
 
+  await createNotification(companyId, {
+    type: "booking.created",
+    title: "New Booking",
+    message: `New booking ${booking.bookingNumber} for ${booking.customerName}`,
+    entityType: "booking",
+    entityId: booking.id,
+  });
+
   res.status(201).json(CreateBookingResponse.parse(mapBooking(booking)));
 });
 
@@ -179,6 +188,16 @@ router.patch("/v1/bookings/:id", async (req, res): Promise<void> => {
   if (!booking) {
     res.status(404).json({ error: "Booking not found" });
     return;
+  }
+
+  if (parsed.data.status === "confirmed") {
+    await createNotification(companyId, {
+      type: "booking.confirmed",
+      title: "Booking Confirmed",
+      message: `Booking ${booking.bookingNumber} for ${booking.customerName} is confirmed`,
+      entityType: "booking",
+      entityId: booking.id,
+    });
   }
 
   res.json(UpdateBookingResponse.parse(mapBooking(booking)));
@@ -243,6 +262,14 @@ router.post("/v1/bookings/:id/assign", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Booking not found" });
     return;
   }
+
+  await createNotification(companyId, {
+    type: "booking.assigned",
+    title: "Driver Assigned",
+    message: `Driver ${driver?.name ?? "unknown"} assigned to booking ${booking.bookingNumber}`,
+    entityType: "booking",
+    entityId: booking.id,
+  });
 
   res.json(AssignBookingResponse.parse(mapBooking(booking)));
 });

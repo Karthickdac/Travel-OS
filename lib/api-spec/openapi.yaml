@@ -1347,6 +1347,112 @@ paths:
               schema:
                 $ref: "#/components/schemas/Booking"
 
+  /v1/crm/quotations/{id}/send:
+    post:
+      operationId: sendQuotation
+      tags: [crm]
+      summary: Mark quotation as sent and get share links
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quotation sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuotationSendPayload"
+
+  /v1/public/quotations/{token}:
+    get:
+      operationId: getPublicQuotation
+      tags: [public]
+      summary: View a quotation via its public token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quotation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicQuotation"
+
+  /v1/public/quotations/{token}/respond:
+    post:
+      operationId: respondPublicQuotation
+      tags: [public]
+      summary: Customer accepts or rejects a quotation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuotationRespondInput"
+      responses:
+        "200":
+          description: Updated quotation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicQuotation"
+
+  /v1/notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications for the current company
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /v1/notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark one notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /v1/notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "204":
+          description: All marked read
+
   /v1/crm/leads/{id}/convert:
     post:
       operationId: convertLeadToBooking
@@ -2862,6 +2968,14 @@ components:
           type: string
         customerEmail:
           type: ["string", "null"]
+        customerPhone:
+          type: ["string", "null"]
+        publicToken:
+          type: string
+        sentAt:
+          type: ["string", "null"]
+        respondedAt:
+          type: ["string", "null"]
         status:
           type: string
           enum: [draft, sent, approved, rejected, expired, converted]
@@ -2903,6 +3017,8 @@ components:
           type: string
         customerEmail:
           type: string
+        customerPhone:
+          type: string
         validUntil:
           type: string
         items:
@@ -2920,6 +3036,80 @@ components:
         validUntil:
           type: string
         notes:
+          type: string
+        customerPhone:
+          type: string
+        customerEmail:
+          type: string
+
+    QuotationSendPayload:
+      type: object
+      required: [quotation, publicUrl, whatsappUrl]
+      properties:
+        quotation:
+          $ref: "#/components/schemas/Quotation"
+        publicUrl:
+          type: string
+        whatsappUrl:
+          type: ["string", "null"]
+
+    PublicQuotation:
+      type: object
+      required: [quotationNumber, customerName, companyName, status, totalAmount, taxAmount, validUntil, items]
+      properties:
+        quotationNumber:
+          type: string
+        customerName:
+          type: string
+        companyName:
+          type: string
+        companyPhone:
+          type: ["string", "null"]
+        companyLogo:
+          type: ["string", "null"]
+        status:
+          type: string
+        totalAmount:
+          type: number
+        taxAmount:
+          type: number
+        validUntil:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuotationItem"
+        notes:
+          type: ["string", "null"]
+
+    QuotationRespondInput:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [approved, rejected]
+
+    # ── Notification ───────────────────────────────────────────────────────
+    Notification:
+      type: object
+      required: [id, type, title, message, isRead, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        entityType:
+          type: ["string", "null"]
+        entityId:
+          type: ["string", "null"]
+        isRead:
+          type: boolean
+        createdAt:
           type: string
 
     # ── Customer ───────────────────────────────────────────────────────────

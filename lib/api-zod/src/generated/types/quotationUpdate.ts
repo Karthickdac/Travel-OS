@@ -10,4 +10,6 @@ export interface QuotationUpdate {
   status?: string;
   validUntil?: string;
   notes?: string;
+  customerPhone?: string;
+  customerEmail?: string;
 }

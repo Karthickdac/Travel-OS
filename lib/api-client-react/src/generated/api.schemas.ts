@@ -622,6 +622,13 @@ export interface Quotation {
   customerName: string;
   /** @nullable */
   customerEmail?: string | null;
+  /** @nullable */
+  customerPhone?: string | null;
+  publicToken?: string;
+  /** @nullable */
+  sentAt?: string | null;
+  /** @nullable */
+  respondedAt?: string | null;
   status: QuotationStatus;
   totalAmount: number;
   taxAmount?: number;
@@ -636,6 +643,7 @@ export interface QuotationInput {
   leadId: string;
   customerName: string;
   customerEmail?: string;
+  customerPhone?: string;
   validUntil: string;
   items: QuotationItem[];
   notes?: string;
@@ -645,6 +653,57 @@ export interface QuotationUpdate {
   status?: string;
   validUntil?: string;
   notes?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+}
+
+export interface QuotationSendPayload {
+  quotation: Quotation;
+  publicUrl: string;
+  /** @nullable */
+  whatsappUrl: string | null;
+}
+
+export interface PublicQuotation {
+  quotationNumber: string;
+  customerName: string;
+  companyName: string;
+  /** @nullable */
+  companyPhone?: string | null;
+  /** @nullable */
+  companyLogo?: string | null;
+  status: string;
+  totalAmount: number;
+  taxAmount: number;
+  validUntil: string;
+  items: QuotationItem[];
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type QuotationRespondInputAction = typeof QuotationRespondInputAction[keyof typeof QuotationRespondInputAction];
+
+
+export const QuotationRespondInputAction = {
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export interface QuotationRespondInput {
+  action: QuotationRespondInputAction;
+}
+
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  /** @nullable */
+  entityType?: string | null;
+  /** @nullable */
+  entityId?: string | null;
+  isRead: boolean;
+  createdAt: string;
 }
 
 export interface Customer {

@@ -1479,6 +1479,10 @@ export const ListQuotationsResponseItem = zod.object({
   "leadId": zod.string(),
   "customerName": zod.string(),
   "customerEmail": zod.string().nullish(),
+  "customerPhone": zod.string().nullish(),
+  "publicToken": zod.string().optional(),
+  "sentAt": zod.string().nullish(),
+  "respondedAt": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'approved', 'rejected', 'expired', 'converted']),
   "totalAmount": zod.number(),
   "taxAmount": zod.number().optional(),
@@ -1502,6 +1506,7 @@ export const CreateQuotationBody = zod.object({
   "leadId": zod.string(),
   "customerName": zod.string(),
   "customerEmail": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
   "validUntil": zod.string(),
   "items": zod.array(zod.object({
   "description": zod.string(),
@@ -1518,6 +1523,10 @@ export const CreateQuotationResponse = zod.object({
   "leadId": zod.string(),
   "customerName": zod.string(),
   "customerEmail": zod.string().nullish(),
+  "customerPhone": zod.string().nullish(),
+  "publicToken": zod.string().optional(),
+  "sentAt": zod.string().nullish(),
+  "respondedAt": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'approved', 'rejected', 'expired', 'converted']),
   "totalAmount": zod.number(),
   "taxAmount": zod.number().optional(),
@@ -1546,6 +1555,10 @@ export const GetQuotationResponse = zod.object({
   "leadId": zod.string(),
   "customerName": zod.string(),
   "customerEmail": zod.string().nullish(),
+  "customerPhone": zod.string().nullish(),
+  "publicToken": zod.string().optional(),
+  "sentAt": zod.string().nullish(),
+  "respondedAt": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'approved', 'rejected', 'expired', 'converted']),
   "totalAmount": zod.number(),
   "taxAmount": zod.number().optional(),
@@ -1571,7 +1584,9 @@ export const UpdateQuotationParams = zod.object({
 export const UpdateQuotationBody = zod.object({
   "status": zod.string().optional(),
   "validUntil": zod.string().optional(),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "customerEmail": zod.string().optional()
 })
 
 export const UpdateQuotationResponse = zod.object({
@@ -1580,6 +1595,10 @@ export const UpdateQuotationResponse = zod.object({
   "leadId": zod.string(),
   "customerName": zod.string(),
   "customerEmail": zod.string().nullish(),
+  "customerPhone": zod.string().nullish(),
+  "publicToken": zod.string().optional(),
+  "sentAt": zod.string().nullish(),
+  "respondedAt": zod.string().nullish(),
   "status": zod.enum(['draft', 'sent', 'approved', 'rejected', 'expired', 'converted']),
   "totalAmount": zod.number(),
   "taxAmount": zod.number().optional(),
@@ -1630,6 +1649,141 @@ export const ConvertQuotationToBookingResponse = zod.object({
   "notes": zod.string().nullish(),
   "createdAt": zod.string().optional()
 })
+
+
+/**
+ * @summary Mark quotation as sent and get share links
+ */
+export const SendQuotationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const SendQuotationResponse = zod.object({
+  "quotation": zod.object({
+  "id": zod.string(),
+  "quotationNumber": zod.string(),
+  "leadId": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string().nullish(),
+  "customerPhone": zod.string().nullish(),
+  "publicToken": zod.string().optional(),
+  "sentAt": zod.string().nullish(),
+  "respondedAt": zod.string().nullish(),
+  "status": zod.enum(['draft', 'sent', 'approved', 'rejected', 'expired', 'converted']),
+  "totalAmount": zod.number(),
+  "taxAmount": zod.number().optional(),
+  "validUntil": zod.string(),
+  "items": zod.array(zod.object({
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "total": zod.number()
+})).optional(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string().optional()
+}),
+  "publicUrl": zod.string(),
+  "whatsappUrl": zod.string().nullable()
+})
+
+
+/**
+ * @summary View a quotation via its public token
+ */
+export const GetPublicQuotationParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetPublicQuotationResponse = zod.object({
+  "quotationNumber": zod.string(),
+  "customerName": zod.string(),
+  "companyName": zod.string(),
+  "companyPhone": zod.string().nullish(),
+  "companyLogo": zod.string().nullish(),
+  "status": zod.string(),
+  "totalAmount": zod.number(),
+  "taxAmount": zod.number(),
+  "validUntil": zod.string(),
+  "items": zod.array(zod.object({
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "total": zod.number()
+})),
+  "notes": zod.string().nullish()
+})
+
+
+/**
+ * @summary Customer accepts or rejects a quotation
+ */
+export const RespondPublicQuotationParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const RespondPublicQuotationBody = zod.object({
+  "action": zod.enum(['approved', 'rejected'])
+})
+
+export const RespondPublicQuotationResponse = zod.object({
+  "quotationNumber": zod.string(),
+  "customerName": zod.string(),
+  "companyName": zod.string(),
+  "companyPhone": zod.string().nullish(),
+  "companyLogo": zod.string().nullish(),
+  "status": zod.string(),
+  "totalAmount": zod.number(),
+  "taxAmount": zod.number(),
+  "validUntil": zod.string(),
+  "items": zod.array(zod.object({
+  "description": zod.string(),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "total": zod.number()
+})),
+  "notes": zod.string().nullish()
+})
+
+
+/**
+ * @summary List notifications for the current company
+ */
+export const ListNotificationsResponseItem = zod.object({
+  "id": zod.string(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "entityType": zod.string().nullish(),
+  "entityId": zod.string().nullish(),
+  "isRead": zod.boolean(),
+  "createdAt": zod.string()
+})
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
+
+
+/**
+ * @summary Mark one notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const MarkNotificationReadResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "entityType": zod.string().nullish(),
+  "entityId": zod.string().nullish(),
+  "isRead": zod.boolean(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.void()
 
 
 /**

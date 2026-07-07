@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListQuotations, useCreateQuotation, useUpdateQuotation, useListLeads } from "@workspace/api-client-react";
+import { useListQuotations, useCreateQuotation, useUpdateQuotation, useListLeads, useSendQuotation } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, Search, CircleDollarSign, Calendar, ChevronDown, ChevronUp, Trash2, Printer } from "lucide-react";
+import { FileText, Plus, Search, CircleDollarSign, Calendar, ChevronDown, ChevronUp, Trash2, Printer, Send, Link2 } from "lucide-react";
 import { format } from "date-fns";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 function QuotationPrintView({ q }: { q: any }) {
   return (
@@ -68,6 +69,8 @@ const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-700 border-gray-200",
   sent: "bg-blue-100 text-blue-700 border-blue-200",
   accepted: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  converted: "bg-emerald-100 text-emerald-700 border-emerald-200",
   rejected: "bg-red-100 text-red-700 border-red-200",
   expired: "bg-amber-100 text-amber-700 border-amber-200",
 };
@@ -79,6 +82,7 @@ export default function AdminQuotations() {
   const { data: leads } = useListLeads();
   const createQuotation = useCreateQuotation();
   const updateQuotation = useUpdateQuotation();
+  const sendQuotation = useSendQuotation();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -89,7 +93,7 @@ export default function AdminQuotations() {
   const [printQuotation, setPrintQuotation] = useState<any | null>(null);
 
   const [form, setForm] = useState({
-    leadId: "", customerName: "", customerEmail: "",
+    leadId: "", customerName: "", customerEmail: "", customerPhone: "",
     validUntil: "", notes: "",
     items: [{ ...EMPTY_ITEM }],
   });
@@ -128,6 +132,7 @@ export default function AdminQuotations() {
       await createQuotation.mutateAsync({ data: {
         leadId: form.leadId, customerName: form.customerName,
         customerEmail: form.customerEmail || undefined,
+        customerPhone: form.customerPhone || undefined,
         validUntil: form.validUntil, notes: form.notes || undefined,
         items: form.items.map(i => ({
           description: i.description || "Service",
@@ -139,8 +144,27 @@ export default function AdminQuotations() {
       toast({ title: "Quotation created" });
       refresh();
       setCreateOpen(false);
-      setForm({ leadId: "", customerName: "", customerEmail: "", validUntil: "", notes: "", items: [{ ...EMPTY_ITEM }] });
+      setForm({ leadId: "", customerName: "", customerEmail: "", customerPhone: "", validUntil: "", notes: "", items: [{ ...EMPTY_ITEM }] });
     } catch { toast({ title: "Failed to create quotation", variant: "destructive" }); }
+  };
+
+  const handleSend = async (q: any) => {
+    try {
+      const res = await sendQuotation.mutateAsync({ id: q.id });
+      refresh();
+      toast({ title: "Quotation sent" });
+      if (res.whatsappUrl) window.open(res.whatsappUrl, "_blank");
+    } catch { toast({ title: "Failed to send quotation", variant: "destructive" }); }
+  };
+
+  const handleCopyLink = async (q: any) => {
+    try {
+      const res = await sendQuotation.mutateAsync({ id: q.id });
+      refresh();
+      const url = new URL(res.publicUrl, window.location.origin).href;
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Link copied to clipboard" });
+    } catch { toast({ title: "Failed to copy link", variant: "destructive" }); }
   };
 
   const handleStatusUpdate = async () => {
@@ -167,9 +191,9 @@ export default function AdminQuotations() {
 
       {/* Stats */}
       <div className="flex gap-4 text-sm flex-wrap">
-        {["draft","sent","accepted","rejected"].map(s => (
+        {["draft","sent","approved","rejected"].map(s => (
           <span key={s} className="flex items-center gap-1">
-            <span className={`font-semibold ${s === "accepted" ? "text-emerald-600" : s === "rejected" ? "text-red-600" : s === "sent" ? "text-blue-600" : ""}`}>
+            <span className={`font-semibold ${s === "approved" ? "text-emerald-600" : s === "rejected" ? "text-red-600" : s === "sent" ? "text-blue-600" : ""}`}>
               {(quotations ?? []).filter(q => q.status === s).length}
             </span>
             <span className="text-muted-foreground">{s}</span>
@@ -214,9 +238,13 @@ export default function AdminQuotations() {
                     <div className="flex flex-wrap gap-x-4 text-xs text-muted-foreground mt-1">
                       <span className="flex items-center gap-1"><CircleDollarSign className="h-3 w-3" />₹{Number(q.totalAmount).toLocaleString()}</span>
                       {q.validUntil && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Valid until {format(new Date(q.validUntil), "MMM d, yyyy")}</span>}
+                      {q.sentAt && <span>Sent {format(new Date(q.sentAt), "MMM d, yyyy")}</span>}
+                      {q.respondedAt && <span>Responded {format(new Date(q.respondedAt), "MMM d, yyyy")}</span>}
                     </div>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
+                    <Button size="sm" variant="ghost" onClick={() => handleSend(q)} disabled={sendQuotation.isPending} className="h-8 text-xs gap-1"><Send className="h-3 w-3" />Send</Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleCopyLink(q)} disabled={sendQuotation.isPending} className="h-8 text-xs gap-1"><Link2 className="h-3 w-3" />Copy link</Button>
                     <Button size="sm" variant="ghost" onClick={() => setPrintQuotation(q)} className="h-8 text-xs gap-1"><Printer className="h-3 w-3" />Print</Button>
                     <Button size="sm" variant="ghost" onClick={() => { setUpdateStatus(q.status); setUpdateDialog(q); }} className="h-8 text-xs">Update</Button>
                     <Button size="sm" variant="ghost" onClick={() => setExpanded(expanded === q.id ? null : q.id)} className="h-8 w-8 p-0">
@@ -245,7 +273,7 @@ export default function AdminQuotations() {
                 <Label>Lead *</Label>
                 <Select value={form.leadId} onValueChange={v => {
                   const lead = (leads ?? []).find(l => l.id === v);
-                  setForm(f => ({ ...f, leadId: v, customerName: lead?.name ?? f.customerName }));
+                  setForm(f => ({ ...f, leadId: v, customerName: lead?.name ?? f.customerName, customerPhone: lead?.phone ?? f.customerPhone }));
                 }}>
                   <SelectTrigger><SelectValue placeholder="Select lead" /></SelectTrigger>
                   <SelectContent>
@@ -255,6 +283,7 @@ export default function AdminQuotations() {
               </div>
               <div className="space-y-1.5"><Label>Customer Name *</Label><Input value={form.customerName} onChange={setF("customerName")} /></div>
               <div className="space-y-1.5"><Label>Customer Email</Label><Input type="email" value={form.customerEmail} onChange={setF("customerEmail")} /></div>
+              <div className="space-y-1.5"><Label>Customer Phone</Label><Input value={form.customerPhone} onChange={setF("customerPhone")} placeholder="9876543210" /></div>
               <div className="space-y-1.5"><Label>Valid Until *</Label><Input type="date" value={form.validUntil} onChange={setF("validUntil")} /></div>
             </div>
 
@@ -323,7 +352,7 @@ export default function AdminQuotations() {
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="sent">Sent to Customer</SelectItem>
-                  <SelectItem value="accepted">Accepted</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                   <SelectItem value="expired">Expired</SelectItem>
                 </SelectContent>

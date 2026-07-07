@@ -15,6 +15,13 @@ export interface Quotation {
   customerName: string;
   /** @nullable */
   customerEmail?: string | null;
+  /** @nullable */
+  customerPhone?: string | null;
+  publicToken?: string;
+  /** @nullable */
+  sentAt?: string | null;
+  /** @nullable */
+  respondedAt?: string | null;
   status: QuotationStatus;
   totalAmount: number;
   taxAmount?: number;

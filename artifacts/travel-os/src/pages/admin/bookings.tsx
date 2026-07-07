@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   useListBookings, useCreateBooking, useUpdateBooking, useAssignBooking,
-  useListDrivers, useListVehicles,
+  useListDrivers, useListVehicles, useGetCmsSettings,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Calendar, MapPin, Phone, Car, CircleDollarSign, Plus, UserCheck, Filter, Search } from "lucide-react";
+import { Calendar, MapPin, Phone, Car, CircleDollarSign, Plus, UserCheck, Filter, Search, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const STATUS_COLORS: Record<string, string> = {
   enquiry: "bg-gray-100 text-gray-700 border-gray-200",
@@ -49,6 +50,8 @@ export default function AdminBookings() {
   const { data: bookings, isLoading } = useListBookings();
   const { data: drivers } = useListDrivers();
   const { data: vehicles } = useListVehicles();
+  const { data: cmsSettings } = useGetCmsSettings();
+  const companyName = cmsSettings?.companyDisplayName || "our team";
   const createBooking = useCreateBooking();
   const updateBooking = useUpdateBooking();
   const assignBooking = useAssignBooking();
@@ -127,6 +130,38 @@ export default function AdminBookings() {
     } catch {
       toast({ title: "Failed to assign", variant: "destructive" });
     }
+  };
+
+  const sendDriverDetails = (b: any) => {
+    const driver = (drivers ?? []).find(d => d.name === b.driverName);
+    const url = buildWhatsAppUrl(driver?.phone, [
+      `Trip details for booking ${b.bookingNumber}:`,
+      `Customer: ${b.customerName}${b.customerPhone ? ` (${b.customerPhone})` : ""}`,
+      `Pickup: ${b.pickupLocation}`,
+      `Drop: ${b.dropLocation}`,
+      `Date: ${b.pickupDate ? format(new Date(b.pickupDate), "dd MMM yyyy HH:mm") : "—"}`,
+      b.vehicleNumber ? `Vehicle: ${b.vehicleNumber}` : "",
+    ].filter(Boolean).join("\n"));
+    if (!url) {
+      toast({ title: "Driver phone number not available", variant: "destructive" });
+      return;
+    }
+    window.open(url, "_blank");
+  };
+
+  const sendCustomerConfirmation = (b: any) => {
+    const url = buildWhatsAppUrl(b.customerPhone, [
+      `Hello ${b.customerName}, your booking ${b.bookingNumber} is confirmed.`,
+      `Trip: ${b.pickupLocation} → ${b.dropLocation}`,
+      `Date: ${b.pickupDate ? format(new Date(b.pickupDate), "dd MMM yyyy HH:mm") : "—"}`,
+      `Amount: ₹${Number(b.amount ?? 0).toLocaleString()}`,
+      `Thank you for choosing ${companyName}.`,
+    ].join("\n"));
+    if (!url) {
+      toast({ title: "Customer phone number not available", variant: "destructive" });
+      return;
+    }
+    window.open(url, "_blank");
   };
 
   const setF = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -247,6 +282,28 @@ export default function AdminBookings() {
                         className="gap-1 text-xs h-7"
                       >
                         <UserCheck className="h-3 w-3" />Assign
+                      </Button>
+                    )}
+                    {/* Send trip details to driver */}
+                    {b.driverName && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => sendDriverDetails(b)}
+                        className="gap-1 text-xs h-7"
+                      >
+                        <MessageCircle className="h-3 w-3" />Driver
+                      </Button>
+                    )}
+                    {/* Send confirmation to customer */}
+                    {b.status === "confirmed" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => sendCustomerConfirmation(b)}
+                        className="gap-1 text-xs h-7"
+                      >
+                        <MessageCircle className="h-3 w-3" />Confirm
                       </Button>
                     )}
                     <div className="flex items-center gap-1 font-black text-primary">

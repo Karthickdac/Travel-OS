@@ -30,6 +30,7 @@ import companySettingsRouter from "./company_settings";
 import portalRouter from "./portal";
 import storageRouter from "./storage";
 import gpsRouter from "./gps";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -82,5 +83,6 @@ router.use(companySettingsRouter);
 router.use(portalRouter);
 router.use(storageRouter);
 router.use(gpsRouter);
+router.use(notificationsRouter);
 
 export default router;

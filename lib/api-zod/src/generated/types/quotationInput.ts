@@ -11,6 +11,7 @@ export interface QuotationInput {
   leadId: string;
   customerName: string;
   customerEmail?: string;
+  customerPhone?: string;
   validUntil: string;
   items: QuotationItem[];
   notes?: string;

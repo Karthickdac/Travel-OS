@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, and, asc } from "drizzle-orm";
-import { db, destinationsTable, tourPackagesTable, leadsTable, companiesTable } from "@workspace/db";
+import { db, destinationsTable, tourPackagesTable, leadsTable, companiesTable, quotationsTable } from "@workspace/db";
+import { createNotification } from "../lib/notify";
 import {
   ListDestinationsResponse,
   CreateDestinationBody,
@@ -19,6 +20,11 @@ import {
   GetPublicDestinationsResponse,
   SubmitEnquiryBody,
   SubmitEnquiryResponse,
+  GetPublicQuotationParams,
+  GetPublicQuotationResponse,
+  RespondPublicQuotationParams,
+  RespondPublicQuotationBody,
+  RespondPublicQuotationResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -332,6 +338,14 @@ router.post("/v1/public/enquiry", async (req, res): Promise<void> => {
     })
     .returning();
 
+  await createNotification(lead.companyId, {
+    type: "lead.created",
+    title: "New Lead",
+    message: `${lead.name} enquired about ${lead.destination || "a trip"} (${lead.phone})`,
+    entityType: "lead",
+    entityId: lead.id,
+  });
+
   const mapped = {
     id: lead.id,
     name: lead.name,
@@ -447,6 +461,117 @@ router.get("/v1/public/geocode", async (req, res): Promise<void> => {
   } finally {
     clearTimeout(timer);
   }
+});
+
+// Public quotation view/respond (NO auth)
+function mapPublicQuotation(
+  q: typeof quotationsTable.$inferSelect,
+  company: { name: string; phone: string | null; logo: string | null } | null,
+) {
+  return {
+    quotationNumber: q.quotationNumber,
+    customerName: q.customerName,
+    companyName: company?.name ?? "",
+    companyPhone: company?.phone ?? null,
+    companyLogo: company?.logo ?? null,
+    status: q.status,
+    totalAmount: Number(q.totalAmount),
+    taxAmount: Number(q.taxAmount),
+    validUntil: q.validUntil,
+    items: (q.items as Array<{ description: string; quantity: number; unitPrice: number; total: number }>) || [],
+    notes: q.notes ?? null,
+  };
+}
+
+router.get("/v1/public/quotations/:token", async (req, res): Promise<void> => {
+  const params = GetPublicQuotationParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [quotation] = await db
+    .select()
+    .from(quotationsTable)
+    .where(eq(quotationsTable.publicToken, params.data.token));
+  if (!quotation || quotation.isDeleted) {
+    res.status(404).json({ error: "Quotation not found" });
+    return;
+  }
+
+  let company: { name: string; phone: string | null; logo: string | null } | null = null;
+  if (quotation.companyId) {
+    const [c] = await db
+      .select({ name: companiesTable.name, phone: companiesTable.phone, logo: companiesTable.logo })
+      .from(companiesTable)
+      .where(eq(companiesTable.id, quotation.companyId));
+    company = c ?? null;
+  }
+
+  res.json(GetPublicQuotationResponse.parse(mapPublicQuotation(quotation, company)));
+});
+
+router.post("/v1/public/quotations/:token/respond", async (req, res): Promise<void> => {
+  const params = RespondPublicQuotationParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = RespondPublicQuotationBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const [quotation] = await db
+    .select()
+    .from(quotationsTable)
+    .where(eq(quotationsTable.publicToken, params.data.token));
+  if (!quotation || quotation.isDeleted) {
+    res.status(404).json({ error: "Quotation not found" });
+    return;
+  }
+
+  if (quotation.status === "converted" || quotation.respondedAt) {
+    res.status(400).json({ error: "Quotation has already been responded to" });
+    return;
+  }
+
+  if (quotation.status !== "sent") {
+    res.status(400).json({ error: "Quotation is not open for response" });
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  if (quotation.validUntil < today) {
+    res.status(400).json({ error: "Quotation has expired" });
+    return;
+  }
+
+  const [updated] = await db
+    .update(quotationsTable)
+    .set({ status: parsed.data.action, respondedAt: new Date() })
+    .where(eq(quotationsTable.id, quotation.id))
+    .returning();
+
+  let company: { name: string; phone: string | null; logo: string | null } | null = null;
+  if (updated.companyId) {
+    const [c] = await db
+      .select({ name: companiesTable.name, phone: companiesTable.phone, logo: companiesTable.logo })
+      .from(companiesTable)
+      .where(eq(companiesTable.id, updated.companyId));
+    company = c ?? null;
+  }
+
+  await createNotification(updated.companyId, {
+    type: parsed.data.action === "approved" ? "quotation.approved" : "quotation.rejected",
+    title: parsed.data.action === "approved" ? "Quotation Approved" : "Quotation Rejected",
+    message: `Quotation ${updated.quotationNumber} was ${parsed.data.action} by ${updated.customerName}`,
+    entityType: "quotation",
+    entityId: updated.id,
+  });
+
+  res.json(RespondPublicQuotationResponse.parse(mapPublicQuotation(updated, company)));
 });
 
 export default router;

@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, and, count } from "drizzle-orm";
-import { db, leadsTable, quotationsTable, bookingsTable } from "@workspace/db";
+import { db, leadsTable, quotationsTable, bookingsTable, companiesTable } from "@workspace/db";
+import { createNotification } from "../lib/notify";
 import {
   ListLeadsQueryParams,
   ListLeadsResponse,
@@ -28,6 +29,8 @@ import {
   ConvertLeadToBookingParams,
   ConvertLeadToBookingBody,
   ConvertLeadToBookingResponse,
+  SendQuotationParams,
+  SendQuotationResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -67,6 +70,10 @@ function mapQuotation(q: typeof quotationsTable.$inferSelect) {
     leadId: q.leadId ?? "",
     customerName: q.customerName,
     customerEmail: q.customerEmail ?? null,
+    customerPhone: q.customerPhone ?? null,
+    publicToken: q.publicToken,
+    sentAt: q.sentAt ? q.sentAt.toISOString() : null,
+    respondedAt: q.respondedAt ? q.respondedAt.toISOString() : null,
     status: q.status,
     totalAmount: Number(q.totalAmount),
     taxAmount: Number(q.taxAmount),
@@ -118,6 +125,14 @@ router.post("/v1/crm/leads", async (req, res): Promise<void> => {
       status: "new",
     })
     .returning();
+
+  await createNotification(companyId, {
+    type: "lead.created",
+    title: "New Lead",
+    message: `${lead.name} added as a lead (source: ${lead.source})`,
+    entityType: "lead",
+    entityId: lead.id,
+  });
 
   res.status(201).json(CreateLeadResponse.parse(mapLead(lead)));
 });
@@ -264,6 +279,7 @@ router.post("/v1/crm/quotations", async (req, res): Promise<void> => {
       leadId: parsed.data.leadId,
       customerName: parsed.data.customerName,
       customerEmail: parsed.data.customerEmail,
+      customerPhone: parsed.data.customerPhone,
       validUntil: parsed.data.validUntil,
       items: parsed.data.items,
       totalAmount: String(totalAmount),
@@ -272,7 +288,84 @@ router.post("/v1/crm/quotations", async (req, res): Promise<void> => {
     })
     .returning();
 
+  await createNotification(companyId, {
+    type: "quotation.created",
+    title: "New Quotation",
+    message: `Quotation ${quotation.quotationNumber} created for ${quotation.customerName}`,
+    entityType: "quotation",
+    entityId: quotation.id,
+  });
+
   res.status(201).json(CreateQuotationResponse.parse(mapQuotation(quotation)));
+});
+
+function buildWhatsAppUrl(phone: string, message: string): string {
+  let digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) digits = `91${digits}`;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
+router.post("/v1/crm/quotations/:id/send", async (req, res): Promise<void> => {
+  const companyId = getCompanyId(req);
+  if (!companyId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const params = SendQuotationParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(quotationsTable)
+    .where(and(eq(quotationsTable.id, params.data.id), eq(quotationsTable.companyId, companyId)));
+  if (!existing || existing.isDeleted) {
+    res.status(404).json({ error: "Quotation not found" });
+    return;
+  }
+
+  if (existing.status !== "draft" && existing.status !== "sent") {
+    res.status(400).json({ error: "Quotation cannot be sent in its current status" });
+    return;
+  }
+
+  const [quotation] = await db
+    .update(quotationsTable)
+    .set({ status: "sent", sentAt: new Date() })
+    .where(and(eq(quotationsTable.id, params.data.id), eq(quotationsTable.companyId, companyId)))
+    .returning();
+
+  const [company] = await db
+    .select({ name: companiesTable.name, domain: companiesTable.domain })
+    .from(companiesTable)
+    .where(eq(companiesTable.id, companyId));
+
+  const companyName = company?.name ?? "";
+  let publicUrl = company?.domain
+    ? `https://${company.domain.replace(/^https?:\/\//, "").replace(/\/$/, "")}/quote/${quotation.publicToken}`
+    : `/quote/${quotation.publicToken}`;
+
+  let whatsappUrl: string | null = null;
+  if (quotation.customerPhone) {
+    const host = req.headers.host;
+    const absoluteUrl = publicUrl.startsWith("http")
+      ? publicUrl
+      : `https://${host ?? ""}${publicUrl}`;
+    const total = Number(quotation.totalAmount) + Number(quotation.taxAmount);
+    const message = `Hello ${quotation.customerName}, here is your quotation ${quotation.quotationNumber} from ${companyName} for ₹${total}. View & approve: ${absoluteUrl}. Valid until ${quotation.validUntil}.`;
+    whatsappUrl = buildWhatsAppUrl(quotation.customerPhone, message);
+  }
+
+  res.json(
+    SendQuotationResponse.parse({
+      quotation: mapQuotation(quotation),
+      publicUrl,
+      whatsappUrl,
+    })
+  );
 });
 
 router.get("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
@@ -320,6 +413,8 @@ router.patch("/v1/crm/quotations/:id", async (req, res): Promise<void> => {
   if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
   if (parsed.data.validUntil !== undefined) updateData.validUntil = parsed.data.validUntil;
   if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
+  if (parsed.data.customerPhone !== undefined) updateData.customerPhone = parsed.data.customerPhone;
+  if (parsed.data.customerEmail !== undefined) updateData.customerEmail = parsed.data.customerEmail;
 
   const [quotation] = await db
     .update(quotationsTable)

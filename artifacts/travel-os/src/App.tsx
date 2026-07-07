@@ -78,6 +78,7 @@ import PublicDestinations from "@/pages/public/destinations";
 import PublicDestinationDetail from "@/pages/public/destination-detail";
 import PublicEnquiry from "@/pages/public/enquiry";
 import PublicContact from "@/pages/public/contact";
+import PublicQuote from "@/pages/public/quote";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -231,6 +232,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/quote/:token" component={PublicQuote} />
 
       <Route path="/master/*">
         <ProtectedRoute component={MasterRoutes} allowedRoles={["master_admin"]} />
