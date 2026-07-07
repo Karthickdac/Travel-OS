@@ -20,12 +20,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setAuthTokenGetter(null);
   }, [token]);
 
-  const { data: user, isLoading: isUserLoading, refetch } = useGetMe({
+  // Keep the last known user so transient network/server errors never log the
+  // user out. Only an explicit 401 (invalid token) or manual logout clears it.
+  const [cachedUser, setCachedUser] = useState<User | null>(null);
+
+  const { data: user, isLoading: isUserLoading, error, refetch } = useGetMe({
     query: {
       enabled: !!token,
-      retry: false,
+      retry: 2,
+      refetchOnWindowFocus: false,
     } as any
   });
+
+  useEffect(() => {
+    if (user) setCachedUser(user);
+  }, [user]);
+
+  useEffect(() => {
+    const status = (error as any)?.response?.status ?? (error as any)?.status;
+    if (status === 401) {
+      localStorage.removeItem("token");
+      setToken(null);
+      setCachedUser(null);
+    }
+  }, [error]);
 
   const login = (newToken: string) => {
     localStorage.setItem("token", newToken);
@@ -36,12 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    setCachedUser(null);
   };
 
-  const isLoading = !!token && isUserLoading;
+  const effectiveUser = user || cachedUser;
+  const isLoading = !!token && isUserLoading && !effectiveUser;
 
   return (
-    <AuthContext.Provider value={{ user: user || null, isLoading, token, login, logout }}>
+    <AuthContext.Provider value={{ user: effectiveUser || null, isLoading, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

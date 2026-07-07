@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { Bell, Contact, Calendar, FileText, Check, CheckCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -59,6 +60,52 @@ export function NotificationBell({ collapsed }: { collapsed?: boolean }) {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
   const latest = notifications.slice(0, 10);
 
+  // ---- Browser (desktop) notifications for new enquiries/leads ----
+  const seenIds = useRef<Set<string> | null>(null);
+  const [notifPermission, setNotifPermission] = useState<string>(
+    typeof Notification !== "undefined" ? Notification.permission : "unsupported",
+  );
+
+  useEffect(() => {
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission().then(p => setNotifPermission(p)).catch(() => {});
+    }
+  }, []);
+
+  const enableBrowserAlerts = () => {
+    if (typeof Notification === "undefined") return;
+    Notification.requestPermission().then(p => setNotifPermission(p)).catch(() => {});
+  };
+
+  useEffect(() => {
+    if (!data) return;
+    // First load: just record what already exists, don't notify old items.
+    if (seenIds.current === null) {
+      seenIds.current = new Set(data.map((n) => n.id));
+      return;
+    }
+    const fresh = data.filter((n) => !seenIds.current!.has(n.id));
+    for (const n of data) seenIds.current.add(n.id);
+    if (fresh.length === 0) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    for (const n of fresh.slice(0, 3)) {
+      try {
+        const notif = new Notification(n.title, {
+          body: n.message,
+          tag: n.id,
+          icon: "/favicon.ico",
+        });
+        notif.onclick = () => {
+          window.focus();
+          navigate(routeForType(n.type));
+          notif.close();
+        };
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [data, navigate]);
+
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() });
 
@@ -94,6 +141,16 @@ export function NotificationBell({ collapsed }: { collapsed?: boolean }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
+        {notifPermission === "default" && (
+          <button
+            type="button"
+            onClick={enableBrowserAlerts}
+            className="w-full text-left px-4 py-2.5 bg-primary/5 border-b text-xs font-medium text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            Enable browser alerts for new enquiries
+          </button>
+        )}
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <span className="font-semibold text-sm">Notifications</span>
           {unreadCount > 0 && (
