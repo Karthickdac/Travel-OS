@@ -760,6 +760,8 @@ export interface TripRateUpdate {
 
 export interface TripEstimatorSettings {
   enabled: boolean;
+  allowOneWay: boolean;
+  allowRoundTrip: boolean;
   gstPercent: number;
   /** @nullable */
   tollNote?: string | null;
@@ -769,6 +771,8 @@ export interface TripEstimatorSettings {
 
 export interface TripEstimatorSettingsInput {
   enabled?: boolean;
+  allowOneWay?: boolean;
+  allowRoundTrip?: boolean;
   gstPercent?: number;
   tollNote?: string;
   termsNote?: string;

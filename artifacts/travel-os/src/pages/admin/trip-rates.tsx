@@ -114,6 +114,8 @@ export default function AdminTripRates() {
 
   const [settingsForm, setSettingsForm] = useState({
     enabled: true,
+    allowOneWay: true,
+    allowRoundTrip: true,
     gstPercent: "0",
     tollNote: "",
     termsNote: "",
@@ -123,6 +125,8 @@ export default function AdminTripRates() {
     if (settings) {
       setSettingsForm({
         enabled: settings.enabled,
+        allowOneWay: settings.allowOneWay,
+        allowRoundTrip: settings.allowRoundTrip,
         gstPercent: String(settings.gstPercent),
         tollNote: settings.tollNote ?? "",
         termsNote: settings.termsNote ?? "",
@@ -205,10 +209,16 @@ export default function AdminTripRates() {
   };
 
   const handleSaveSettings = async () => {
+    if (!settingsForm.allowOneWay && !settingsForm.allowRoundTrip) {
+      toast({ title: "Enable at least one trip type (one way or round trip)", variant: "destructive" });
+      return;
+    }
     try {
       await updateSettings.mutateAsync({
         data: {
           enabled: settingsForm.enabled,
+          allowOneWay: settingsForm.allowOneWay,
+          allowRoundTrip: settingsForm.allowRoundTrip,
           gstPercent: Number(settingsForm.gstPercent) || 0,
           tollNote: settingsForm.tollNote.trim() || undefined,
           termsNote: settingsForm.termsNote.trim() || undefined,
@@ -263,6 +273,32 @@ export default function AdminTripRates() {
                   checked={settingsForm.enabled}
                   onCheckedChange={(v) => setSettingsForm((s) => ({ ...s, enabled: v }))}
                 />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">Allow one-way trips</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Customers can get one-way fare estimates.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settingsForm.allowOneWay}
+                    onCheckedChange={(v) => setSettingsForm((s) => ({ ...s, allowOneWay: v }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">Allow round trips</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Customers can get round-trip fare estimates.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settingsForm.allowRoundTrip}
+                    onCheckedChange={(v) => setSettingsForm((s) => ({ ...s, allowRoundTrip: v }))}
+                  />
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">

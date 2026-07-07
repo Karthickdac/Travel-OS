@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
-  Calculator, MapPin, Route, Car, Snowflake, Fan, Loader2, ArrowRight, Repeat,
+  Calculator, MapPin, Route, Car, Snowflake, Fan, Loader2, ArrowRight, Repeat, CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -35,8 +36,26 @@ export default function EstimatorSection() {
   const [from, setFrom] = useState<Place | null>(null);
   const [to, setTo] = useState<Place | null>(null);
   const [roundTrip, setRoundTrip] = useState(true);
+  const [startDate, setStartDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [acMode, setAcMode] = useState<"ac" | "nonac">("ac");
+
+  const allowOneWay = settings?.allowOneWay ?? true;
+  const allowRoundTrip = settings?.allowRoundTrip ?? true;
+  useEffect(() => {
+    if (!allowRoundTrip && roundTrip) setRoundTrip(false);
+    if (!allowOneWay && !roundTrip) setRoundTrip(true);
+  }, [allowOneWay, allowRoundTrip, roundTrip]);
+
+  const dateDays = useMemo(() => {
+    if (!startDate) return null;
+    if (!roundTrip || !returnDate) return roundTrip ? null : 1;
+    const s = new Date(`${startDate}T00:00:00`);
+    const r = new Date(`${returnDate}T00:00:00`);
+    if (Number.isNaN(s.getTime()) || Number.isNaN(r.getTime()) || r < s) return null;
+    return Math.round((r.getTime() - s.getTime()) / 86_400_000) + 1;
+  }, [startDate, returnDate, roundTrip]);
 
   useEffect(() => {
     if (!selectedId && rates.length > 0) setSelectedId(rates[0].id);
@@ -71,7 +90,7 @@ export default function EstimatorSection() {
     const ac = acMode === "ac";
     const ratePerKm = ac || selected.nonAcRatePerKm <= 0 ? selected.ratePerKm : selected.nonAcRatePerKm;
     const gstPercent = settings?.gstPercent ?? 0;
-    const days = Math.max(1, Math.ceil(totalKm / Math.max(selected.minKmPerDay, 1)));
+    const days = dateDays ?? Math.max(1, Math.ceil(totalKm / Math.max(selected.minKmPerDay, 1)));
     const nights = Math.max(days - 1, 0);
     const billedKm = Math.max(totalKm, days * selected.minKmPerDay);
     const subtotal =
@@ -80,7 +99,7 @@ export default function EstimatorSection() {
       nights * selected.nightHaltCharge;
     const gst = (subtotal * gstPercent) / 100;
     return { total: subtotal + gst, days };
-  }, [selected, totalKm, acMode, settings?.gstPercent]);
+  }, [selected, totalKm, acMode, settings?.gstPercent, dateDays]);
 
   if (settings?.enabled === false || rates.length === 0) return null;
 
@@ -144,6 +163,37 @@ export default function EstimatorSection() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5 mb-2">
+                <CalendarDays className="w-4 h-4 text-primary" /> Start date
+              </label>
+              <Input
+                type="date"
+                value={startDate}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  if (returnDate && e.target.value && returnDate < e.target.value) {
+                    setReturnDate(e.target.value);
+                  }
+                }}
+                className="h-12 rounded-xl bg-white"
+              />
+            </div>
+            {roundTrip && (
+              <div>
+                <label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5 mb-2">
+                  <CalendarDays className="w-4 h-4 text-primary" /> Return date
+                </label>
+                <Input
+                  type="date"
+                  value={returnDate}
+                  min={startDate || new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="h-12 rounded-xl bg-white"
+                />
+              </div>
+            )}
             <div className="flex items-end gap-3">
               <div className="flex-1">
                 <label className="text-[13px] font-bold text-muted-foreground mb-2 block">Comfort</label>
@@ -176,11 +226,18 @@ export default function EstimatorSection() {
           </div>
 
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <label className="flex items-center gap-2.5 cursor-pointer">
-              <Repeat className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold">Round trip</span>
-              <Switch checked={roundTrip} onCheckedChange={setRoundTrip} />
-            </label>
+            {allowOneWay && allowRoundTrip ? (
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <Repeat className="h-4 w-4 text-primary" />
+                <span className="text-sm font-bold">Round trip</span>
+                <Switch checked={roundTrip} onCheckedChange={setRoundTrip} />
+              </label>
+            ) : (
+              <span className="flex items-center gap-2.5">
+                <Repeat className="h-4 w-4 text-primary" />
+                <span className="text-sm font-bold">{roundTrip ? "Round trip" : "One way"} only</span>
+              </span>
+            )}
             {routeLoading && bothChosen && (
               <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Calculating route…

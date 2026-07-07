@@ -29,6 +29,8 @@ export const tripEstimatorSettingsTable = pgTable("trip_estimator_settings", {
   id: uuid("id").primaryKey().defaultRandom(),
   companyId: uuid("company_id").references(() => companiesTable.id).unique(),
   enabled: boolean("enabled").notNull().default(true),
+  allowOneWay: boolean("allow_one_way").notNull().default(true),
+  allowRoundTrip: boolean("allow_round_trip").notNull().default(true),
   gstPercent: decimal("gst_percent", { precision: 5, scale: 2 }).notNull().default("0"),
   tollNote: text("toll_note"),
   termsNote: text("terms_note"),

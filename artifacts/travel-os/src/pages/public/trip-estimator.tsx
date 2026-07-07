@@ -70,12 +70,37 @@ export default function PublicTripEstimator() {
   const [mode, setMode] = useState<Mode>("km");
   const [acMode, setAcMode] = useState<AcMode>("ac");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [days, setDays] = useState(1);
+  const [manualDays, setManualDays] = useState(1);
+
+  // Travel dates
+  const [startDate, setStartDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
 
   // Route selection
   const [from, setFrom] = useState<Place | null>(null);
   const [to, setTo] = useState<Place | null>(null);
   const [roundTrip, setRoundTrip] = useState(true);
+
+  // Trip type availability from company settings
+  const allowOneWay = settings?.allowOneWay ?? true;
+  const allowRoundTrip = settings?.allowRoundTrip ?? true;
+  useEffect(() => {
+    if (!allowRoundTrip && roundTrip) setRoundTrip(false);
+    if (!allowOneWay && !roundTrip) setRoundTrip(true);
+  }, [allowOneWay, allowRoundTrip, roundTrip]);
+
+  // Days derived from travel dates when both are chosen; otherwise the manual stepper.
+  // Return date only counts when it is actually shown (round trip, or day-rental mode).
+  const returnDateApplies = roundTrip || mode === "day";
+  const dateDays = useMemo(() => {
+    if (!startDate) return null;
+    if (!returnDateApplies || !returnDate) return returnDateApplies ? null : 1;
+    const s = new Date(`${startDate}T00:00:00`);
+    const r = new Date(`${returnDate}T00:00:00`);
+    if (Number.isNaN(s.getTime()) || Number.isNaN(r.getTime()) || r < s) return null;
+    return Math.round((r.getTime() - s.getTime()) / 86_400_000) + 1;
+  }, [startDate, returnDate, returnDateApplies]);
+  const days = dateDays ?? manualDays;
 
   // Manual distance fallback / override
   const [manualMode, setManualMode] = useState(false);
@@ -200,13 +225,14 @@ export default function PublicTripEstimator() {
       `Trip Estimate — ${data?.companyName ?? ""}`.trim(),
       routeLabel ? `Route: ${routeLabel}` : null,
       `Vehicle: ${selected.vehicleType}${selected.seats ? ` (${selected.seats} seater)` : ""} • ${acLabel}`,
+      startDate ? `Dates: ${startDate}${returnDate && (roundTrip || mode === "day") ? ` → ${returnDate}` : ""}` : null,
       mode === "km"
         ? `Kilometre Rental (Outstation) • ${num.format(distanceKm)} km • ${days} day(s)`
         : `Day Rental (Local) • ${days} day(s) • ${num.format(totalKm)} km`,
       `Estimated total: ${fmt(estimate.total)}`,
     ].filter(Boolean) as string[];
     return lines.join("\n");
-  }, [selected, estimate, data?.companyName, routeLabel, acLabel, mode, distanceKm, totalKm, days]);
+  }, [selected, estimate, data?.companyName, routeLabel, acLabel, mode, distanceKm, totalKm, days, startDate, returnDate, roundTrip]);
 
   const handleBook = () => {
     try {
@@ -322,9 +348,17 @@ export default function PublicTripEstimator() {
                 {mode === "km" && oneWayKm != null && (
                   <div className="mt-4 flex items-center gap-3 bg-muted/50 rounded-2xl px-4 py-3">
                     <Repeat className="h-4 w-4 text-primary shrink-0" />
-                    <span className="text-sm font-bold">One way</span>
-                    <Switch checked={roundTrip} onCheckedChange={setRoundTrip} />
-                    <span className="text-sm font-bold">Round trip</span>
+                    {allowOneWay && allowRoundTrip ? (
+                      <>
+                        <span className="text-sm font-bold">One way</span>
+                        <Switch checked={roundTrip} onCheckedChange={setRoundTrip} />
+                        <span className="text-sm font-bold">Round trip</span>
+                      </>
+                    ) : (
+                      <span className="text-sm font-bold">
+                        {roundTrip ? "Round trip" : "One way"} only
+                      </span>
+                    )}
                     <span className="text-xs text-muted-foreground ml-auto">
                       {roundTrip ? "Doubling one-way distance" : "One-way distance"}
                     </span>
@@ -537,11 +571,52 @@ export default function PublicTripEstimator() {
                     </div>
                   )}
 
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5 mb-3">
+                        <CalendarDays className="w-4 h-4" /> Start date
+                      </label>
+                      <Input
+                        type="date"
+                        value={startDate}
+                        min={new Date().toISOString().slice(0, 10)}
+                        onChange={(e) => {
+                          setStartDate(e.target.value);
+                          if (returnDate && e.target.value && returnDate < e.target.value) {
+                            setReturnDate(e.target.value);
+                          }
+                        }}
+                        className="h-12 rounded-xl bg-white"
+                      />
+                    </div>
+                    {(roundTrip || mode === "day") && (
+                      <div>
+                        <label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5 mb-3">
+                          <CalendarDays className="w-4 h-4" /> Return date
+                        </label>
+                        <Input
+                          type="date"
+                          value={returnDate}
+                          min={startDate || new Date().toISOString().slice(0, 10)}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          className="h-12 rounded-xl bg-white"
+                        />
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5 mb-3">
                       <CalendarDays className="w-4 h-4" /> Number of days
                     </label>
-                    <Stepper value={days} min={1} max={60} onChange={setDays} />
+                    {dateDays != null ? (
+                      <div className="inline-flex items-center gap-2 h-12 px-4 rounded-xl bg-primary/10 text-primary font-black">
+                        {dateDays} {dateDays > 1 ? "days" : "day"}
+                        <span className="text-xs font-bold text-primary/70">from your dates</span>
+                      </div>
+                    ) : (
+                      <Stepper value={manualDays} min={1} max={60} onChange={setManualDays} />
+                    )}
                   </div>
                 </div>
               </motion.section>

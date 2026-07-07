@@ -8,6 +8,8 @@
 
 export interface TripEstimatorSettings {
   enabled: boolean;
+  allowOneWay: boolean;
+  allowRoundTrip: boolean;
   gstPercent: number;
   /** @nullable */
   tollNote?: string | null;

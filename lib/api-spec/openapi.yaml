@@ -3388,9 +3388,13 @@ components:
 
     TripEstimatorSettings:
       type: object
-      required: [enabled, gstPercent]
+      required: [enabled, gstPercent, allowOneWay, allowRoundTrip]
       properties:
         enabled:
+          type: boolean
+        allowOneWay:
+          type: boolean
+        allowRoundTrip:
           type: boolean
         gstPercent:
           type: number
@@ -3403,6 +3407,10 @@ components:
       type: object
       properties:
         enabled:
+          type: boolean
+        allowOneWay:
+          type: boolean
+        allowRoundTrip:
           type: boolean
         gstPercent:
           type: number

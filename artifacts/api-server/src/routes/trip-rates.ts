@@ -72,10 +72,12 @@ function mapRate(r: typeof tripRatesTable.$inferSelect) {
 
 function mapSettings(s: typeof tripEstimatorSettingsTable.$inferSelect | undefined) {
   if (!s) {
-    return { enabled: true, gstPercent: 0, tollNote: null, termsNote: null };
+    return { enabled: true, allowOneWay: true, allowRoundTrip: true, gstPercent: 0, tollNote: null, termsNote: null };
   }
   return {
     enabled: s.enabled,
+    allowOneWay: s.allowOneWay,
+    allowRoundTrip: s.allowRoundTrip,
     gstPercent: Number(s.gstPercent),
     tollNote: s.tollNote ?? null,
     termsNote: s.termsNote ?? null,
@@ -99,6 +101,20 @@ router.put("/v1/trip-rates/settings", async (req, res): Promise<void> => {
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const values: Record<string, unknown> = { companyId };
   if (parsed.data.enabled !== undefined) values.enabled = parsed.data.enabled;
+  if (parsed.data.allowOneWay !== undefined) values.allowOneWay = parsed.data.allowOneWay;
+  if (parsed.data.allowRoundTrip !== undefined) values.allowRoundTrip = parsed.data.allowRoundTrip;
+  if (parsed.data.allowOneWay !== undefined || parsed.data.allowRoundTrip !== undefined) {
+    const [existing] = await db
+      .select()
+      .from(tripEstimatorSettingsTable)
+      .where(eq(tripEstimatorSettingsTable.companyId, companyId));
+    const effOneWay = parsed.data.allowOneWay ?? existing?.allowOneWay ?? true;
+    const effRoundTrip = parsed.data.allowRoundTrip ?? existing?.allowRoundTrip ?? true;
+    if (!effOneWay && !effRoundTrip) {
+      res.status(400).json({ error: "At least one trip type (one way or round trip) must be enabled" });
+      return;
+    }
+  }
   if (parsed.data.gstPercent !== undefined) values.gstPercent = String(parsed.data.gstPercent);
   if (parsed.data.tollNote !== undefined) values.tollNote = parsed.data.tollNote;
   if (parsed.data.termsNote !== undefined) values.termsNote = parsed.data.termsNote;

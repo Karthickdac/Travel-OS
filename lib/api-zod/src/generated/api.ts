@@ -1862,6 +1862,8 @@ export const CreateTripRateResponse = zod.object({
  */
 export const GetTripEstimatorSettingsResponse = zod.object({
   "enabled": zod.boolean(),
+  "allowOneWay": zod.boolean(),
+  "allowRoundTrip": zod.boolean(),
   "gstPercent": zod.number(),
   "tollNote": zod.string().nullish(),
   "termsNote": zod.string().nullish()
@@ -1873,6 +1875,8 @@ export const GetTripEstimatorSettingsResponse = zod.object({
  */
 export const UpdateTripEstimatorSettingsBody = zod.object({
   "enabled": zod.boolean().optional(),
+  "allowOneWay": zod.boolean().optional(),
+  "allowRoundTrip": zod.boolean().optional(),
   "gstPercent": zod.number().optional(),
   "tollNote": zod.string().optional(),
   "termsNote": zod.string().optional()
@@ -1880,6 +1884,8 @@ export const UpdateTripEstimatorSettingsBody = zod.object({
 
 export const UpdateTripEstimatorSettingsResponse = zod.object({
   "enabled": zod.boolean(),
+  "allowOneWay": zod.boolean(),
+  "allowRoundTrip": zod.boolean(),
   "gstPercent": zod.number(),
   "tollNote": zod.string().nullish(),
   "termsNote": zod.string().nullish()
@@ -1957,6 +1963,8 @@ export const GetPublicTripRatesResponse = zod.object({
   "companyName": zod.string(),
   "settings": zod.object({
   "enabled": zod.boolean(),
+  "allowOneWay": zod.boolean(),
+  "allowRoundTrip": zod.boolean(),
   "gstPercent": zod.number(),
   "tollNote": zod.string().nullish(),
   "termsNote": zod.string().nullish()
