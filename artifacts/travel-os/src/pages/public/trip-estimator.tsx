@@ -81,6 +81,33 @@ export default function PublicTripEstimator() {
   const [to, setTo] = useState<Place | null>(null);
   const [roundTrip, setRoundTrip] = useState(true);
 
+  // Prefill from the homepage estimator widget (one-shot, on mount)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("estimatorPrefill");
+      if (!raw) return;
+      sessionStorage.removeItem("estimatorPrefill");
+      const p = JSON.parse(raw) as {
+        from?: Place | null;
+        to?: Place | null;
+        roundTrip?: boolean;
+        startDate?: string;
+        returnDate?: string;
+        vehicleId?: string | null;
+        acMode?: AcMode;
+      };
+      if (p.from && typeof p.from.lat === "number" && typeof p.from.lng === "number") setFrom(p.from);
+      if (p.to && typeof p.to.lat === "number" && typeof p.to.lng === "number") setTo(p.to);
+      if (typeof p.roundTrip === "boolean") setRoundTrip(p.roundTrip);
+      if (typeof p.startDate === "string") setStartDate(p.startDate);
+      if (typeof p.returnDate === "string") setReturnDate(p.returnDate);
+      if (typeof p.vehicleId === "string" && p.vehicleId) setSelectedId(p.vehicleId);
+      if (p.acMode === "ac" || p.acMode === "nonac") setAcMode(p.acMode);
+    } catch {
+      // Ignore malformed prefill — start with defaults
+    }
+  }, []);
+
   // Trip type availability from company settings
   const allowOneWay = settings?.allowOneWay ?? true;
   const allowRoundTrip = settings?.allowRoundTrip ?? true;

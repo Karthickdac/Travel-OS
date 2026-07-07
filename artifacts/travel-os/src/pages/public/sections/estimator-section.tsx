@@ -270,7 +270,25 @@ export default function EstimatorSection() {
             <Button
               size="lg"
               className="h-14 px-8 rounded-full font-bold gap-2"
-              onClick={() => navigate("/trip-estimator")}
+              onClick={() => {
+                try {
+                  sessionStorage.setItem(
+                    "estimatorPrefill",
+                    JSON.stringify({
+                      from,
+                      to,
+                      roundTrip,
+                      startDate,
+                      returnDate,
+                      vehicleId: selected?.id ?? null,
+                      acMode,
+                    }),
+                  );
+                } catch {
+                  // sessionStorage unavailable — open the page without prefill
+                }
+                navigate("/trip-estimator");
+              }}
             >
               Full estimate & booking <ArrowRight className="h-5 w-5" />
             </Button>
