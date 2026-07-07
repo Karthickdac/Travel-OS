@@ -1577,6 +1577,59 @@ paths:
               schema:
                 $ref: "#/components/schemas/PublicTripRates"
 
+  /v1/public/place-search:
+    get:
+      operationId: searchPlaces
+      tags: [public]
+      summary: Search places with coordinates for trip estimator
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Place suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceSearchResult"
+
+  /v1/public/route-distance:
+    get:
+      operationId: getRouteDistance
+      tags: [public]
+      summary: Driving distance between two coordinates
+      parameters:
+        - name: fromLat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: fromLng
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: toLat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: toLng
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Route distance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RouteDistance"
+
   /v1/crm/leads/{id}/convert:
     post:
       operationId: convertLeadToBooking
@@ -3217,7 +3270,7 @@ components:
     # ── Trip Rates ─────────────────────────────────────────────────────────
     TripRate:
       type: object
-      required: [id, vehicleType, ratePerKm, minKmPerDay, dayRate, kmIncludedPerDay, extraKmRate, driverBataPerDay, nightHaltCharge, isActive, sortOrder]
+      required: [id, vehicleType, ratePerKm, nonAcRatePerKm, nonAcDayRate, nonAcExtraKmRate, minKmPerDay, dayRate, kmIncludedPerDay, extraKmRate, driverBataPerDay, nightHaltCharge, isActive, sortOrder]
       properties:
         id:
           type: string
@@ -3230,6 +3283,12 @@ components:
         imageUrl:
           type: ["string", "null"]
         ratePerKm:
+          type: number
+        nonAcRatePerKm:
+          type: number
+        nonAcDayRate:
+          type: number
+        nonAcExtraKmRate:
           type: number
         minKmPerDay:
           type: integer
@@ -3264,6 +3323,12 @@ components:
           type: string
         ratePerKm:
           type: number
+        nonAcRatePerKm:
+          type: number
+        nonAcDayRate:
+          type: number
+        nonAcExtraKmRate:
+          type: number
         minKmPerDay:
           type: integer
         dayRate:
@@ -3295,6 +3360,12 @@ components:
         imageUrl:
           type: string
         ratePerKm:
+          type: number
+        nonAcRatePerKm:
+          type: number
+        nonAcDayRate:
+          type: number
+        nonAcExtraKmRate:
           type: number
         minKmPerDay:
           type: integer
@@ -3339,6 +3410,41 @@ components:
           type: string
         termsNote:
           type: string
+
+    PlaceSearchResult:
+      type: object
+      required: [places]
+      properties:
+        places:
+          type: array
+          items:
+            type: object
+            required: [label, lat, lng]
+            properties:
+              label:
+                type: string
+              lat:
+                type: number
+              lng:
+                type: number
+
+    RouteDistance:
+      type: object
+      required: [distanceKm]
+      properties:
+        distanceKm:
+          type: number
+        durationMinutes:
+          type: ["number", "null"]
+        geometry:
+          type: ["array", "null"]
+          items:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 2
+          description: Route polyline as [lat, lng] pairs
 
     PublicTripRates:
       type: object

@@ -1796,6 +1796,9 @@ export const ListTripRatesResponseItem = zod.object({
   "seats": zod.number().nullish(),
   "imageUrl": zod.string().nullish(),
   "ratePerKm": zod.number(),
+  "nonAcRatePerKm": zod.number(),
+  "nonAcDayRate": zod.number(),
+  "nonAcExtraKmRate": zod.number(),
   "minKmPerDay": zod.number(),
   "dayRate": zod.number(),
   "kmIncludedPerDay": zod.number(),
@@ -1818,6 +1821,9 @@ export const CreateTripRateBody = zod.object({
   "seats": zod.number().optional(),
   "imageUrl": zod.string().optional(),
   "ratePerKm": zod.number().optional(),
+  "nonAcRatePerKm": zod.number().optional(),
+  "nonAcDayRate": zod.number().optional(),
+  "nonAcExtraKmRate": zod.number().optional(),
   "minKmPerDay": zod.number().optional(),
   "dayRate": zod.number().optional(),
   "kmIncludedPerDay": zod.number().optional(),
@@ -1836,6 +1842,9 @@ export const CreateTripRateResponse = zod.object({
   "seats": zod.number().nullish(),
   "imageUrl": zod.string().nullish(),
   "ratePerKm": zod.number(),
+  "nonAcRatePerKm": zod.number(),
+  "nonAcDayRate": zod.number(),
+  "nonAcExtraKmRate": zod.number(),
   "minKmPerDay": zod.number(),
   "dayRate": zod.number(),
   "kmIncludedPerDay": zod.number(),
@@ -1890,6 +1899,9 @@ export const UpdateTripRateBody = zod.object({
   "seats": zod.number().optional(),
   "imageUrl": zod.string().optional(),
   "ratePerKm": zod.number().optional(),
+  "nonAcRatePerKm": zod.number().optional(),
+  "nonAcDayRate": zod.number().optional(),
+  "nonAcExtraKmRate": zod.number().optional(),
   "minKmPerDay": zod.number().optional(),
   "dayRate": zod.number().optional(),
   "kmIncludedPerDay": zod.number().optional(),
@@ -1908,6 +1920,9 @@ export const UpdateTripRateResponse = zod.object({
   "seats": zod.number().nullish(),
   "imageUrl": zod.string().nullish(),
   "ratePerKm": zod.number(),
+  "nonAcRatePerKm": zod.number(),
+  "nonAcDayRate": zod.number(),
+  "nonAcExtraKmRate": zod.number(),
   "minKmPerDay": zod.number(),
   "dayRate": zod.number(),
   "kmIncludedPerDay": zod.number(),
@@ -1953,6 +1968,9 @@ export const GetPublicTripRatesResponse = zod.object({
   "seats": zod.number().nullish(),
   "imageUrl": zod.string().nullish(),
   "ratePerKm": zod.number(),
+  "nonAcRatePerKm": zod.number(),
+  "nonAcDayRate": zod.number(),
+  "nonAcExtraKmRate": zod.number(),
   "minKmPerDay": zod.number(),
   "dayRate": zod.number(),
   "kmIncludedPerDay": zod.number(),
@@ -1963,6 +1981,44 @@ export const GetPublicTripRatesResponse = zod.object({
   "isActive": zod.boolean(),
   "sortOrder": zod.number()
 }))
+})
+
+
+/**
+ * @summary Search places with coordinates for trip estimator
+ */
+export const SearchPlacesQueryParams = zod.object({
+  "q": zod.coerce.string()
+})
+
+export const SearchPlacesResponse = zod.object({
+  "places": zod.array(zod.object({
+  "label": zod.string(),
+  "lat": zod.number(),
+  "lng": zod.number()
+}))
+})
+
+
+/**
+ * @summary Driving distance between two coordinates
+ */
+export const GetRouteDistanceQueryParams = zod.object({
+  "fromLat": zod.coerce.number(),
+  "fromLng": zod.coerce.number(),
+  "toLat": zod.coerce.number(),
+  "toLng": zod.coerce.number()
+})
+
+export const getRouteDistanceResponseGeometryItemMin = 2;
+export const getRouteDistanceResponseGeometryItemMax = 2;
+
+
+
+export const GetRouteDistanceResponse = zod.object({
+  "distanceKm": zod.number(),
+  "durationMinutes": zod.number().nullish(),
+  "geometry": zod.array(zod.array(zod.number()).min(getRouteDistanceResponseGeometryItemMin).max(getRouteDistanceResponseGeometryItemMax)).nullish().describe('Route polyline as [lat, lng] pairs')
 })
 
 

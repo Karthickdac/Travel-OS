@@ -16,6 +16,9 @@ export interface TripRate {
   /** @nullable */
   imageUrl?: string | null;
   ratePerKm: number;
+  nonAcRatePerKm: number;
+  nonAcDayRate: number;
+  nonAcExtraKmRate: number;
   minKmPerDay: number;
   dayRate: number;
   kmIncludedPerDay: number;

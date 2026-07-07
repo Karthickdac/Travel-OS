@@ -703,6 +703,9 @@ export interface TripRate {
   /** @nullable */
   imageUrl?: string | null;
   ratePerKm: number;
+  nonAcRatePerKm: number;
+  nonAcDayRate: number;
+  nonAcExtraKmRate: number;
   minKmPerDay: number;
   dayRate: number;
   kmIncludedPerDay: number;
@@ -721,6 +724,9 @@ export interface TripRateInput {
   seats?: number;
   imageUrl?: string;
   ratePerKm?: number;
+  nonAcRatePerKm?: number;
+  nonAcDayRate?: number;
+  nonAcExtraKmRate?: number;
   minKmPerDay?: number;
   dayRate?: number;
   kmIncludedPerDay?: number;
@@ -738,6 +744,9 @@ export interface TripRateUpdate {
   seats?: number;
   imageUrl?: string;
   ratePerKm?: number;
+  nonAcRatePerKm?: number;
+  nonAcDayRate?: number;
+  nonAcExtraKmRate?: number;
   minKmPerDay?: number;
   dayRate?: number;
   kmIncludedPerDay?: number;
@@ -763,6 +772,29 @@ export interface TripEstimatorSettingsInput {
   gstPercent?: number;
   tollNote?: string;
   termsNote?: string;
+}
+
+export type PlaceSearchResultPlacesItem = {
+  label: string;
+  lat: number;
+  lng: number;
+};
+
+export interface PlaceSearchResult {
+  places: PlaceSearchResultPlacesItem[];
+}
+
+export interface RouteDistance {
+  distanceKm: number;
+  /** @nullable */
+  durationMinutes?: number | null;
+  /**
+     * Route polyline as [lat, lng] pairs
+     * @nullable
+     * @items.minItems 2
+     * @items.maxItems 2
+     */
+  geometry?: number[][] | null;
 }
 
 export interface PublicTripRates {
@@ -1332,6 +1364,17 @@ status?: string;
 export type GetPublicTripRatesParams = {
 domain?: string;
 companyId?: string;
+};
+
+export type SearchPlacesParams = {
+q: string;
+};
+
+export type GetRouteDistanceParams = {
+fromLat: number;
+fromLng: number;
+toLat: number;
+toLng: number;
 };
 
 export type ListCustomersParams = {

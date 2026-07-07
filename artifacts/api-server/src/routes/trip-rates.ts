@@ -14,6 +14,10 @@ import {
   UpdateTripEstimatorSettingsResponse,
   GetPublicTripRatesQueryParams,
   GetPublicTripRatesResponse,
+  SearchPlacesQueryParams,
+  SearchPlacesResponse,
+  GetRouteDistanceQueryParams,
+  GetRouteDistanceResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -51,6 +55,9 @@ function mapRate(r: typeof tripRatesTable.$inferSelect) {
     seats: r.seats ?? null,
     imageUrl: r.imageUrl ?? null,
     ratePerKm: Number(r.ratePerKm),
+    nonAcRatePerKm: Number(r.nonAcRatePerKm),
+    nonAcDayRate: Number(r.nonAcDayRate),
+    nonAcExtraKmRate: Number(r.nonAcExtraKmRate),
     minKmPerDay: Number(r.minKmPerDay),
     dayRate: Number(r.dayRate),
     kmIncludedPerDay: Number(r.kmIncludedPerDay),
@@ -131,6 +138,9 @@ router.post("/v1/trip-rates", async (req, res): Promise<void> => {
       seats: d.seats,
       imageUrl: d.imageUrl,
       ratePerKm: d.ratePerKm !== undefined ? String(d.ratePerKm) : undefined,
+      nonAcRatePerKm: d.nonAcRatePerKm !== undefined ? String(d.nonAcRatePerKm) : undefined,
+      nonAcDayRate: d.nonAcDayRate !== undefined ? String(d.nonAcDayRate) : undefined,
+      nonAcExtraKmRate: d.nonAcExtraKmRate !== undefined ? String(d.nonAcExtraKmRate) : undefined,
       minKmPerDay: d.minKmPerDay,
       dayRate: d.dayRate !== undefined ? String(d.dayRate) : undefined,
       kmIncludedPerDay: d.kmIncludedPerDay,
@@ -164,6 +174,9 @@ router.put("/v1/trip-rates/:id", async (req, res): Promise<void> => {
   if (d.seats !== undefined) updateData.seats = d.seats;
   if (d.imageUrl !== undefined) updateData.imageUrl = d.imageUrl;
   if (d.ratePerKm !== undefined) updateData.ratePerKm = String(d.ratePerKm);
+  if (d.nonAcRatePerKm !== undefined) updateData.nonAcRatePerKm = String(d.nonAcRatePerKm);
+  if (d.nonAcDayRate !== undefined) updateData.nonAcDayRate = String(d.nonAcDayRate);
+  if (d.nonAcExtraKmRate !== undefined) updateData.nonAcExtraKmRate = String(d.nonAcExtraKmRate);
   if (d.minKmPerDay !== undefined) updateData.minKmPerDay = d.minKmPerDay;
   if (d.dayRate !== undefined) updateData.dayRate = String(d.dayRate);
   if (d.kmIncludedPerDay !== undefined) updateData.kmIncludedPerDay = d.kmIncludedPerDay;
@@ -237,6 +250,190 @@ router.get("/v1/public/trip-rates", async (req, res): Promise<void> => {
     settings: mapSettings(settings),
     rates: rates.map(mapRate),
   }));
+});
+
+// ---------- public place search + route distance (for the estimator map) ----------
+
+type CacheEntry<T> = { value: T; expires: number };
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_MAX_ENTRIES = 500;
+
+// Bounded TTL cache: expired entries are dropped on access, and when the map is
+// full the oldest-inserted entries are evicted (Map preserves insertion order).
+function cacheGet<T>(cache: Map<string, CacheEntry<T>>, key: string): T | undefined {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (entry.expires <= Date.now()) {
+    cache.delete(key);
+    return undefined;
+  }
+  return entry.value;
+}
+
+function cacheSet<T>(cache: Map<string, CacheEntry<T>>, key: string, value: T): void {
+  if (cache.size >= CACHE_MAX_ENTRIES) {
+    const now = Date.now();
+    for (const [k, v] of cache) {
+      if (v.expires <= now) cache.delete(k);
+    }
+    while (cache.size >= CACHE_MAX_ENTRIES) {
+      const oldest = cache.keys().next().value;
+      if (oldest === undefined) break;
+      cache.delete(oldest);
+    }
+  }
+  cache.set(key, { value, expires: Date.now() + CACHE_TTL_MS });
+}
+
+const placeCache = new Map<string, CacheEntry<{ label: string; lat: number; lng: number }[]>>();
+const routeCache = new Map<string, CacheEntry<{ distanceKm: number; durationMinutes: number | null; geometry: [number, number][] | null }>>();
+
+const RATE_LIMIT_MAX_IPS = 5000;
+const searchHits = new Map<string, { count: number; resetAt: number }>();
+function rateLimited(ip: string, max: number): boolean {
+  const now = Date.now();
+  const entry = searchHits.get(ip);
+  if (!entry || entry.resetAt < now) {
+    if (searchHits.size >= RATE_LIMIT_MAX_IPS) {
+      for (const [k, v] of searchHits) {
+        if (v.resetAt < now) searchHits.delete(k);
+      }
+      while (searchHits.size >= RATE_LIMIT_MAX_IPS) {
+        const oldest = searchHits.keys().next().value;
+        if (oldest === undefined) break;
+        searchHits.delete(oldest);
+      }
+    }
+    searchHits.set(ip, { count: 1, resetAt: now + 60_000 });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > max;
+}
+
+router.get("/v1/public/place-search", async (req, res): Promise<void> => {
+  const params = SearchPlacesQueryParams.safeParse(req.query);
+  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+  const q = params.data.q.trim();
+  if (q.length < 2) { res.json(SearchPlacesResponse.parse({ places: [] })); return; }
+  if (rateLimited(req.ip ?? "unknown", 30)) { res.status(429).json({ error: "Too many requests" }); return; }
+
+  const cacheKey = q.toLowerCase();
+  const cached = cacheGet(placeCache, cacheKey);
+  if (cached) {
+    res.json(SearchPlacesResponse.parse({ places: cached }));
+    return;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=15&lang=en&lat=22&lon=79&location_bias_scale=0.6`;
+    const resp = await fetch(url, { signal: controller.signal });
+    if (!resp.ok) { res.json(SearchPlacesResponse.parse({ places: [] })); return; }
+    const data = (await resp.json()) as {
+      features?: Array<{ properties?: Record<string, unknown>; geometry?: { coordinates?: number[] } }>;
+    };
+    const seen = new Set<string>();
+    const places: { label: string; lat: number; lng: number }[] = [];
+    for (const f of data.features ?? []) {
+      const p = f.properties ?? {};
+      const coords = f.geometry?.coordinates;
+      if (!coords || coords.length < 2) continue;
+      const name = typeof p.name === "string" ? p.name : "";
+      if (!name) continue;
+      const label = [
+        name,
+        typeof p.state === "string" ? p.state : "",
+        typeof p.country === "string" ? p.country : "",
+      ].filter(Boolean).join(", ");
+      const key = label.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      places.push({ label, lat: coords[1], lng: coords[0] });
+      if (places.length >= 8) break;
+    }
+    cacheSet(placeCache, cacheKey, places);
+    res.json(SearchPlacesResponse.parse({ places }));
+  } catch (err) {
+    req.log.warn({ err }, "place search failed");
+    res.json(SearchPlacesResponse.parse({ places: [] }));
+  } finally {
+    clearTimeout(timer);
+  }
+});
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+router.get("/v1/public/route-distance", async (req, res): Promise<void> => {
+  const params = GetRouteDistanceQueryParams.safeParse(req.query);
+  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+  const { fromLat, fromLng, toLat, toLng } = params.data;
+  if (
+    Math.abs(fromLat) > 90 || Math.abs(toLat) > 90 ||
+    Math.abs(fromLng) > 180 || Math.abs(toLng) > 180
+  ) {
+    res.status(400).json({ error: "Invalid coordinates" });
+    return;
+  }
+  if (rateLimited(req.ip ?? "unknown", 30)) { res.status(429).json({ error: "Too many requests" }); return; }
+
+  const cacheKey = [fromLat, fromLng, toLat, toLng].map((n) => n.toFixed(4)).join(",");
+  const cached = cacheGet(routeCache, cacheKey);
+  if (cached) {
+    res.json(GetRouteDistanceResponse.parse(cached));
+    return;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=simplified&geometries=geojson`;
+    const resp = await fetch(url, { signal: controller.signal });
+    if (resp.ok) {
+      const data = (await resp.json()) as {
+        routes?: Array<{ distance?: number; duration?: number; geometry?: { coordinates?: [number, number][] } }>;
+      };
+      const route = data.routes?.[0];
+      if (route?.distance !== undefined) {
+        const value = {
+          distanceKm: Math.round(route.distance / 100) / 10,
+          durationMinutes: route.duration !== undefined ? Math.round(route.duration / 60) : null,
+          geometry: route.geometry?.coordinates
+            ? route.geometry.coordinates.map(([lng, lat]) => [lat, lng] as [number, number])
+            : null,
+        };
+        cacheSet(routeCache, cacheKey, value);
+        res.json(GetRouteDistanceResponse.parse(value));
+        return;
+      }
+    }
+    // OSRM unavailable — estimate from straight-line distance with a road factor.
+    const fallback = {
+      distanceKm: Math.round(haversineKm(fromLat, fromLng, toLat, toLng) * 1.3 * 10) / 10,
+      durationMinutes: null,
+      geometry: null,
+    };
+    res.json(GetRouteDistanceResponse.parse(fallback));
+  } catch (err) {
+    req.log.warn({ err }, "route distance lookup failed, using haversine fallback");
+    const fallback = {
+      distanceKm: Math.round(haversineKm(fromLat, fromLng, toLat, toLng) * 1.3 * 10) / 10,
+      durationMinutes: null,
+      geometry: null,
+    };
+    res.json(GetRouteDistanceResponse.parse(fallback));
+  } finally {
+    clearTimeout(timer);
+  }
 });
 
 export default router;

@@ -40,6 +40,9 @@ type RateForm = {
   vehicleExamples: string;
   seats: string;
   ratePerKm: string;
+  nonAcRatePerKm: string;
+  nonAcDayRate: string;
+  nonAcExtraKmRate: string;
   minKmPerDay: string;
   dayRate: string;
   kmIncludedPerDay: string;
@@ -56,6 +59,9 @@ const EMPTY_FORM: RateForm = {
   vehicleExamples: "",
   seats: "",
   ratePerKm: "0",
+  nonAcRatePerKm: "0",
+  nonAcDayRate: "0",
+  nonAcExtraKmRate: "0",
   minKmPerDay: "0",
   dayRate: "0",
   kmIncludedPerDay: "0",
@@ -73,6 +79,9 @@ function toForm(r: TripRate): RateForm {
     vehicleExamples: r.vehicleExamples ?? "",
     seats: r.seats != null ? String(r.seats) : "",
     ratePerKm: String(r.ratePerKm),
+    nonAcRatePerKm: String(r.nonAcRatePerKm),
+    nonAcDayRate: String(r.nonAcDayRate),
+    nonAcExtraKmRate: String(r.nonAcExtraKmRate),
     minKmPerDay: String(r.minKmPerDay),
     dayRate: String(r.dayRate),
     kmIncludedPerDay: String(r.kmIncludedPerDay),
@@ -146,6 +155,9 @@ export default function AdminTripRates() {
       vehicleExamples: form.vehicleExamples.trim() || undefined,
       seats: form.seats ? Number(form.seats) : undefined,
       ratePerKm: Number(form.ratePerKm) || 0,
+      nonAcRatePerKm: Number(form.nonAcRatePerKm) || 0,
+      nonAcDayRate: Number(form.nonAcDayRate) || 0,
+      nonAcExtraKmRate: Number(form.nonAcExtraKmRate) || 0,
       minKmPerDay: Number(form.minKmPerDay) || 0,
       dayRate: Number(form.dayRate) || 0,
       kmIncludedPerDay: Number(form.kmIncludedPerDay) || 0,
@@ -337,7 +349,12 @@ export default function AdminTripRates() {
                       )}
                     </td>
                     <td className="px-4 py-3">{r.seats ?? "—"}</td>
-                    <td className="px-4 py-3">{inr(r.ratePerKm)}</td>
+                    <td className="px-4 py-3">
+                      {inr(r.ratePerKm)}
+                      {r.nonAcRatePerKm > 0 && (
+                        <span className="text-muted-foreground"> / {inr(r.nonAcRatePerKm)} non-AC</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">{r.minKmPerDay}</td>
                     <td className="px-4 py-3">{inr(r.dayRate)}</td>
                     <td className="px-4 py-3">{r.kmIncludedPerDay}</td>
@@ -429,6 +446,31 @@ export default function AdminTripRates() {
                 <div className="space-y-1.5">
                   <Label>Extra km rate (₹)</Label>
                   <Input type="number" value={form.extraKmRate} onChange={setF("extraKmRate")} />
+                </div>
+              </div>
+            </div>
+
+            {/* Non-AC rates */}
+            <div className="rounded-lg border p-4 space-y-3">
+              <div className="flex items-center gap-2 font-semibold">
+                <Car className="h-4 w-4 text-primary" />
+                Non-AC rates (optional)
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Leave 0 if Non-AC is not offered for this vehicle
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label>Non-AC ₹/km</Label>
+                  <Input type="number" value={form.nonAcRatePerKm} onChange={setF("nonAcRatePerKm")} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Non-AC day rate (₹)</Label>
+                  <Input type="number" value={form.nonAcDayRate} onChange={setF("nonAcDayRate")} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Non-AC extra km (₹)</Label>
+                  <Input type="number" value={form.nonAcExtraKmRate} onChange={setF("nonAcExtraKmRate")} />
                 </div>
               </div>
             </div>

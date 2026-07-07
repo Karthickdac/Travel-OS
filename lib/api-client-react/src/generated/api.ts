@@ -62,6 +62,7 @@ import type {
   GetPublicPackagesParams,
   GetPublicTripRatesParams,
   GetRevenueTrendParams,
+  GetRouteDistanceParams,
   HealthStatus,
   Invoice,
   InvoiceInput,
@@ -84,6 +85,7 @@ import type {
   MasterDashboardStats,
   MasterUser,
   Notification,
+  PlaceSearchResult,
   PublicQuotation,
   PublicTripRates,
   Quotation,
@@ -92,6 +94,8 @@ import type {
   QuotationSendPayload,
   QuotationUpdate,
   RevenueTrendPoint,
+  RouteDistance,
+  SearchPlacesParams,
   SetUserCompaniesInput,
   SubscriptionPlan,
   SubscriptionPlanInput,
@@ -6347,6 +6351,174 @@ export function useGetPublicTripRates<TData = Awaited<ReturnType<typeof getPubli
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetPublicTripRatesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSearchPlacesUrl = (params: SearchPlacesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/public/place-search?${stringifiedParams}` : `/api/v1/public/place-search`
+}
+
+/**
+ * @summary Search places with coordinates for trip estimator
+ */
+export const searchPlaces = async (params: SearchPlacesParams, options?: RequestInit): Promise<PlaceSearchResult> => {
+
+  return customFetch<PlaceSearchResult>(getSearchPlacesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchPlacesQueryKey = (params?: SearchPlacesParams,) => {
+    return [
+    `/api/v1/public/place-search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchPlacesQueryOptions = <TData = Awaited<ReturnType<typeof searchPlaces>>, TError = ErrorType<unknown>>(params: SearchPlacesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchPlaces>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchPlacesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchPlaces>>> = ({ signal }) => searchPlaces(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchPlaces>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchPlacesQueryResult = NonNullable<Awaited<ReturnType<typeof searchPlaces>>>
+export type SearchPlacesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Search places with coordinates for trip estimator
+ */
+
+export function useSearchPlaces<TData = Awaited<ReturnType<typeof searchPlaces>>, TError = ErrorType<unknown>>(
+ params: SearchPlacesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchPlaces>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchPlacesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRouteDistanceUrl = (params: GetRouteDistanceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/public/route-distance?${stringifiedParams}` : `/api/v1/public/route-distance`
+}
+
+/**
+ * @summary Driving distance between two coordinates
+ */
+export const getRouteDistance = async (params: GetRouteDistanceParams, options?: RequestInit): Promise<RouteDistance> => {
+
+  return customFetch<RouteDistance>(getGetRouteDistanceUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRouteDistanceQueryKey = (params?: GetRouteDistanceParams,) => {
+    return [
+    `/api/v1/public/route-distance`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetRouteDistanceQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistance>>, TError = ErrorType<unknown>>(params: GetRouteDistanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRouteDistanceQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistance>>> = ({ signal }) => getRouteDistance(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRouteDistance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRouteDistanceQueryResult = NonNullable<Awaited<ReturnType<typeof getRouteDistance>>>
+export type GetRouteDistanceQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Driving distance between two coordinates
+ */
+
+export function useGetRouteDistance<TData = Awaited<ReturnType<typeof getRouteDistance>>, TError = ErrorType<unknown>>(
+ params: GetRouteDistanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRouteDistanceQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -12,6 +12,9 @@ export interface TripRateUpdate {
   seats?: number;
   imageUrl?: string;
   ratePerKm?: number;
+  nonAcRatePerKm?: number;
+  nonAcDayRate?: number;
+  nonAcExtraKmRate?: number;
   minKmPerDay?: number;
   dayRate?: number;
   kmIncludedPerDay?: number;
