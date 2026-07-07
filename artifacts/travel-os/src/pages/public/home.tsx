@@ -11,6 +11,7 @@ import HeroSection from "./sections/hero-section";
 import DestinationsSection from "./sections/destinations-section";
 import PackagesSection, { type PublicPackage } from "./sections/packages-section";
 import WhySection from "./sections/why-section";
+import EstimatorSection from "./sections/estimator-section";
 
 const HERO_IMAGE = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1920&q=85&auto=format&fit=crop";
 const SERVICE_ICONS = [Users, MapPin, Shield, HeadphonesIcon, Phone, ArrowRight];
@@ -76,6 +77,8 @@ export default function PublicHome() {
         heroBgImage={heroBgImage}
         stats={cmsStats}
       />
+
+      <EstimatorSection />
 
       <WhySection
         t={t}
