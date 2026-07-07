@@ -264,6 +264,19 @@ export default function PublicTripEstimator() {
   const handleBook = () => {
     try {
       if (summaryText) sessionStorage.setItem("tripEstimate", summaryText);
+      sessionStorage.setItem(
+        "tripEstimateDetails",
+        JSON.stringify({
+          fromCity: from?.label ?? "",
+          toDestination: to?.label ?? "",
+          travelDate: startDate,
+          returnDate: returnDateApplies ? returnDate : "",
+          vehiclePreference: selected?.vehicleType ?? "",
+          seats: selected?.seats ?? null,
+          tripType: mode === "km" ? "Outstation Cab" : "Local Cab",
+          budget: estimate ? `Approx ${fmt(estimate.total)} (estimated fare)` : "",
+        }),
+      );
     } catch {
       /* ignore */
     }

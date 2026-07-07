@@ -15,6 +15,7 @@ import { useSearch } from "wouter";
 const SITE_DOMAIN = getSiteDomain();
 
 const TRIP_TYPES = ["Pilgrimage Tour", "Family Tour", "Honeymoon Package", "Adventure Tour", "Corporate Trip", "Airport Transfer", "Outstation Cab", "Local Cab", "Custom Package"];
+const VEHICLE_OPTIONS = ["AC Innova", "Crysta", "Tempo Traveller", "Mini Bus", "Sedan", "SUV"];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -36,20 +37,41 @@ export default function PublicEnquiry() {
     const pkg = params.get("package") ?? "";
     const tripTypeParam = params.get("tripType") ?? "";
     let estimateMsg = "";
+    let details: {
+      fromCity?: string;
+      toDestination?: string;
+      travelDate?: string;
+      returnDate?: string;
+      vehiclePreference?: string;
+      seats?: number | null;
+      tripType?: string;
+      budget?: string;
+    } = {};
     try {
       const stored = sessionStorage.getItem("tripEstimate");
       if (stored) {
         estimateMsg = stored;
         sessionStorage.removeItem("tripEstimate");
       }
+      const storedDetails = sessionStorage.getItem("tripEstimateDetails");
+      if (storedDetails) {
+        details = JSON.parse(storedDetails);
+        sessionStorage.removeItem("tripEstimateDetails");
+      }
     } catch {
       /* ignore */
     }
+    const detailTripType = details.tripType && TRIP_TYPES.includes(details.tripType) ? details.tripType : "";
     return {
       name: "", phone: "", email: "",
-      tripType: TRIP_TYPES.includes(tripTypeParam) ? tripTypeParam : "",
-      fromCity: "", toDestination: destination,
-      travelDate: "", returnDate: "", passengers: "2", vehiclePreference: "", budget: "",
+      tripType: detailTripType || (TRIP_TYPES.includes(tripTypeParam) ? tripTypeParam : ""),
+      fromCity: details.fromCity ?? "",
+      toDestination: details.toDestination || destination,
+      travelDate: details.travelDate ?? "",
+      returnDate: details.returnDate ?? "",
+      passengers: details.seats ? String(details.seats) : "2",
+      vehiclePreference: details.vehiclePreference ?? "",
+      budget: details.budget ?? "",
       message: estimateMsg
         ? estimateMsg
         : pkg ? `I'm interested in the "${pkg}" package. Please share availability and pricing.` : "",
@@ -304,12 +326,10 @@ export default function PublicEnquiry() {
                       <Label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5"><Car className="w-3.5 h-3.5" /> Vehicle Preference</Label>
                       <select value={form.vehiclePreference} onChange={setF("vehiclePreference")} className="w-full h-12 border border-input rounded-xl px-4 text-[15px] font-medium bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                         <option value="">Any vehicle</option>
-                        <option>AC Innova</option>
-                        <option>Crysta</option>
-                        <option>Tempo Traveller</option>
-                        <option>Mini Bus</option>
-                        <option>Sedan</option>
-                        <option>SUV</option>
+                        {form.vehiclePreference && !VEHICLE_OPTIONS.includes(form.vehiclePreference) && (
+                          <option value={form.vehiclePreference}>{form.vehiclePreference}</option>
+                        )}
+                        {VEHICLE_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                     </div>
 
