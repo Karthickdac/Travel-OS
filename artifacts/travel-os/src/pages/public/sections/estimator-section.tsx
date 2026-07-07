@@ -104,9 +104,12 @@ export default function EstimatorSection() {
   if (settings?.enabled === false || rates.length === 0) return null;
 
   return (
-    <section className="py-20 bg-white relative">
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-      <div className="container mx-auto px-4">
+    <section className="py-20 relative overflow-hidden bg-gradient-to-br from-primary/15 via-primary/5 to-primary/10">
+      {/* Decorative color blobs */}
+      <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 right-10 h-40 w-40 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+      <div className="container mx-auto px-4 relative">
         <motion.div
           className="text-center mb-10 max-w-2xl mx-auto"
           initial="hidden"
@@ -114,11 +117,11 @@ export default function EstimatorSection() {
           viewport={{ once: true, amount: 0.3 }}
           variants={staggerContainer(0.1)}
         >
-          <motion.p variants={fadeUp} className="text-primary font-bold text-sm uppercase tracking-[0.2em] mb-3">
-            Instant Fare
+          <motion.p variants={fadeUp} className="inline-flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-[0.2em] mb-3 bg-white shadow-sm border border-primary/20 px-4 py-1.5 rounded-full">
+            <Calculator className="w-4 h-4" /> Instant Fare
           </motion.p>
           <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-black mb-4 tracking-tight" style={{ fontFamily: "var(--app-font-serif)" }}>
-            Estimate Your Trip
+            Estimate Your <span className="text-primary">Trip</span>
           </motion.h2>
           <motion.p variants={fadeUp} className="text-muted-foreground text-lg">
             Pick your route and vehicle — get an instant fare estimate.
@@ -130,8 +133,9 @@ export default function EstimatorSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.5 }}
-          className="max-w-4xl mx-auto bg-[#FAF8F5] border border-border/60 rounded-3xl shadow-sm p-6 md:p-8"
+          className="max-w-4xl mx-auto bg-white/90 backdrop-blur border-2 border-primary/15 rounded-3xl shadow-xl shadow-primary/10 p-6 md:p-8 relative overflow-hidden"
         >
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-primary/60 to-primary/30" />
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="text-[13px] font-bold text-muted-foreground flex items-center gap-1.5 mb-2">
@@ -203,7 +207,7 @@ export default function EstimatorSection() {
                     onClick={() => setAcMode("ac")}
                     className={cn(
                       "h-12 rounded-xl border-2 flex items-center justify-center gap-2 text-sm font-bold transition-all",
-                      acMode === "ac" ? "border-primary bg-primary/5 text-primary" : "border-border/60 bg-white text-muted-foreground",
+                      acMode === "ac" ? "border-primary bg-primary/10 text-primary shadow-sm" : "border-border/60 bg-white text-muted-foreground",
                     )}
                   >
                     <Snowflake className="h-4 w-4" /> AC
@@ -214,7 +218,7 @@ export default function EstimatorSection() {
                     disabled={!canNonAc}
                     className={cn(
                       "h-12 rounded-xl border-2 flex items-center justify-center gap-2 text-sm font-bold transition-all",
-                      acMode === "nonac" ? "border-primary bg-primary/5 text-primary" : "border-border/60 bg-white text-muted-foreground",
+                      acMode === "nonac" ? "border-primary bg-primary/10 text-primary shadow-sm" : "border-border/60 bg-white text-muted-foreground",
                       !canNonAc && "opacity-40 cursor-not-allowed",
                     )}
                   >
@@ -250,11 +254,11 @@ export default function EstimatorSection() {
             )}
           </div>
 
-          <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-border/60 pt-6">
+          <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-primary/15 via-primary/5 to-primary/10 border border-primary/20 p-5">
             <div>
               {estimate ? (
                 <>
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Estimated fare</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-primary/70">Estimated fare</p>
                   <p className="text-3xl font-black text-primary">{fmt(estimate.total)}</p>
                   <p className="text-xs text-muted-foreground">
                     Incl. driver bata{estimate.days > 1 ? ` · approx ${estimate.days} days` : ""} · taxes as applicable
@@ -269,7 +273,7 @@ export default function EstimatorSection() {
             </div>
             <Button
               size="lg"
-              className="h-14 px-8 rounded-full font-bold gap-2"
+              className="h-14 px-8 rounded-full font-bold gap-2 shadow-lg shadow-primary/30"
               onClick={() => {
                 try {
                   sessionStorage.setItem(
