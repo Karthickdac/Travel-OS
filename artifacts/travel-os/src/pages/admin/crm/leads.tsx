@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useListLeads, useCreateLead, useUpdateLead, useDeleteLead, useConvertLeadToBooking, LeadSource, LeadStatus } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,8 +65,10 @@ export default function AdminLeads() {
   const [updateForm, setUpdateForm] = useState(BLANK_UPDATE);
   const [convertDialog, setConvertDialog] = useState<any | null>(null);
   const [convertForm, setConvertForm] = useState(BLANK_CONVERT);
+  const [detailLead, setDetailLead] = useState<any | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
+  const justDragged = useRef(false);
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["/v1/crm/leads"] });
@@ -262,8 +264,9 @@ export default function AdminLeads() {
                       <Card
                         key={lead.id}
                         draggable
-                        onDragStart={() => setDragId(lead.id)}
-                        onDragEnd={() => { setDragId(null); setDragOver(null); }}
+                        onDragStart={() => { justDragged.current = true; setDragId(lead.id); }}
+                        onDragEnd={() => { setDragId(null); setDragOver(null); setTimeout(() => { justDragged.current = false; }, 100); }}
+                        onClick={() => { if (!justDragged.current) setDetailLead(lead); }}
                         className={cn("shadow-sm cursor-grab active:cursor-grabbing group", dragId === lead.id && "opacity-40")}
                       >
                         <CardContent className="p-3">
@@ -285,10 +288,10 @@ export default function AdminLeads() {
                                 )}
                               </div>
                               <div className="flex items-center flex-wrap gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button size="sm" variant="ghost" onClick={() => openUpdate(lead)} className="h-6 px-1.5 text-[11px] gap-1"><MessageSquare className="h-3 w-3" />Update</Button>
-                                {lead.status !== "won" && lead.status !== "lost" && <Button size="sm" variant="ghost" onClick={() => openConvert(lead)} className="h-6 px-1.5 text-[11px] gap-1 text-emerald-600 hover:text-emerald-700"><CalendarCheck className="h-3 w-3" />Convert</Button>}
-                                {next && <Button size="sm" variant="ghost" onClick={() => moveStage(lead, next.key)} className="h-6 px-1.5 text-[11px] gap-0.5">{next.label}<ChevronRight className="h-3 w-3" /></Button>}
-                                <Button size="sm" variant="ghost" onClick={() => handleDelete(lead.id, lead.name)} className="h-6 w-6 p-0 text-destructive hover:text-destructive ml-auto"><Trash2 className="h-3 w-3" /></Button>
+                                <Button size="sm" variant="ghost" onClick={e => { e.stopPropagation(); openUpdate(lead); }} className="h-6 px-1.5 text-[11px] gap-1"><MessageSquare className="h-3 w-3" />Update</Button>
+                                {lead.status !== "won" && lead.status !== "lost" && <Button size="sm" variant="ghost" onClick={e => { e.stopPropagation(); openConvert(lead); }} className="h-6 px-1.5 text-[11px] gap-1 text-emerald-600 hover:text-emerald-700"><CalendarCheck className="h-3 w-3" />Convert</Button>}
+                                {next && <Button size="sm" variant="ghost" onClick={e => { e.stopPropagation(); moveStage(lead, next.key); }} className="h-6 px-1.5 text-[11px] gap-0.5">{next.label}<ChevronRight className="h-3 w-3" /></Button>}
+                                <Button size="sm" variant="ghost" onClick={e => { e.stopPropagation(); handleDelete(lead.id, lead.name); }} className="h-6 w-6 p-0 text-destructive hover:text-destructive ml-auto"><Trash2 className="h-3 w-3" /></Button>
                               </div>
                             </div>
                           </div>
@@ -324,7 +327,7 @@ export default function AdminLeads() {
           ) : (
             <div className="space-y-2">
               {filtered.map(lead => (
-                <Card key={lead.id} className="shadow-sm hover:shadow-md transition-shadow">
+                <Card key={lead.id} onClick={() => setDetailLead(lead)} className="shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-sm flex-shrink-0">
@@ -347,9 +350,9 @@ export default function AdminLeads() {
                         {lead.notes && <p className="text-xs text-muted-foreground mt-1.5 italic line-clamp-1">{lead.notes}</p>}
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
-                        <Button size="sm" variant="ghost" onClick={() => openUpdate(lead)} className="h-8 text-xs gap-1"><MessageSquare className="h-3 w-3" />Update</Button>
-                        {lead.status !== "won" && lead.status !== "lost" && <Button size="sm" variant="ghost" onClick={() => openConvert(lead)} className="h-8 text-xs gap-1 text-emerald-600 hover:text-emerald-700"><CalendarCheck className="h-3.5 w-3.5" />Convert</Button>}
-                        <Button size="sm" variant="ghost" onClick={() => handleDelete(lead.id, lead.name)} className="h-8 w-8 p-0 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                        <Button size="sm" variant="ghost" onClick={e => { e.stopPropagation(); openUpdate(lead); }} className="h-8 text-xs gap-1"><MessageSquare className="h-3 w-3" />Update</Button>
+                        {lead.status !== "won" && lead.status !== "lost" && <Button size="sm" variant="ghost" onClick={e => { e.stopPropagation(); openConvert(lead); }} className="h-8 text-xs gap-1 text-emerald-600 hover:text-emerald-700"><CalendarCheck className="h-3.5 w-3.5" />Convert</Button>}
+                        <Button size="sm" variant="ghost" onClick={e => { e.stopPropagation(); handleDelete(lead.id, lead.name); }} className="h-8 w-8 p-0 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </div>
                   </CardContent>
@@ -441,6 +444,54 @@ export default function AdminLeads() {
               <Button onClick={handleConvert} disabled={convertLead.isPending} className="gap-1"><CalendarCheck className="h-4 w-4" />Create Booking</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lead Details Dialog */}
+      <Dialog open={!!detailLead} onOpenChange={() => setDetailLead(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Lead Details</DialogTitle></DialogHeader>
+          {detailLead && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg shrink-0">
+                  {detailLead.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-lg leading-tight truncate">{detailLead.name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className={`text-xs ${STAGE_COLORS[detailLead.status] ?? ""}`}>{STAGE_LABELS[detailLead.status] ?? detailLead.status}</Badge>
+                    {detailLead.source && <span className="text-xs text-muted-foreground border border-border rounded-full px-2 py-0.5">{SOURCE_LABELS[detailLead.source] ?? detailLead.source}</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <div><p className="text-xs text-muted-foreground mb-0.5">Phone</p><p className="font-medium flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 text-muted-foreground" />{detailLead.phone}</p></div>
+                <div><p className="text-xs text-muted-foreground mb-0.5">Email</p><p className="font-medium truncate">{detailLead.email || "—"}</p></div>
+                <div><p className="text-xs text-muted-foreground mb-0.5">Destination</p><p className="font-medium flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-muted-foreground" />{detailLead.destination || "—"}</p></div>
+                <div><p className="text-xs text-muted-foreground mb-0.5">Travel Date</p><p className="font-medium flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5 text-muted-foreground" />{detailLead.travelDate || "—"}</p></div>
+                <div><p className="text-xs text-muted-foreground mb-0.5">Passengers</p><p className="font-medium">{detailLead.pax ? `${detailLead.pax} pax` : "—"}</p></div>
+                <div><p className="text-xs text-muted-foreground mb-0.5">Budget</p><p className="font-medium">{detailLead.budget ? inr(Number(detailLead.budget)) : "—"}</p></div>
+                <div><p className="text-xs text-muted-foreground mb-0.5">Follow-up Date</p><p className={cn("font-medium flex items-center gap-1.5", isOverdue(detailLead.followUpDate) && "text-red-600")}><Clock className="h-3.5 w-3.5 text-muted-foreground" />{detailLead.followUpDate || "—"}{isOverdue(detailLead.followUpDate) && " • overdue"}</p></div>
+                <div><p className="text-xs text-muted-foreground mb-0.5">Created</p><p className="font-medium">{detailLead.createdAt ? new Date(detailLead.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}</p></div>
+              </div>
+
+              {detailLead.notes && (
+                <div className="bg-muted/40 border border-border/60 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground mb-1 font-semibold uppercase tracking-wide">Notes</p>
+                  <p className="text-sm whitespace-pre-wrap">{detailLead.notes}</p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-1">
+                <Button variant="outline" size="sm" onClick={() => { const l = detailLead; setDetailLead(null); openUpdate(l); }} className="gap-1"><MessageSquare className="h-3.5 w-3.5" />Update</Button>
+                {detailLead.status !== "won" && detailLead.status !== "lost" && (
+                  <Button size="sm" onClick={() => { const l = detailLead; setDetailLead(null); openConvert(l); }} className="gap-1 bg-emerald-600 hover:bg-emerald-700"><CalendarCheck className="h-3.5 w-3.5" />Convert to Booking</Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
