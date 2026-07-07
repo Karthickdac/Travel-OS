@@ -52,6 +52,7 @@ import AdminMarketingLoyalty from "@/pages/admin/marketing/loyalty";
 import AdminCmsMenus from "@/pages/admin/cms/menus";
 import AdminCmsSeo from "@/pages/admin/cms/seo";
 import AdminCmsHomepage from "@/pages/admin/cms/homepage";
+import AdminCmsTestimonials from "@/pages/admin/cms/testimonials";
 import AdminCmsLayout from "@/pages/admin/cms/layout";
 import AdminCmsThemes from "@/pages/admin/cms/themes";
 import AdminFleetFuel from "@/pages/admin/fleet/fuel";
@@ -185,6 +186,7 @@ function AdminRoutes() {
         <Route path="/admin/cms/menus"><AdminOnly component={AdminCmsMenus} /></Route>
         <Route path="/admin/cms/seo"><AdminOnly component={AdminCmsSeo} /></Route>
         <Route path="/admin/cms/homepage"><AdminOnly component={AdminCmsHomepage} /></Route>
+        <Route path="/admin/cms/testimonials"><AdminOnly component={AdminCmsTestimonials} /></Route>
         <Route path="/admin/cms/layout"><AdminOnly component={AdminCmsLayout} /></Route>
         <Route path="/admin/cms/themes"><AdminOnly component={AdminCmsThemes} /></Route>
         <Route path="/admin/cms"><AdminOnly component={AdminCms} /></Route>

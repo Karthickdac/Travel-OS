@@ -1748,6 +1748,77 @@ paths:
         "204":
           description: Deleted
 
+  # ── TESTIMONIALS ──────────────────────────────────────────────────────────
+  /v1/testimonials:
+    get:
+      operationId: listTestimonials
+      tags: [testimonials]
+      summary: List testimonials for the company
+      responses:
+        "200":
+          description: Testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+    post:
+      operationId: createTestimonial
+      tags: [testimonials]
+      summary: Create testimonial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
+  /v1/testimonials/{id}:
+    put:
+      operationId: updateTestimonial
+      tags: [testimonials]
+      summary: Update testimonial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+    delete:
+      operationId: deleteTestimonial
+      tags: [testimonials]
+      summary: Delete testimonial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
   # ── TOURS ─────────────────────────────────────────────────────────────────
   /v1/tours/destinations:
     get:
@@ -2167,6 +2238,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Destination"
+
+  /v1/public/testimonials:
+    get:
+      operationId: getPublicTestimonials
+      tags: [public]
+      summary: Get active customer testimonials for the public website
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
 
   /v1/public/enquiry:
     post:
@@ -3580,6 +3677,51 @@ components:
           type: array
           items:
             type: string
+
+    # ── Testimonial ────────────────────────────────────────────────────────
+    Testimonial:
+      type: object
+      required: [id, authorName, rating, content, isActive, sortOrder]
+      properties:
+        id:
+          type: string
+        authorName:
+          type: string
+        location:
+          type: ["string", "null"]
+        tripName:
+          type: ["string", "null"]
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        content:
+          type: string
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    TestimonialInput:
+      type: object
+      required: [authorName, rating, content]
+      properties:
+        authorName:
+          type: string
+        location:
+          type: string
+        tripName:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        content:
+          type: string
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
 
     # ── Tour Package ───────────────────────────────────────────────────────
     TourPackage:

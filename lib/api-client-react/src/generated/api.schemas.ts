@@ -873,6 +873,37 @@ export interface DestinationInput {
   tags?: string[];
 }
 
+export interface Testimonial {
+  id: string;
+  authorName: string;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  tripName?: string | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  rating: number;
+  content: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface TestimonialInput {
+  authorName: string;
+  location?: string;
+  tripName?: string;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  rating: number;
+  content: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
 export type TourPackagePackageType = typeof TourPackagePackageType[keyof typeof TourPackagePackageType];
 
 
@@ -1408,6 +1439,11 @@ companyId?: string;
 };
 
 export type GetPublicDestinationsParams = {
+domain?: string;
+companyId?: string;
+};
+
+export type GetPublicTestimonialsParams = {
 domain?: string;
 companyId?: string;
 };

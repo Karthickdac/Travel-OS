@@ -2176,6 +2176,106 @@ export const DeleteCustomerResponse = zod.void()
 
 
 /**
+ * @summary List testimonials for the company
+ */
+export const listTestimonialsResponseRatingMax = 5;
+
+
+
+export const ListTestimonialsResponseItem = zod.object({
+  "id": zod.string(),
+  "authorName": zod.string(),
+  "location": zod.string().nullish(),
+  "tripName": zod.string().nullish(),
+  "rating": zod.number().min(1).max(listTestimonialsResponseRatingMax),
+  "content": zod.string(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+})
+export const ListTestimonialsResponse = zod.array(ListTestimonialsResponseItem)
+
+
+/**
+ * @summary Create testimonial
+ */
+export const createTestimonialBodyRatingMax = 5;
+
+
+
+export const CreateTestimonialBody = zod.object({
+  "authorName": zod.string(),
+  "location": zod.string().optional(),
+  "tripName": zod.string().optional(),
+  "rating": zod.number().min(1).max(createTestimonialBodyRatingMax),
+  "content": zod.string(),
+  "isActive": zod.boolean().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const createTestimonialResponseRatingMax = 5;
+
+
+
+export const CreateTestimonialResponse = zod.object({
+  "id": zod.string(),
+  "authorName": zod.string(),
+  "location": zod.string().nullish(),
+  "tripName": zod.string().nullish(),
+  "rating": zod.number().min(1).max(createTestimonialResponseRatingMax),
+  "content": zod.string(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+})
+
+
+/**
+ * @summary Update testimonial
+ */
+export const UpdateTestimonialParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const updateTestimonialBodyRatingMax = 5;
+
+
+
+export const UpdateTestimonialBody = zod.object({
+  "authorName": zod.string(),
+  "location": zod.string().optional(),
+  "tripName": zod.string().optional(),
+  "rating": zod.number().min(1).max(updateTestimonialBodyRatingMax),
+  "content": zod.string(),
+  "isActive": zod.boolean().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const updateTestimonialResponseRatingMax = 5;
+
+
+
+export const UpdateTestimonialResponse = zod.object({
+  "id": zod.string(),
+  "authorName": zod.string(),
+  "location": zod.string().nullish(),
+  "tripName": zod.string().nullish(),
+  "rating": zod.number().min(1).max(updateTestimonialResponseRatingMax),
+  "content": zod.string(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+})
+
+
+/**
+ * @summary Delete testimonial
+ */
+export const DeleteTestimonialParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteTestimonialResponse = zod.void()
+
+
+/**
  * @summary List destinations
  */
 export const ListDestinationsResponseItem = zod.object({
@@ -3014,6 +3114,31 @@ export const GetPublicDestinationsResponseItem = zod.object({
   "totalPackages": zod.number().optional()
 })
 export const GetPublicDestinationsResponse = zod.array(GetPublicDestinationsResponseItem)
+
+
+/**
+ * @summary Get active customer testimonials for the public website
+ */
+export const GetPublicTestimonialsQueryParams = zod.object({
+  "domain": zod.coerce.string().optional(),
+  "companyId": zod.coerce.string().optional()
+})
+
+export const getPublicTestimonialsResponseRatingMax = 5;
+
+
+
+export const GetPublicTestimonialsResponseItem = zod.object({
+  "id": zod.string(),
+  "authorName": zod.string(),
+  "location": zod.string().nullish(),
+  "tripName": zod.string().nullish(),
+  "rating": zod.number().min(1).max(getPublicTestimonialsResponseRatingMax),
+  "content": zod.string(),
+  "isActive": zod.boolean(),
+  "sortOrder": zod.number()
+})
+export const GetPublicTestimonialsResponse = zod.array(GetPublicTestimonialsResponseItem)
 
 
 /**

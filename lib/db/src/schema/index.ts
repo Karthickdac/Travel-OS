@@ -8,6 +8,7 @@ export * from "./bookings";
 export * from "./vendors";
 export * from "./crm";
 export * from "./tours";
+export * from "./testimonials";
 export * from "./finance";
 export * from "./cms";
 export * from "./fastag";

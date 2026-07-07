@@ -8,6 +8,7 @@ import { useGetPublicCmsSettings } from "@workspace/api-client-react";
 import { getSiteDomain, hexToHslTriplet } from "@/lib/site-domain";
 import { resolveSectionLayouts } from "@/lib/homepage-templates";
 import { useSeo } from "@/lib/use-seo";
+import { ConversionWidgets } from "@/components/layout/conversion-widgets";
 
 const SITE_DOMAIN = getSiteDomain();
 
@@ -279,6 +280,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1">
         {children}
       </main>
+
+      <ConversionWidgets phone={phone} whatsapp={cms?.socialWhatsapp} brandName={brandName} />
 
       {/* Footer */}
       <footer className="bg-[#111] text-white/80 pt-20 pb-10 border-t-4 border-primary">

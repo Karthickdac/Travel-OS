@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate, Navigation, Radio, Check, Loader2, Calculator } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate, Navigation, Radio, Check, Loader2, Calculator, MessageSquareQuote } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListMyCompanies, useSwitchCompany } from "@workspace/api-client-react";
@@ -101,6 +101,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/cms/layout", label: "Website Layout", icon: LayoutTemplate },
       { href: "/admin/cms/menus", label: "Menus", icon: ListTodo },
       { href: "/admin/cms/seo", label: "SEO", icon: Globe },
+      { href: "/admin/cms/testimonials", label: "Customer Reviews", icon: MessageSquareQuote },
       { href: "/admin/cms/themes", label: "Theme Engine", icon: Palette },
     ],
   },
