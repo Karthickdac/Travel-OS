@@ -82,6 +82,92 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
 
+  /v1/auth/my-companies:
+    get:
+      operationId: listMyCompanies
+      tags: [auth]
+      summary: List companies the current user can access
+      responses:
+        "200":
+          description: Accessible companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CompanyOption"
+        "401":
+          description: Unauthorized
+
+  /v1/auth/switch-company:
+    post:
+      operationId: switchCompany
+      tags: [auth]
+      summary: Switch the active company for the current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SwitchCompanyInput"
+      responses:
+        "200":
+          description: Updated current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Company not accessible to this user
+
+  /v1/master/users:
+    get:
+      operationId: listMasterUsers
+      tags: [master]
+      summary: List all users with their assigned companies (master admin)
+      responses:
+        "200":
+          description: Users with company assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MasterUser"
+        "403":
+          description: Forbidden
+
+  /v1/master/users/{id}/companies:
+    put:
+      operationId: setUserCompanies
+      tags: [master]
+      summary: Set the group of companies a user can access (master admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUserCompaniesInput"
+      responses:
+        "200":
+          description: Updated user with company assignments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MasterUser"
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+
   # ── MASTER ADMIN ──────────────────────────────────────────────────────────
   /v1/master/dashboard:
     get:
@@ -2032,6 +2118,56 @@ components:
           type: string
         isActive:
           type: boolean
+
+    CompanyOption:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        domain:
+          type: ["string", "null"]
+        logo:
+          type: ["string", "null"]
+
+    SwitchCompanyInput:
+      type: object
+      required: [companyId]
+      properties:
+        companyId:
+          type: string
+
+    MasterUser:
+      type: object
+      required: [id, email, name, role, companyIds]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        companyId:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        companyIds:
+          type: array
+          items:
+            type: string
+
+    SetUserCompaniesInput:
+      type: object
+      required: [companyIds]
+      properties:
+        companyIds:
+          type: array
+          items:
+            type: string
 
     # ── Master Dashboard ───────────────────────────────────────────────────
     MasterDashboardStats:

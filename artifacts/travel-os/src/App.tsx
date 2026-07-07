@@ -14,6 +14,7 @@ import Login from "@/pages/login";
 
 import MasterDashboard from "@/pages/master/dashboard";
 import MasterCompanies from "@/pages/master/companies";
+import MasterUsers from "@/pages/master/users";
 import MasterPlans from "@/pages/master/plans";
 import MasterAnalytics from "@/pages/master/analytics";
 import MasterThemes from "@/pages/master/themes";
@@ -120,6 +121,7 @@ function MasterRoutes() {
       <Switch>
         <Route path="/master/dashboard" component={MasterDashboard} />
         <Route path="/master/companies" component={MasterCompanies} />
+        <Route path="/master/users" component={MasterUsers} />
         <Route path="/master/plans" component={MasterPlans} />
         <Route path="/master/analytics" component={MasterAnalytics} />
         <Route path="/master/themes" component={MasterThemes} />

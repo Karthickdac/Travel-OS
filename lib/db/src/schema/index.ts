@@ -1,5 +1,6 @@
 export * from "./companies";
 export * from "./users";
+export * from "./user_companies";
 export * from "./fleet";
 export * from "./drivers";
 export * from "./customers";

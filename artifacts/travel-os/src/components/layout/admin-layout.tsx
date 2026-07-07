@@ -3,8 +3,18 @@ import { useAuth } from "@/lib/auth-context";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate, Navigation, Radio } from "lucide-react";
+import { LogOut, LayoutDashboard, CarFront, Users, Users2, Map, FileText, Settings, Wallet, Contact, Calendar, BookOpen, Building2, BarChart3, Bell, Receipt, CreditCard, Globe, Nfc, Tag, Headphones, Fuel, AlertTriangle, CalendarClock, Award, Gauge, ListTodo, Megaphone, Palette, Plug, Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, LayoutTemplate, Navigation, Radio, Check, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQueryClient } from "@tanstack/react-query";
+import { useListMyCompanies, useSwitchCompany } from "@workspace/api-client-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 function PackageIcon(props: any) {
   return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>;
@@ -104,6 +114,68 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
+function CompanySwitcher({ collapsed }: { collapsed: boolean }) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { data: companies } = useListMyCompanies();
+  const switchCompany = useSwitchCompany();
+
+  if (!companies || companies.length < 2) return null;
+
+  const active = companies.find((c) => c.id === user?.companyId);
+  const isPending = switchCompany.isPending;
+
+  const handleSelect = (companyId: string) => {
+    if (companyId === user?.companyId || isPending) return;
+    switchCompany.mutate(
+      { data: { companyId } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries();
+        },
+      },
+    );
+  };
+
+  return (
+    <div className={cn("px-3 pt-3", collapsed ? "md:hidden" : "")}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            disabled={isPending}
+            className="w-full justify-between text-sidebar-foreground border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <span className="flex items-center gap-2 overflow-hidden">
+              {isPending ? (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              ) : (
+                <Building2 className="h-4 w-4 shrink-0" />
+              )}
+              <span className="truncate">{active?.name || "Select site"}</span>
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuLabel>Switch site</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {companies.map((c) => (
+            <DropdownMenuItem
+              key={c.id}
+              onSelect={() => handleSelect(c.id)}
+              className="flex items-center justify-between gap-2"
+            >
+              <span className="truncate">{c.name}</span>
+              {c.id === user?.companyId && <Check className="h-4 w-4 shrink-0" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { logout, user } = useAuth();
@@ -228,6 +300,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        <CompanySwitcher collapsed={collapsed} />
 
         <ScrollArea className="flex-1">
           <nav className={cn("py-6 space-y-3", collapsed ? "md:px-2 px-4" : "px-4")}>

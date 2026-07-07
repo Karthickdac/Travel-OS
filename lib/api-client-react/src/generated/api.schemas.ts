@@ -91,6 +91,34 @@ export interface UserUpdate {
   isActive?: boolean;
 }
 
+export interface CompanyOption {
+  id: string;
+  name: string;
+  /** @nullable */
+  domain?: string | null;
+  /** @nullable */
+  logo?: string | null;
+}
+
+export interface SwitchCompanyInput {
+  companyId: string;
+}
+
+export interface MasterUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  /** @nullable */
+  companyId?: string | null;
+  isActive?: boolean;
+  companyIds: string[];
+}
+
+export interface SetUserCompaniesInput {
+  companyIds: string[];
+}
+
 export interface MasterDashboardStats {
   totalCompanies: number;
   activeCompanies: number;

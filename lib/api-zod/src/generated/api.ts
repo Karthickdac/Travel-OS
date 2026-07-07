@@ -64,6 +64,75 @@ export const GetMeResponse = zod.object({
 
 
 /**
+ * @summary List companies the current user can access
+ */
+export const ListMyCompaniesResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "domain": zod.string().nullish(),
+  "logo": zod.string().nullish()
+})
+export const ListMyCompaniesResponse = zod.array(ListMyCompaniesResponseItem)
+
+
+/**
+ * @summary Switch the active company for the current user
+ */
+export const SwitchCompanyBody = zod.object({
+  "companyId": zod.string()
+})
+
+export const SwitchCompanyResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "companyId": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "avatar": zod.string().nullish(),
+  "isActive": zod.boolean().optional(),
+  "createdAt": zod.string().optional()
+})
+
+
+/**
+ * @summary List all users with their assigned companies (master admin)
+ */
+export const ListMasterUsersResponseItem = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "companyId": zod.string().nullish(),
+  "isActive": zod.boolean().optional(),
+  "companyIds": zod.array(zod.string())
+})
+export const ListMasterUsersResponse = zod.array(ListMasterUsersResponseItem)
+
+
+/**
+ * @summary Set the group of companies a user can access (master admin)
+ */
+export const SetUserCompaniesParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const SetUserCompaniesBody = zod.object({
+  "companyIds": zod.array(zod.string())
+})
+
+export const SetUserCompaniesResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "companyId": zod.string().nullish(),
+  "isActive": zod.boolean().optional(),
+  "companyIds": zod.array(zod.string())
+})
+
+
+/**
  * @summary Master admin dashboard KPIs
  */
 export const GetMasterDashboardResponse = zod.object({

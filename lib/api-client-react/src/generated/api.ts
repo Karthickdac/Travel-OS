@@ -30,6 +30,7 @@ import type {
   CompanyDashboardStats,
   CompanyInput,
   CompanyListResult,
+  CompanyOption,
   CompanyUpdate,
   ConvertLeadInput,
   Customer,
@@ -80,13 +81,16 @@ import type {
   ListVehiclesParams,
   LoginInput,
   MasterDashboardStats,
+  MasterUser,
   Quotation,
   QuotationInput,
   QuotationUpdate,
   RevenueTrendPoint,
+  SetUserCompaniesInput,
   SubscriptionPlan,
   SubscriptionPlanInput,
   SubscriptionPlanUpdate,
+  SwitchCompanyInput,
   TourPackage,
   TourPackageInput,
   TourPackageUpdate,
@@ -427,6 +431,301 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Err
 
 
 
+
+export const getListMyCompaniesUrl = () => {
+
+
+
+
+  return `/api/v1/auth/my-companies`
+}
+
+/**
+ * @summary List companies the current user can access
+ */
+export const listMyCompanies = async ( options?: RequestInit): Promise<CompanyOption[]> => {
+
+  return customFetch<CompanyOption[]>(getListMyCompaniesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMyCompaniesQueryKey = () => {
+    return [
+    `/api/v1/auth/my-companies`
+    ] as const;
+    }
+
+
+export const getListMyCompaniesQueryOptions = <TData = Awaited<ReturnType<typeof listMyCompanies>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyCompanies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMyCompaniesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyCompanies>>> = ({ signal }) => listMyCompanies({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMyCompanies>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMyCompaniesQueryResult = NonNullable<Awaited<ReturnType<typeof listMyCompanies>>>
+export type ListMyCompaniesQueryError = ErrorType<void>
+
+
+/**
+ * @summary List companies the current user can access
+ */
+
+export function useListMyCompanies<TData = Awaited<ReturnType<typeof listMyCompanies>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyCompanies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMyCompaniesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSwitchCompanyUrl = () => {
+
+
+
+
+  return `/api/v1/auth/switch-company`
+}
+
+/**
+ * @summary Switch the active company for the current user
+ */
+export const switchCompany = async (switchCompanyInput: SwitchCompanyInput, options?: RequestInit): Promise<User> => {
+
+  return customFetch<User>(getSwitchCompanyUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(switchCompanyInput)
+  }
+);}
+
+
+
+
+export const getSwitchCompanyMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof switchCompany>>, TError,{data: BodyType<SwitchCompanyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof switchCompany>>, TError,{data: BodyType<SwitchCompanyInput>}, TContext> => {
+
+const mutationKey = ['switchCompany'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof switchCompany>>, {data: BodyType<SwitchCompanyInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  switchCompany(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SwitchCompanyMutationResult = NonNullable<Awaited<ReturnType<typeof switchCompany>>>
+    export type SwitchCompanyMutationBody = BodyType<SwitchCompanyInput>
+    export type SwitchCompanyMutationError = ErrorType<void>
+
+    /**
+ * @summary Switch the active company for the current user
+ */
+export const useSwitchCompany = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof switchCompany>>, TError,{data: BodyType<SwitchCompanyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof switchCompany>>,
+        TError,
+        {data: BodyType<SwitchCompanyInput>},
+        TContext
+      > => {
+      return useMutation(getSwitchCompanyMutationOptions(options));
+    }
+
+export const getListMasterUsersUrl = () => {
+
+
+
+
+  return `/api/v1/master/users`
+}
+
+/**
+ * @summary List all users with their assigned companies (master admin)
+ */
+export const listMasterUsers = async ( options?: RequestInit): Promise<MasterUser[]> => {
+
+  return customFetch<MasterUser[]>(getListMasterUsersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMasterUsersQueryKey = () => {
+    return [
+    `/api/v1/master/users`
+    ] as const;
+    }
+
+
+export const getListMasterUsersQueryOptions = <TData = Awaited<ReturnType<typeof listMasterUsers>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMasterUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMasterUsersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMasterUsers>>> = ({ signal }) => listMasterUsers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMasterUsers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMasterUsersQueryResult = NonNullable<Awaited<ReturnType<typeof listMasterUsers>>>
+export type ListMasterUsersQueryError = ErrorType<void>
+
+
+/**
+ * @summary List all users with their assigned companies (master admin)
+ */
+
+export function useListMasterUsers<TData = Awaited<ReturnType<typeof listMasterUsers>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMasterUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMasterUsersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetUserCompaniesUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/master/users/${id}/companies`
+}
+
+/**
+ * @summary Set the group of companies a user can access (master admin)
+ */
+export const setUserCompanies = async (id: string,
+    setUserCompaniesInput: SetUserCompaniesInput, options?: RequestInit): Promise<MasterUser> => {
+
+  return customFetch<MasterUser>(getSetUserCompaniesUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(setUserCompaniesInput)
+  }
+);}
+
+
+
+
+export const getSetUserCompaniesMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setUserCompanies>>, TError,{id: string;data: BodyType<SetUserCompaniesInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setUserCompanies>>, TError,{id: string;data: BodyType<SetUserCompaniesInput>}, TContext> => {
+
+const mutationKey = ['setUserCompanies'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setUserCompanies>>, {id: string;data: BodyType<SetUserCompaniesInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setUserCompanies(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetUserCompaniesMutationResult = NonNullable<Awaited<ReturnType<typeof setUserCompanies>>>
+    export type SetUserCompaniesMutationBody = BodyType<SetUserCompaniesInput>
+    export type SetUserCompaniesMutationError = ErrorType<void>
+
+    /**
+ * @summary Set the group of companies a user can access (master admin)
+ */
+export const useSetUserCompanies = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setUserCompanies>>, TError,{id: string;data: BodyType<SetUserCompaniesInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setUserCompanies>>,
+        TError,
+        {id: string;data: BodyType<SetUserCompaniesInput>},
+        TContext
+      > => {
+      return useMutation(getSetUserCompaniesMutationOptions(options));
+    }
 
 export const getGetMasterDashboardUrl = () => {
 
