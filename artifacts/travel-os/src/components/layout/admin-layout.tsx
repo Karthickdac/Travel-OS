@@ -186,7 +186,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     try {
-      return JSON.parse(localStorage.getItem("admin-sidebar-groups") || "{}");
+      return JSON.parse(localStorage.getItem("admin-sidebar-groups-v2") || "{}");
     } catch {
       return {};
     }
@@ -197,11 +197,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   }, [collapsed]);
 
   useEffect(() => {
-    localStorage.setItem("admin-sidebar-groups", JSON.stringify(openGroups));
+    localStorage.setItem("admin-sidebar-groups-v2", JSON.stringify(openGroups));
   }, [openGroups]);
 
   const toggleGroup = (title: string) =>
-    setOpenGroups((prev) => ({ ...prev, [title]: prev[title] === false ? true : false }));
+    setOpenGroups((prev) => ({ ...prev, [title]: prev[title] !== true }));
 
   // Close the mobile drawer whenever the route changes.
   useEffect(() => {
@@ -307,8 +307,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <nav className={cn("py-6 space-y-3", collapsed ? "md:px-2 px-4" : "px-4")}>
             {navGroups.map((group) => {
               // In icon-rail mode every group is shown (icons only); otherwise the
-              // header toggles the group open/closed (default open).
-              const isOpen = collapsed || openGroups[group.title] !== false;
+              // header toggles the group open/closed (default collapsed).
+              const isOpen = collapsed || openGroups[group.title] === true;
               return (
                 <div key={group.title}>
                   {!collapsed && (
