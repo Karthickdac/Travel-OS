@@ -109,6 +109,17 @@ export default function PublicReviews() {
                 <span className="text-sm">· {all.length} review{all.length > 1 ? "s" : ""}</span>
               </motion.div>
             ) : null}
+
+            {google?.writeReviewUri && (
+              <motion.div variants={fadeUp} className="mt-5">
+                <a href={google.writeReviewUri} target="_blank" rel="noopener noreferrer">
+                  <Button size="lg" className="rounded-full font-bold gap-2">
+                    <GoogleG className="h-4 w-4" />
+                    {lang === "en" ? "Review us on Google" : "Google-இல் எங்களை மதிப்பிடுங்கள்"}
+                  </Button>
+                </a>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>

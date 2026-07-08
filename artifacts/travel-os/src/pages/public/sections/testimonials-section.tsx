@@ -61,10 +61,12 @@ export default function TestimonialsSection() {
   }));
 
   const all = [...googleReviews, ...manual];
-  if (all.length === 0) return null;
+  // Keep the section when there are no reviews yet but a Google write-review
+  // link exists — the CTA is how the first reviews get collected.
+  if (all.length === 0 && !google?.writeReviewUri) return null;
 
   const hasGoogleRating = !!google?.connected && typeof google.rating === "number";
-  const localAvg = all.reduce((s, t) => s + t.rating, 0) / all.length;
+  const localAvg = all.length > 0 ? all.reduce((s, t) => s + t.rating, 0) / all.length : 0;
 
   return (
     <section className="py-20 bg-white relative">
@@ -105,11 +107,28 @@ export default function TestimonialsSection() {
                 </a>
               )}
             </motion.div>
-          ) : (
+          ) : all.length > 0 ? (
             <motion.div variants={fadeUp} className="flex items-center justify-center gap-2 text-muted-foreground">
               <StarRow value={localAvg} size="h-5 w-5" />
               <span className="text-sm font-bold text-foreground">{localAvg.toFixed(1)}</span>
               <span className="text-sm">· {all.length} review{all.length > 1 ? "s" : ""}</span>
+            </motion.div>
+          ) : (
+            <motion.p variants={fadeUp} className="text-muted-foreground text-sm">
+              Travelled with us? Share your experience and help other travellers.
+            </motion.p>
+          )}
+
+          {google?.writeReviewUri && (
+            <motion.div variants={fadeUp} className="mt-4">
+              <a
+                href={google.writeReviewUri}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-md hover:bg-primary/90 transition-colors"
+              >
+                <GoogleG className="h-4 w-4" /> Review us on Google
+              </a>
             </motion.div>
           )}
         </motion.div>

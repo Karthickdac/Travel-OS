@@ -26,6 +26,7 @@ type GoogleSummary = {
   rating: number | null;
   totalReviews: number | null;
   mapsUri: string | null;
+  writeReviewUri: string | null;
   reviews: Array<{
     authorName: string;
     rating: number;
@@ -35,7 +36,12 @@ type GoogleSummary = {
   }>;
 };
 
-const NOT_CONNECTED: GoogleSummary = { connected: false, rating: null, totalReviews: null, mapsUri: null, reviews: [] };
+const NOT_CONNECTED: GoogleSummary = { connected: false, rating: null, totalReviews: null, mapsUri: null, writeReviewUri: null, reviews: [] };
+
+function writeReviewUriFor(placeId: string | null | undefined): string | null {
+  const id = placeId?.trim();
+  return id ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(id)}` : null;
+}
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours for successful lookups
 const NEGATIVE_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes for failed lookups
@@ -69,6 +75,7 @@ async function fetchGoogleSummary(placeId: string, apiKey: string): Promise<Goog
     rating: typeof data.rating === "number" ? data.rating : null,
     totalReviews: typeof data.userRatingCount === "number" ? data.userRatingCount : null,
     mapsUri: data.googleMapsUri ?? null,
+    writeReviewUri: writeReviewUriFor(placeId),
     reviews,
   };
 }
@@ -105,8 +112,13 @@ router.get("/v1/public/google-reviews", async (req, res): Promise<void> => {
     .where(eq(companySettingsTable.companyId, companyId))
     .limit(1);
 
+  // The "write a review" link only needs the Place ID — expose it even when
+  // the Places API key is missing or failing, so sites can collect Google
+  // reviews before the full read integration is set up.
+  const notConnected: GoogleSummary = { ...NOT_CONNECTED, writeReviewUri: writeReviewUriFor(settings?.placeId) };
+
   if (!settings?.apiKey || !settings?.placeId) {
-    res.json(GetPublicGoogleReviewsResponse.parse(NOT_CONNECTED));
+    res.json(GetPublicGoogleReviewsResponse.parse(notConnected));
     return;
   }
 
@@ -114,16 +126,16 @@ router.get("/v1/public/google-reviews", async (req, res): Promise<void> => {
     const summary = await fetchGoogleSummary(settings.placeId.trim(), settings.apiKey.trim());
     if (!summary) {
       req.log.warn({ companyId }, "Google Places API returned non-OK for google-reviews");
-      cache.set(companyId, { at: Date.now(), ttl: NEGATIVE_CACHE_TTL_MS, data: NOT_CONNECTED });
-      res.json(GetPublicGoogleReviewsResponse.parse(NOT_CONNECTED));
+      cache.set(companyId, { at: Date.now(), ttl: NEGATIVE_CACHE_TTL_MS, data: notConnected });
+      res.json(GetPublicGoogleReviewsResponse.parse(notConnected));
       return;
     }
     cache.set(companyId, { at: Date.now(), ttl: CACHE_TTL_MS, data: summary });
     res.json(GetPublicGoogleReviewsResponse.parse(summary));
   } catch (err) {
     req.log.error({ err, companyId }, "Failed to fetch Google reviews");
-    cache.set(companyId, { at: Date.now(), ttl: NEGATIVE_CACHE_TTL_MS, data: NOT_CONNECTED });
-    res.json(GetPublicGoogleReviewsResponse.parse(NOT_CONNECTED));
+    cache.set(companyId, { at: Date.now(), ttl: NEGATIVE_CACHE_TTL_MS, data: notConnected });
+    res.json(GetPublicGoogleReviewsResponse.parse(notConnected));
   }
 });
 

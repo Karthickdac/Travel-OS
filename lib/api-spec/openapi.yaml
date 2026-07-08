@@ -3776,6 +3776,8 @@ components:
           type: ["integer", "null"]
         mapsUri:
           type: ["string", "null"]
+        writeReviewUri:
+          type: ["string", "null"]
         reviews:
           type: array
           items:

@@ -3158,6 +3158,7 @@ export const GetPublicGoogleReviewsResponse = zod.object({
   "rating": zod.number().nullish(),
   "totalReviews": zod.number().nullish(),
   "mapsUri": zod.string().nullish(),
+  "writeReviewUri": zod.string().nullish(),
   "reviews": zod.array(zod.object({
   "authorName": zod.string(),
   "rating": zod.number().min(1).max(getPublicGoogleReviewsResponseReviewsItemRatingMax),

@@ -15,5 +15,7 @@ export interface GoogleReviewsSummary {
   totalReviews?: number | null;
   /** @nullable */
   mapsUri?: string | null;
+  /** @nullable */
+  writeReviewUri?: string | null;
   reviews: GoogleReview[];
 }
