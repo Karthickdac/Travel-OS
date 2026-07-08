@@ -2265,6 +2265,63 @@ paths:
                 items:
                   $ref: "#/components/schemas/Testimonial"
 
+  /v1/public/blogs:
+    get:
+      operationId: listPublicBlogs
+      tags: [public]
+      summary: Get published blog articles for the public website
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Published blog articles (without full content)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicBlogSummary"
+
+  /v1/public/blogs/{slug}:
+    get:
+      operationId: getPublicBlog
+      tags: [public]
+      summary: Get a published blog article by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Published blog article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicBlog"
+        "404":
+          description: Blog article not found
+
   /v1/public/google-reviews:
     get:
       operationId: getPublicGoogleReviews
@@ -3746,6 +3803,44 @@ components:
           type: boolean
         sortOrder:
           type: integer
+
+    PublicBlogSummary:
+      type: object
+      required: [id, title, slug]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: ["string", "null"]
+        featuredImage:
+          type: ["string", "null"]
+        author:
+          type: string
+        category:
+          type: ["string", "null"]
+        tags:
+          type: ["string", "null"]
+        readTime:
+          type: ["integer", "null"]
+        publishedAt:
+          type: ["string", "null"]
+
+    PublicBlog:
+      allOf:
+        - $ref: "#/components/schemas/PublicBlogSummary"
+        - type: object
+          required: [content]
+          properties:
+            content:
+              type: string
+            metaTitle:
+              type: ["string", "null"]
+            metaDescription:
+              type: ["string", "null"]
 
     GoogleReview:
       type: object

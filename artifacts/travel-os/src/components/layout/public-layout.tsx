@@ -38,7 +38,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const baseTitle = cms?.metaTitle || `${brandName} — Cab Booking & Tour Packages`;
   // Detail pages own their title/description (set via their own useSeo call
   // with item-specific content); the layout must not override them.
-  const isDetailPage = /^\/(packages|destinations)\/./.test(location);
+  const isDetailPage = /^\/(packages|destinations|blog)\/./.test(location);
   const pageTitle =
     location === "/packages"
       ? `Tour Packages & Holiday Deals | ${brandName}`
@@ -156,6 +156,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 { href: "/", label: t.nav.home },
                 { href: "/packages", label: t.nav.packages },
                 { href: "/destinations", label: t.nav.destinations },
+                { href: "/blog", label: t.nav.blog },
                 { href: "/trip-estimator", label: lang === "en" ? "Trip Estimator" : "பயண மதிப்பீடு" },
                 { href: "/reviews", label: t.nav.reviews },
                 { href: "/enquiry", label: t.nav.contact },
@@ -235,6 +236,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   { href: "/", label: t.nav.home },
                   { href: "/packages", label: t.nav.packages },
                   { href: "/destinations", label: t.nav.destinations },
+                  { href: "/blog", label: t.nav.blog },
                   { href: "/trip-estimator", label: lang === "en" ? "Trip Estimator" : "பயண மதிப்பீடு" },
                   { href: "/reviews", label: t.nav.reviews },
                   { href: "/enquiry", label: t.nav.contact },
@@ -349,6 +351,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <ul className="space-y-3 text-sm">
               <li><Link href="/"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.home}</span></Link></li>
               <li><Link href="/packages"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.tourPackages}</span></Link></li>
+              <li><Link href="/blog"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.nav.blog}</span></Link></li>
               <li><Link href="/reviews"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.nav.reviews}</span></Link></li>
               <li><Link href="/enquiry"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.contactUs}</span></Link></li>
               <li><Link href="/login"><span className="hover:text-primary hover:translate-x-1 inline-block cursor-pointer transition-all duration-300">{t.footer.adminLogin}</span></Link></li>

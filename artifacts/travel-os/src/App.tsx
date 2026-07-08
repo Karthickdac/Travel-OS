@@ -83,6 +83,8 @@ import PublicContact from "@/pages/public/contact";
 import PublicQuote from "@/pages/public/quote";
 import PublicTripEstimator from "@/pages/public/trip-estimator";
 import PublicReviews from "@/pages/public/reviews";
+import PublicBlog from "@/pages/public/blog";
+import PublicBlogDetail from "@/pages/public/blog-detail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -225,6 +227,8 @@ function PublicRoutes() {
           <Route path="/packages/:id" component={PublicPackageDetail} />
           <Route path="/destinations" component={PublicDestinations} />
           <Route path="/destinations/:id" component={PublicDestinationDetail} />
+          <Route path="/blog" component={PublicBlog} />
+          <Route path="/blog/:slug" component={PublicBlogDetail} />
           <Route path="/trip-estimator" component={PublicTripEstimator} />
           <Route path="/reviews" component={PublicReviews} />
           <Route path="/enquiry" component={PublicEnquiry} />

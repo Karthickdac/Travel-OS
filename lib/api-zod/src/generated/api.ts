@@ -3142,6 +3142,59 @@ export const GetPublicTestimonialsResponse = zod.array(GetPublicTestimonialsResp
 
 
 /**
+ * @summary Get published blog articles for the public website
+ */
+export const ListPublicBlogsQueryParams = zod.object({
+  "domain": zod.coerce.string().optional(),
+  "companyId": zod.coerce.string().optional()
+})
+
+export const ListPublicBlogsResponseItem = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string().nullish(),
+  "featuredImage": zod.string().nullish(),
+  "author": zod.string().optional(),
+  "category": zod.string().nullish(),
+  "tags": zod.string().nullish(),
+  "readTime": zod.number().nullish(),
+  "publishedAt": zod.string().nullish()
+})
+export const ListPublicBlogsResponse = zod.array(ListPublicBlogsResponseItem)
+
+
+/**
+ * @summary Get a published blog article by slug
+ */
+export const GetPublicBlogParams = zod.object({
+  "slug": zod.coerce.string()
+})
+
+export const GetPublicBlogQueryParams = zod.object({
+  "domain": zod.coerce.string().optional(),
+  "companyId": zod.coerce.string().optional()
+})
+
+export const GetPublicBlogResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string().nullish(),
+  "featuredImage": zod.string().nullish(),
+  "author": zod.string().optional(),
+  "category": zod.string().nullish(),
+  "tags": zod.string().nullish(),
+  "readTime": zod.number().nullish(),
+  "publishedAt": zod.string().nullish()
+}).and(zod.object({
+  "content": zod.string(),
+  "metaTitle": zod.string().nullish(),
+  "metaDescription": zod.string().nullish()
+}))
+
+
+/**
  * @summary Get Google Business Profile rating and reviews for the public website
  */
 export const GetPublicGoogleReviewsQueryParams = zod.object({

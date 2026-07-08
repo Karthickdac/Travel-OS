@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request } from "express";
 import { and, asc, eq } from "drizzle-orm";
-import { db, companiesTable, websiteSettingsTable, destinationsTable, tourPackagesTable } from "@workspace/db";
+import { db, companiesTable, websiteSettingsTable, destinationsTable, tourPackagesTable, blogsTable } from "@workspace/db";
 
 // Serves per-tenant robots.txt and sitemap.xml at the domain root so each
 // customer website is fully crawlable. Mounted at the app root (NOT under
@@ -80,6 +80,7 @@ const PUBLIC_PATHS: { path: string; priority: string; changefreq: string }[] = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
   { path: "/packages", priority: "0.9", changefreq: "weekly" },
   { path: "/destinations", priority: "0.9", changefreq: "weekly" },
+  { path: "/blog", priority: "0.8", changefreq: "weekly" },
   { path: "/enquiry", priority: "0.7", changefreq: "monthly" },
   { path: "/contact", priority: "0.7", changefreq: "monthly" },
 ];
@@ -141,7 +142,7 @@ router.get("/sitemap.xml", async (req, res): Promise<void> => {
   try {
     const contentCompanyId = await resolveContentCompanyId(companyId);
     if (contentCompanyId) {
-      const [dests, pkgs] = await Promise.all([
+      const [dests, pkgs, blogs] = await Promise.all([
         db
           .select({ id: destinationsTable.id, updatedAt: destinationsTable.updatedAt })
           .from(destinationsTable)
@@ -150,6 +151,16 @@ router.get("/sitemap.xml", async (req, res): Promise<void> => {
           .select({ id: tourPackagesTable.id, updatedAt: tourPackagesTable.updatedAt })
           .from(tourPackagesTable)
           .where(and(eq(tourPackagesTable.isActive, true), eq(tourPackagesTable.companyId, contentCompanyId))),
+        db
+          .select({ slug: blogsTable.slug, updatedAt: blogsTable.updatedAt })
+          .from(blogsTable)
+          .where(
+            and(
+              eq(blogsTable.companyId, contentCompanyId),
+              eq(blogsTable.status, "published"),
+              eq(blogsTable.isDeleted, false),
+            ),
+          ),
       ]);
       for (const d of dests) {
         const mod = d.updatedAt ? new Date(d.updatedAt).toISOString() : lastmod;
@@ -161,6 +172,12 @@ router.get("/sitemap.xml", async (req, res): Promise<void> => {
         const mod = p.updatedAt ? new Date(p.updatedAt).toISOString() : lastmod;
         entries.push(
           `  <url>\n    <loc>${xmlEscape(`${base}/packages/${p.id}`)}</loc>\n    <lastmod>${mod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`,
+        );
+      }
+      for (const b of blogs) {
+        const mod = b.updatedAt ? new Date(b.updatedAt).toISOString() : lastmod;
+        entries.push(
+          `  <url>\n    <loc>${xmlEscape(`${base}/blog/${encodeURIComponent(b.slug)}`)}</loc>\n    <lastmod>${mod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`,
         );
       }
     }

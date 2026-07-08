@@ -3,7 +3,7 @@ import fsp from "fs/promises";
 import path from "path";
 import type { NextFunction, Request, Response } from "express";
 import { and, eq } from "drizzle-orm";
-import { db, websiteSettingsTable, destinationsTable, tourPackagesTable } from "@workspace/db";
+import { db, websiteSettingsTable, destinationsTable, tourPackagesTable, blogsTable } from "@workspace/db";
 import { resolveCanonical } from "./seo_files";
 
 // Serves the SPA's index.html with per-tenant, per-page SEO meta baked in
@@ -163,10 +163,69 @@ async function buildMeta(req: Request): Promise<PageMeta | null> {
     }
   }
 
+  const blogMatch = reqPath.match(/^\/blog\/([^/]+)$/);
+  if (blogMatch) {
+    let slug = blogMatch[1];
+    try {
+      slug = decodeURIComponent(slug);
+    } catch {
+      /* keep raw slug */
+    }
+    const [blog] = await db
+      .select({
+        title: blogsTable.title,
+        excerpt: blogsTable.excerpt,
+        content: blogsTable.content,
+        featuredImage: blogsTable.featuredImage,
+        author: blogsTable.author,
+        metaTitle: blogsTable.metaTitle,
+        metaDescription: blogsTable.metaDescription,
+        publishedAt: blogsTable.publishedAt,
+        updatedAt: blogsTable.updatedAt,
+      })
+      .from(blogsTable)
+      .where(
+        and(
+          eq(blogsTable.slug, slug),
+          eq(blogsTable.companyId, companyId),
+          eq(blogsTable.status, "published"),
+          eq(blogsTable.isDeleted, false),
+        ),
+      );
+    if (blog) {
+      const plainText = (blog.excerpt || blog.content || "").replace(/<[^>]*>/g, " ");
+      const description = truncate(blog.metaDescription || plainText || `${blog.title} — ${settings.displayName}`);
+      return {
+        ...common,
+        title: blog.metaTitle || `${blog.title} | ${settings.displayName}`,
+        description,
+        image: blog.featuredImage || common.image,
+        pageJsonLd: {
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: blog.title,
+          description: truncate(description, 300),
+          ...(blog.featuredImage ? { image: blog.featuredImage } : {}),
+          author: { "@type": "Organization", name: blog.author || settings.displayName },
+          publisher: {
+            "@type": "Organization",
+            name: settings.displayName,
+            ...(settings.logoUrl ? { logo: { "@type": "ImageObject", url: settings.logoUrl } } : {}),
+          },
+          ...(blog.publishedAt ? { datePublished: new Date(blog.publishedAt).toISOString() } : {}),
+          ...(blog.updatedAt ? { dateModified: new Date(blog.updatedAt).toISOString() } : {}),
+          mainEntityOfPage: canonical,
+          url: canonical,
+        },
+      };
+    }
+  }
+
   const staticTitles: Record<string, string> = {
     "/": siteTitle,
     "/packages": `Tour Packages | ${settings.displayName}`,
     "/destinations": `Destinations | ${settings.displayName}`,
+    "/blog": `Travel Blog & Guides | ${settings.displayName}`,
     "/enquiry": `Travel Enquiry | ${settings.displayName}`,
     "/contact": `Contact Us | ${settings.displayName}`,
   };

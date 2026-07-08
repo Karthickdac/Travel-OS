@@ -34,6 +34,7 @@ import storageRouter from "./storage";
 import gpsRouter from "./gps";
 import notificationsRouter from "./notifications";
 import tripRatesRouter from "./trip-rates";
+import publicBlogsRouter from "./public_blogs";
 
 const router: IRouter = Router();
 
@@ -90,5 +91,6 @@ router.use(storageRouter);
 router.use(gpsRouter);
 router.use(notificationsRouter);
 router.use(tripRatesRouter);
+router.use(publicBlogsRouter);
 
 export default router;

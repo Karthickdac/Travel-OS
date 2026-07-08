@@ -904,6 +904,33 @@ export interface TestimonialInput {
   sortOrder?: number;
 }
 
+export interface PublicBlogSummary {
+  id: string;
+  title: string;
+  slug: string;
+  /** @nullable */
+  excerpt?: string | null;
+  /** @nullable */
+  featuredImage?: string | null;
+  author?: string;
+  /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  tags?: string | null;
+  /** @nullable */
+  readTime?: number | null;
+  /** @nullable */
+  publishedAt?: string | null;
+}
+
+export type PublicBlog = PublicBlogSummary & ({
+  content: string;
+  /** @nullable */
+  metaTitle?: string | null;
+  /** @nullable */
+  metaDescription?: string | null;
+});
+
 export interface GoogleReview {
   authorName: string;
   /**
@@ -1471,6 +1498,16 @@ companyId?: string;
 };
 
 export type GetPublicTestimonialsParams = {
+domain?: string;
+companyId?: string;
+};
+
+export type ListPublicBlogsParams = {
+domain?: string;
+companyId?: string;
+};
+
+export type GetPublicBlogParams = {
 domain?: string;
 companyId?: string;
 };
