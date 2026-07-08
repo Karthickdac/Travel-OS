@@ -3142,6 +3142,33 @@ export const GetPublicTestimonialsResponse = zod.array(GetPublicTestimonialsResp
 
 
 /**
+ * @summary Get Google Business Profile rating and reviews for the public website
+ */
+export const GetPublicGoogleReviewsQueryParams = zod.object({
+  "domain": zod.coerce.string().optional(),
+  "companyId": zod.coerce.string().optional()
+})
+
+export const getPublicGoogleReviewsResponseReviewsItemRatingMax = 5;
+
+
+
+export const GetPublicGoogleReviewsResponse = zod.object({
+  "connected": zod.boolean(),
+  "rating": zod.number().nullish(),
+  "totalReviews": zod.number().nullish(),
+  "mapsUri": zod.string().nullish(),
+  "reviews": zod.array(zod.object({
+  "authorName": zod.string(),
+  "rating": zod.number().min(1).max(getPublicGoogleReviewsResponseReviewsItemRatingMax),
+  "text": zod.string(),
+  "relativeTime": zod.string().nullish(),
+  "profilePhotoUrl": zod.string().nullish()
+}))
+})
+
+
+/**
  * @summary Submit booking enquiry from website
  */
 export const SubmitEnquiryBody = zod.object({

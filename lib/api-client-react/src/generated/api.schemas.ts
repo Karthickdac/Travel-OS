@@ -904,6 +904,31 @@ export interface TestimonialInput {
   sortOrder?: number;
 }
 
+export interface GoogleReview {
+  authorName: string;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  rating: number;
+  text: string;
+  /** @nullable */
+  relativeTime?: string | null;
+  /** @nullable */
+  profilePhotoUrl?: string | null;
+}
+
+export interface GoogleReviewsSummary {
+  connected: boolean;
+  /** @nullable */
+  rating?: number | null;
+  /** @nullable */
+  totalReviews?: number | null;
+  /** @nullable */
+  mapsUri?: string | null;
+  reviews: GoogleReview[];
+}
+
 export type TourPackagePackageType = typeof TourPackagePackageType[keyof typeof TourPackagePackageType];
 
 
@@ -1444,6 +1469,11 @@ companyId?: string;
 };
 
 export type GetPublicTestimonialsParams = {
+domain?: string;
+companyId?: string;
+};
+
+export type GetPublicGoogleReviewsParams = {
 domain?: string;
 companyId?: string;
 };

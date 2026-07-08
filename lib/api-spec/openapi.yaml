@@ -2265,6 +2265,30 @@ paths:
                 items:
                   $ref: "#/components/schemas/Testimonial"
 
+  /v1/public/google-reviews:
+    get:
+      operationId: getPublicGoogleReviews
+      tags: [public]
+      summary: Get Google Business Profile rating and reviews for the public website
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Google reviews summary (connected=false when not configured)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoogleReviewsSummary"
+
   /v1/public/enquiry:
     post:
       operationId: submitEnquiry
@@ -3722,6 +3746,40 @@ components:
           type: boolean
         sortOrder:
           type: integer
+
+    GoogleReview:
+      type: object
+      required: [authorName, rating, text]
+      properties:
+        authorName:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+        relativeTime:
+          type: ["string", "null"]
+        profilePhotoUrl:
+          type: ["string", "null"]
+
+    GoogleReviewsSummary:
+      type: object
+      required: [connected, reviews]
+      properties:
+        connected:
+          type: boolean
+        rating:
+          type: ["number", "null"]
+        totalReviews:
+          type: ["integer", "null"]
+        mapsUri:
+          type: ["string", "null"]
+        reviews:
+          type: array
+          items:
+            $ref: "#/components/schemas/GoogleReview"
 
     # ── Tour Package ───────────────────────────────────────────────────────
     TourPackage:

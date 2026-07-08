@@ -12,7 +12,7 @@ function companyId(req: any): string | null {
 const EDITABLE = [
   "theme", "primaryColor", "secondaryColor", "accentColor", "fontFamily", "borderRadius",
   "darkMode", "customCss", "customJs", "cookieConsentText", "whatsappToken", "smsGatewayKey",
-  "googleMapsKey", "razorpayKeyId", "stripePublishableKey",
+  "googleMapsKey", "googlePlaceId", "razorpayKeyId", "stripePublishableKey",
 ] as const;
 
 router.get("/v1/company/settings", async (req, res): Promise<void> => {

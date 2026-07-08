@@ -10,13 +10,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Smartphone, MapPin, CreditCard, Code2, Save, Plug, Cookie } from "lucide-react";
+import { MessageSquare, Smartphone, MapPin, CreditCard, Code2, Save, Plug, Cookie, Star } from "lucide-react";
 
 type CompanySettings = {
   id: string;
   whatsappToken?: string | null;
   smsGatewayKey?: string | null;
   googleMapsKey?: string | null;
+  googlePlaceId?: string | null;
   razorpayKeyId?: string | null;
   stripePublishableKey?: string | null;
   customCss?: string | null;
@@ -35,7 +36,8 @@ type IntegrationField = {
 const INTEGRATIONS: IntegrationField[] = [
   { key: "whatsappToken", label: "WhatsApp Business API Token", icon: MessageSquare, description: "Send booking confirmations & alerts to customers over WhatsApp.", placeholder: "EAAG..." },
   { key: "smsGatewayKey", label: "SMS Gateway API Key", icon: Smartphone, description: "Deliver transactional SMS (OTP, trip updates) via your SMS provider.", placeholder: "sms_live_..." },
-  { key: "googleMapsKey", label: "Google Maps API Key", icon: MapPin, description: "Power route maps, distance estimates and pickup locations.", placeholder: "AIza..." },
+  { key: "googleMapsKey", label: "Google Maps API Key", icon: MapPin, description: "Power route maps, distance estimates, pickup locations and Google reviews. Needs the Places API enabled in Google Cloud.", placeholder: "AIza..." },
+  { key: "googlePlaceId", label: "Google Business Place ID", icon: Star, description: "Show your Google Business rating & reviews on your website. Find your Place ID at developers.google.com/maps/documentation/places/web-service/place-id (search your business name).", placeholder: "ChIJ..." },
   { key: "razorpayKeyId", label: "Razorpay Key ID", icon: CreditCard, description: "Accept online payments from customers in India via Razorpay.", placeholder: "rzp_live_..." },
   { key: "stripePublishableKey", label: "Stripe Publishable Key", icon: CreditCard, description: "Accept international card payments via Stripe.", placeholder: "pk_live_..." },
 ];
@@ -57,6 +59,7 @@ export default function AdminSettingsIntegrations() {
         whatsappToken: settings.whatsappToken ?? "",
         smsGatewayKey: settings.smsGatewayKey ?? "",
         googleMapsKey: settings.googleMapsKey ?? "",
+        googlePlaceId: settings.googlePlaceId ?? "",
         razorpayKeyId: settings.razorpayKeyId ?? "",
         stripePublishableKey: settings.stripePublishableKey ?? "",
         customCss: settings.customCss ?? "",
@@ -83,6 +86,7 @@ export default function AdminSettingsIntegrations() {
       whatsappToken: form.whatsappToken ?? "",
       smsGatewayKey: form.smsGatewayKey ?? "",
       googleMapsKey: form.googleMapsKey ?? "",
+      googlePlaceId: form.googlePlaceId ?? "",
       razorpayKeyId: form.razorpayKeyId ?? "",
       stripePublishableKey: form.stripePublishableKey ?? "",
     });

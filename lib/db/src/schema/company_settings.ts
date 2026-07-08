@@ -19,6 +19,7 @@ export const companySettingsTable = pgTable("company_settings", {
   whatsappToken: text("whatsapp_token"),
   smsGatewayKey: text("sms_gateway_key"),
   googleMapsKey: text("google_maps_key"),
+  googlePlaceId: text("google_place_id"),
   razorpayKeyId: text("razorpay_key_id"),
   stripePublishableKey: text("stripe_publishable_key"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

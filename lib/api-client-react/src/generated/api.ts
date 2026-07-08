@@ -59,11 +59,13 @@ import type {
   GetFinanceSummaryParams,
   GetPublicCmsSettingsParams,
   GetPublicDestinationsParams,
+  GetPublicGoogleReviewsParams,
   GetPublicPackagesParams,
   GetPublicTestimonialsParams,
   GetPublicTripRatesParams,
   GetRevenueTrendParams,
   GetRouteDistanceParams,
+  GoogleReviewsSummary,
   HealthStatus,
   Invoice,
   InvoiceInput,
@@ -8999,6 +9001,90 @@ export function useGetPublicTestimonials<TData = Awaited<ReturnType<typeof getPu
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetPublicTestimonialsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetPublicGoogleReviewsUrl = (params?: GetPublicGoogleReviewsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/public/google-reviews?${stringifiedParams}` : `/api/v1/public/google-reviews`
+}
+
+/**
+ * @summary Get Google Business Profile rating and reviews for the public website
+ */
+export const getPublicGoogleReviews = async (params?: GetPublicGoogleReviewsParams, options?: RequestInit): Promise<GoogleReviewsSummary> => {
+
+  return customFetch<GoogleReviewsSummary>(getGetPublicGoogleReviewsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicGoogleReviewsQueryKey = (params?: GetPublicGoogleReviewsParams,) => {
+    return [
+    `/api/v1/public/google-reviews`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetPublicGoogleReviewsQueryOptions = <TData = Awaited<ReturnType<typeof getPublicGoogleReviews>>, TError = ErrorType<unknown>>(params?: GetPublicGoogleReviewsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicGoogleReviews>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicGoogleReviewsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicGoogleReviews>>> = ({ signal }) => getPublicGoogleReviews(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicGoogleReviews>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicGoogleReviewsQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicGoogleReviews>>>
+export type GetPublicGoogleReviewsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Google Business Profile rating and reviews for the public website
+ */
+
+export function useGetPublicGoogleReviews<TData = Awaited<ReturnType<typeof getPublicGoogleReviews>>, TError = ErrorType<unknown>>(
+ params?: GetPublicGoogleReviewsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicGoogleReviews>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicGoogleReviewsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

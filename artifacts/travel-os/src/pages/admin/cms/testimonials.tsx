@@ -18,7 +18,8 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Star, Plus, Pencil, Trash2, MessageSquareQuote } from "lucide-react";
+import { Star, Plus, Pencil, Trash2, MessageSquareQuote, Settings2 } from "lucide-react";
+import { Link } from "wouter";
 
 const BLANK = {
   authorName: "",
@@ -152,6 +153,22 @@ export default function AdminCmsTestimonials() {
           <Plus className="h-4 w-4" /> Add Review
         </Button>
       </div>
+
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="py-4 px-5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1 text-sm">
+            <p className="font-semibold">Show your Google Business reviews too</p>
+            <p className="text-muted-foreground">
+              Connect your Google Business Profile and your live Google rating & reviews appear on the website automatically, alongside the reviews you add here.
+            </p>
+          </div>
+          <Link href="/admin/settings/integrations">
+            <Button variant="outline" size="sm" className="gap-2 shrink-0">
+              <Settings2 className="h-4 w-4" /> Set up in Integrations
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
 
       {isLoading ? (
         <div className="space-y-3">
