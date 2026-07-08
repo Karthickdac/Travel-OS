@@ -47,3 +47,9 @@ id = "wLDW-M_qO0JAPfzo_MA8m"
 uri = "file://exports/Google-Business-Profiles-Filled.xlsx"
 type = "table"
 title = "Google Business Profile — 3 Businesses (Filled)"
+
+[[outputs]]
+id = "M7KKAN1NOOIgXoJx2995z"
+uri = "file://exports/Google-Business-Profiles-Filled-v2.xlsx"
+type = "table"
+title = "Google Business Profile — Fixed (v2)"
