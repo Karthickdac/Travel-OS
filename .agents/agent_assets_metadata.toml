@@ -41,3 +41,9 @@ id = "txkRyhi4N7hS0LODUHNe0"
 uri = "file://migration_tmp/travelos_dump.sql.gz"
 type = "unspecified"
 title = "TravelOS clean database export (dummy transactions removed)"
+
+[[outputs]]
+id = "wLDW-M_qO0JAPfzo_MA8m"
+uri = "file://exports/Google-Business-Profiles-Filled.xlsx"
+type = "table"
+title = "Google Business Profile — 3 Businesses (Filled)"
