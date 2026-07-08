@@ -53,3 +53,9 @@ id = "M7KKAN1NOOIgXoJx2995z"
 uri = "file://exports/Google-Business-Profiles-Filled-v2.xlsx"
 type = "table"
 title = "Google Business Profile — Fixed (v2)"
+
+[[outputs]]
+id = "fMPaxtF8TqzhwWIK4154Y"
+uri = "file://exports/Google-Business-Profiles-Filled-v3.xlsx"
+type = "table"
+title = "Google Business Profile — v3 (coordinates added)"
