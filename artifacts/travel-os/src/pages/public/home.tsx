@@ -28,7 +28,7 @@ export default function PublicHome() {
   const tokens = template.tokens;
   const layouts = resolveSectionLayouts(cms?.homepageTemplate, cms?.sectionLayouts);
 
-  const heroTitle = cms?.heroTitle || "Madurai SMT Travels";
+  const heroTitle = cms?.heroTitle || "";
   const heroSubtitle = cms?.heroSubtitle || t.hero.tagline;
   const heroDesc = cms?.heroDesc || t.hero.desc;
   const heroCtaText = cms?.heroCtaText || t.hero.book;

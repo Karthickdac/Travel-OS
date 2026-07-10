@@ -22,13 +22,13 @@ export default function PublicPackageDetail() {
   const contactPhone = cms?.phone || "8110806339";
 
   const pkg = (packages ?? []).find((p) => p.id === id);
-  const brandName = cms?.companyDisplayName || "Madurai SMT Travels";
+  const brandName = cms?.companyDisplayName || "";
   const seoDescription = pkg
     ? (pkg.description?.slice(0, 155) ||
         `Book ${pkg.title}${pkg.destinationName ? ` to ${pkg.destinationName}` : ""} with ${brandName}. ${pkg.duration ? `${pkg.duration}, ` : ""}best price guaranteed. Enquire now.`)
     : undefined;
   useSeo(
-    pkg
+    pkg && brandName
       ? {
           title: `${pkg.title}${pkg.destinationName ? ` — ${pkg.destinationName} Tour Package` : " — Tour Package"} | ${brandName}`,
           description: seoDescription,

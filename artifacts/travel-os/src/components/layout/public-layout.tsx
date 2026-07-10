@@ -26,12 +26,15 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const isHome = location === "/";
 
   const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
-  const brandName = cms?.companyDisplayName || "Madurai SMT Travels";
-  const brandAbbr = logoAbbr(brandName);
-  const phone = cms?.phone || "8110806339";
+  // Until the tenant's CMS data loads, render nothing brand-specific rather
+  // than a hardcoded placeholder — otherwise every site briefly flashes the
+  // wrong company name/phone on first paint before its own data arrives.
+  const brandName = cms?.companyDisplayName || "";
+  const brandAbbr = brandName ? logoAbbr(brandName) : "";
+  const phone = cms?.phone || "";
   const phoneSecondary = cms?.phoneSecondary || "";
-  const email = cms?.email || "admin@maduraismt.com";
-  const address = cms?.address || "Madurai, Tamil Nadu";
+  const email = cms?.email || "";
+  const address = cms?.address || "";
 
   // Per-tenant, per-page SEO (title, description, keywords, OG/Twitter,
   // canonical + JSON-LD structured data). All values are CMS-driven.
@@ -78,12 +81,16 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
     keywords: cms?.metaKeywords || undefined,
     priceRange: "₹₹",
   };
+  // Only manage the head once CMS data is present. While loading, pass
+  // undefined so we don't overwrite the correct title the server injected
+  // into the initial HTML with a placeholder built from an empty brand name.
+  const seoReady = !!cms && !isDetailPage;
   useSeo({
-    title: isDetailPage ? undefined : pageTitle,
-    description: isDetailPage ? undefined : pageDescription,
+    title: seoReady ? pageTitle : undefined,
+    description: seoReady ? pageDescription : undefined,
     keywords: cms?.metaKeywords || undefined,
-    image: isDetailPage ? undefined : cms?.heroBgImage || undefined,
-    jsonLd,
+    image: seoReady ? cms?.heroBgImage || undefined : undefined,
+    jsonLd: seoReady ? jsonLd : undefined,
   });
 
   useEffect(() => {
@@ -190,11 +197,13 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               </button>
 
               {/* Phone */}
-              <a href={`tel:${phone}`} className={`hidden md:flex items-center gap-2 text-[15px] font-bold transition-colors ${
-                transparent ? "text-white hover:text-white/80" : "text-primary hover:text-primary/80"
-              }`}>
-                <Phone className="h-4 w-4" /> {phone}
-              </a>
+              {phone && (
+                <a href={`tel:${phone}`} className={`hidden md:flex items-center gap-2 text-[15px] font-bold transition-colors ${
+                  transparent ? "text-white hover:text-white/80" : "text-primary hover:text-primary/80"
+                }`}>
+                  <Phone className="h-4 w-4" /> {phone}
+                </a>
+              )}
 
               {/* Admin */}
               <Link href="/login">
@@ -299,12 +308,14 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             </div>
             <p className="text-sm leading-relaxed mb-6 font-medium text-white/60">{t.footer.tagline}</p>
             <div className="space-y-4">
-              <a href={`tel:${phone}`} className="flex items-center gap-3 text-sm font-bold text-white hover:text-primary transition-colors group">
-                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
-                  <Phone className="h-4 w-4" />
-                </div>
-                {phone}
-              </a>
+              {phone && (
+                <a href={`tel:${phone}`} className="flex items-center gap-3 text-sm font-bold text-white hover:text-primary transition-colors group">
+                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  {phone}
+                </a>
+              )}
               {phoneSecondary && (
                 <a href={`tel:${phoneSecondary}`} className="flex items-center gap-3 text-sm font-bold text-white hover:text-primary transition-colors group">
                   <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
@@ -313,18 +324,22 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   {phoneSecondary}
                 </a>
               )}
-              <div className="flex items-center gap-3 text-sm font-medium text-white/80 group">
-                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
-                  <MapPin className="h-4 w-4" />
+              {address && (
+                <div className="flex items-center gap-3 text-sm font-medium text-white/80 group">
+                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  {address}
                 </div>
-                {address}
-              </div>
-              <a href={`mailto:${email}`} className="flex items-center gap-3 text-sm font-medium text-white/80 hover:text-primary transition-colors group">
-                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
-                  <Mail className="h-4 w-4" />
-                </div>
-                {email}
-              </a>
+              )}
+              {email && (
+                <a href={`mailto:${email}`} className="flex items-center gap-3 text-sm font-medium text-white/80 hover:text-primary transition-colors group">
+                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary/20">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  {email}
+                </a>
+              )}
             </div>
           </div>
 
@@ -360,7 +375,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="container mx-auto px-4 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-white/40">
-          <span>© {new Date().getFullYear()} {t.footer.copyright}</span>
+          <span>© {new Date().getFullYear()} {brandName ? `${brandName} · ` : ""}{t.footer.copyright}</span>
           <span className="italic font-serif text-[13px] text-white/50">{t.footer.footerTagline}</span>
         </div>
       </footer>

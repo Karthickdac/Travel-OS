@@ -27,12 +27,14 @@ export default function PublicReviews() {
   const { data: testimonials, isLoading: loadingManual } = useGetPublicTestimonials({ domain: SITE_DOMAIN });
   const { data: google, isLoading: loadingGoogle } = useGetPublicGoogleReviews({ domain: SITE_DOMAIN });
 
-  const brandName = cms?.companyDisplayName || "Madurai SMT Travels";
+  const brandName = cms?.companyDisplayName || "";
   const phone = cms?.phone || "8110806339";
 
   useSeo({
-    title: `Customer Reviews & Ratings | ${brandName}`,
-    description: `Read genuine customer reviews and Google ratings for ${brandName}. Trusted cab booking and tour packages across Tamil Nadu & South India.`,
+    title: brandName ? `Customer Reviews & Ratings | ${brandName}` : undefined,
+    description: brandName
+      ? `Read genuine customer reviews and Google ratings for ${brandName}. Trusted cab booking and tour packages across Tamil Nadu & South India.`
+      : undefined,
   });
 
   const manual: CardReview[] = (testimonials ?? []).map((t) => ({

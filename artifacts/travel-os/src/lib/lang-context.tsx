@@ -58,7 +58,7 @@ export const translations = {
     },
     whyUs: {
       eyebrow: "Why Travellers Trust Us",
-      heading: "The Madurai SMT\nTravels Promise",
+      heading: "Our Travel\nPromise",
       desc: "Over a decade of taking families, pilgrims and corporate groups safely across South India's most iconic destinations. We don't just arrange travel — we craft memories.",
       bullets: [
         "10+ years of trusted service in South India",
@@ -88,7 +88,7 @@ export const translations = {
       heading: "Ready to Plan Your\nDream Journey?",
       sub: "Call us now for instant bookings and customised tour packages. We're available 24/7.",
       enquire: "Send Enquiry",
-      tagline: '"Your Journey, Our Responsibility" — Madurai SMT Travels',
+      tagline: '"Your Journey, Our Responsibility"',
     },
     footer: {
       tagline: "Safe • Comfortable • Reliable Travel Service across Tamil Nadu, Kerala and beyond.",
@@ -99,7 +99,7 @@ export const translations = {
       tourPackages: "Tour Packages",
       contactUs: "Contact Us",
       adminLogin: "Admin Login",
-      copyright: "Madurai SMT Travels. All rights reserved.",
+      copyright: "All rights reserved.",
       footerTagline: '"Your Journey, Our Responsibility"',
       serviceItems: ["Family Tours", "Pilgrimage Trips", "Tourist Packages", "Airport Pickup & Drop", "Outstation Cab", "24/7 Support"],
       destItems: ["Madurai", "Rameshwaram", "Kanyakumari", "Kovalam Beach", "Trivandrum", "Dhanushkodi"],
@@ -160,7 +160,7 @@ export const translations = {
     },
     whyUs: {
       eyebrow: "பயணிகள் ஏன் நம்புகிறார்கள்",
-      heading: "மதுரை SMT டிராவல்ஸ்\nவாக்குறுதி",
+      heading: "எங்கள் பயண\nவாக்குறுதி",
       desc: "கடந்த பத்தாண்டுகளாக குடும்பங்கள், திருத்தல பயணிகள் மற்றும் கார்ப்பரேட் குழுக்களை தென் இந்தியாவின் புகழ்பெற்ற தலங்களுக்கு பாதுகாப்பாக அழைத்துச் செல்கிறோம்.",
       bullets: [
         "தென் இந்தியாவில் 10+ ஆண்டுகால நம்பகமான சேவை",
@@ -190,7 +190,7 @@ export const translations = {
       heading: "உங்கள் கனவு பயணத்தை\nதிட்டமிட தயாரா?",
       sub: "உடனடி முன்பதிவு மற்றும் தனிப்பயன் சுற்றுலா தொகுப்புகளுக்கு இப்போது அழையுங்கள். நாங்கள் 24/7 கிடைக்கிறோம்.",
       enquire: "விசாரணை அனுப்புங்கள்",
-      tagline: '"உங்கள் பயணம், எங்கள் பொறுப்பு" — மதுரை SMT டிராவல்ஸ்',
+      tagline: '"உங்கள் பயணம், எங்கள் பொறுப்பு"',
     },
     footer: {
       tagline: "தமிழ்நாடு, கேரளா முழுவதும் பாதுகாப்பான • வசதியான • நம்பகமான பயண சேவை.",
@@ -201,7 +201,7 @@ export const translations = {
       tourPackages: "சுற்றுலா தொகுப்புகள்",
       contactUs: "தொடர்பு கொள்ளுங்கள்",
       adminLogin: "நிர்வாக உள்நுழைவு",
-      copyright: "மதுரை SMT டிராவல்ஸ். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
+      copyright: "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
       footerTagline: '"உங்கள் பயணம், எங்கள் பொறுப்பு"',
       serviceItems: ["குடும்ப சுற்றுலாக்கள்", "திருத்தல யாத்திரைகள்", "சுற்றுலா தொகுப்புகள்", "விமான நிலைய சேவை", "அவுட்ஸ்டேஷன் கேப்", "24/7 ஆதரவு"],
       destItems: ["மதுரை", "இராமேஸ்வரம்", "கன்னியாகுமரி", "கோவளம் கடற்கரை", "திருவனந்தபுரம்", "தனுஷ்கோடி"],
