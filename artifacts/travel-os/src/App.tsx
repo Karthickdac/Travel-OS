@@ -1,3 +1,4 @@
+import { lazy, Suspense, Component } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,94 +7,136 @@ import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LangProvider } from "@/lib/lang-context";
 import NotFound from "@/pages/not-found";
 
+// Layouts stay eagerly imported so the shell (header/nav/footer) is available
+// immediately; each portal's pages are code-split below so a visitor only
+// downloads the JavaScript for the section they actually open.
 import { MasterLayout } from "@/components/layout/master-layout";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { PublicLayout } from "@/components/layout/public-layout";
-
-import Login from "@/pages/login";
-
-import MasterDashboard from "@/pages/master/dashboard";
-import MasterCompanies from "@/pages/master/companies";
-import MasterUsers from "@/pages/master/users";
-import MasterPlans from "@/pages/master/plans";
-import MasterAnalytics from "@/pages/master/analytics";
-import MasterThemes from "@/pages/master/themes";
-
-import AdminDashboard from "@/pages/admin/dashboard";
-import AdminBookings from "@/pages/admin/bookings";
-import AdminFleet from "@/pages/admin/fleet";
-import AdminFastag from "@/pages/admin/fleet/fastag";
-import AdminDrivers from "@/pages/admin/drivers";
-import AdminUsers from "@/pages/admin/users";
-import AdminLeads from "@/pages/admin/crm/leads";
-import AdminQuotations from "@/pages/admin/crm/quotations";
-import AdminTripRates from "@/pages/admin/trip-rates";
-import AdminCustomers from "@/pages/admin/customers";
-import AdminDestinations from "@/pages/admin/tours/destinations";
-import AdminPackages from "@/pages/admin/tours/packages";
-import AdminFinanceSummary from "@/pages/admin/finance/summary";
-import AdminFinanceInvoices from "@/pages/admin/finance/invoices";
-import AdminFinanceExpenses from "@/pages/admin/finance/expenses";
-import AdminVendors from "@/pages/admin/vendors";
-import AdminReports from "@/pages/admin/reports";
-import AdminSettings from "@/pages/admin/settings";
-import AdminNotifications from "@/pages/admin/notifications";
-import AdminCms from "@/pages/admin/cms";
-import AdminMarketing from "@/pages/admin/marketing";
-import AdminSupport from "@/pages/admin/support";
-import AdminFinancePL from "@/pages/admin/finance/pl";
-import AdminFinanceGst from "@/pages/admin/finance/gst";
-import AdminFinanceRefunds from "@/pages/admin/finance/refunds";
-import AdminFinanceCashbook from "@/pages/admin/finance/cashbook";
-import AdminFinanceLedger from "@/pages/admin/finance/ledger";
-import AdminMarketingReferrals from "@/pages/admin/marketing/referrals";
-import AdminMarketingCampaigns from "@/pages/admin/marketing/campaigns";
-import AdminMarketingLoyalty from "@/pages/admin/marketing/loyalty";
-import AdminCmsMenus from "@/pages/admin/cms/menus";
-import AdminCmsSeo from "@/pages/admin/cms/seo";
-import AdminCmsHomepage from "@/pages/admin/cms/homepage";
-import AdminCmsTestimonials from "@/pages/admin/cms/testimonials";
-import AdminCmsLayout from "@/pages/admin/cms/layout";
-import AdminCmsThemes from "@/pages/admin/cms/themes";
-import AdminFleetFuel from "@/pages/admin/fleet/fuel";
-import AdminFleetAccidents from "@/pages/admin/fleet/accidents";
-import AdminFleetAvailability from "@/pages/admin/fleet/availability";
-import AdminFleetTracking from "@/pages/admin/fleet/tracking";
-import AdminFleetDevices from "@/pages/admin/fleet/devices";
-import AdminDriversLeave from "@/pages/admin/drivers/leave";
-import AdminDriversBonusPenalty from "@/pages/admin/drivers/bonus-penalty";
-import AdminDriversPerformance from "@/pages/admin/drivers/performance";
-import AdminCrmTasks from "@/pages/admin/crm/tasks";
-import AdminCustomerProfile from "@/pages/admin/crm/customer-profile";
-import AdminReportsOperational from "@/pages/admin/reports/operational";
-import AdminSettingsIntegrations from "@/pages/admin/settings/integrations";
-
 import { PortalLayout } from "@/components/layout/portal-layout";
-import PortalDashboard from "@/pages/portal/dashboard";
-import PortalBookings from "@/pages/portal/bookings";
-import PortalSupport from "@/pages/portal/support";
 
-import PublicHome from "@/pages/public/home";
-import PublicPackages from "@/pages/public/packages";
-import PublicPackageDetail from "@/pages/public/package-detail";
-import PublicDestinations from "@/pages/public/destinations";
-import PublicDestinationDetail from "@/pages/public/destination-detail";
-import PublicEnquiry from "@/pages/public/enquiry";
-import PublicContact from "@/pages/public/contact";
-import PublicQuote from "@/pages/public/quote";
-import PublicTripEstimator from "@/pages/public/trip-estimator";
-import PublicReviews from "@/pages/public/reviews";
-import PublicBlog from "@/pages/public/blog";
-import PublicBlogDetail from "@/pages/public/blog-detail";
+// Route-level code splitting: each page becomes its own chunk loaded on demand.
+// This keeps the public website's initial bundle tiny — visitors no longer
+// download the entire admin/master ERP just to view the homepage.
+const Login = lazy(() => import("@/pages/login"));
+
+const MasterDashboard = lazy(() => import("@/pages/master/dashboard"));
+const MasterCompanies = lazy(() => import("@/pages/master/companies"));
+const MasterUsers = lazy(() => import("@/pages/master/users"));
+const MasterPlans = lazy(() => import("@/pages/master/plans"));
+const MasterAnalytics = lazy(() => import("@/pages/master/analytics"));
+const MasterThemes = lazy(() => import("@/pages/master/themes"));
+
+const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
+const AdminBookings = lazy(() => import("@/pages/admin/bookings"));
+const AdminFleet = lazy(() => import("@/pages/admin/fleet"));
+const AdminFastag = lazy(() => import("@/pages/admin/fleet/fastag"));
+const AdminDrivers = lazy(() => import("@/pages/admin/drivers"));
+const AdminUsers = lazy(() => import("@/pages/admin/users"));
+const AdminLeads = lazy(() => import("@/pages/admin/crm/leads"));
+const AdminQuotations = lazy(() => import("@/pages/admin/crm/quotations"));
+const AdminTripRates = lazy(() => import("@/pages/admin/trip-rates"));
+const AdminCustomers = lazy(() => import("@/pages/admin/customers"));
+const AdminDestinations = lazy(() => import("@/pages/admin/tours/destinations"));
+const AdminPackages = lazy(() => import("@/pages/admin/tours/packages"));
+const AdminFinanceSummary = lazy(() => import("@/pages/admin/finance/summary"));
+const AdminFinanceInvoices = lazy(() => import("@/pages/admin/finance/invoices"));
+const AdminFinanceExpenses = lazy(() => import("@/pages/admin/finance/expenses"));
+const AdminVendors = lazy(() => import("@/pages/admin/vendors"));
+const AdminReports = lazy(() => import("@/pages/admin/reports"));
+const AdminSettings = lazy(() => import("@/pages/admin/settings"));
+const AdminNotifications = lazy(() => import("@/pages/admin/notifications"));
+const AdminCms = lazy(() => import("@/pages/admin/cms"));
+const AdminMarketing = lazy(() => import("@/pages/admin/marketing"));
+const AdminSupport = lazy(() => import("@/pages/admin/support"));
+const AdminFinancePL = lazy(() => import("@/pages/admin/finance/pl"));
+const AdminFinanceGst = lazy(() => import("@/pages/admin/finance/gst"));
+const AdminFinanceRefunds = lazy(() => import("@/pages/admin/finance/refunds"));
+const AdminFinanceCashbook = lazy(() => import("@/pages/admin/finance/cashbook"));
+const AdminFinanceLedger = lazy(() => import("@/pages/admin/finance/ledger"));
+const AdminMarketingReferrals = lazy(() => import("@/pages/admin/marketing/referrals"));
+const AdminMarketingCampaigns = lazy(() => import("@/pages/admin/marketing/campaigns"));
+const AdminMarketingLoyalty = lazy(() => import("@/pages/admin/marketing/loyalty"));
+const AdminCmsMenus = lazy(() => import("@/pages/admin/cms/menus"));
+const AdminCmsSeo = lazy(() => import("@/pages/admin/cms/seo"));
+const AdminCmsHomepage = lazy(() => import("@/pages/admin/cms/homepage"));
+const AdminCmsTestimonials = lazy(() => import("@/pages/admin/cms/testimonials"));
+const AdminCmsLayout = lazy(() => import("@/pages/admin/cms/layout"));
+const AdminCmsThemes = lazy(() => import("@/pages/admin/cms/themes"));
+const AdminFleetFuel = lazy(() => import("@/pages/admin/fleet/fuel"));
+const AdminFleetAccidents = lazy(() => import("@/pages/admin/fleet/accidents"));
+const AdminFleetAvailability = lazy(() => import("@/pages/admin/fleet/availability"));
+const AdminFleetTracking = lazy(() => import("@/pages/admin/fleet/tracking"));
+const AdminFleetDevices = lazy(() => import("@/pages/admin/fleet/devices"));
+const AdminDriversLeave = lazy(() => import("@/pages/admin/drivers/leave"));
+const AdminDriversBonusPenalty = lazy(() => import("@/pages/admin/drivers/bonus-penalty"));
+const AdminDriversPerformance = lazy(() => import("@/pages/admin/drivers/performance"));
+const AdminCrmTasks = lazy(() => import("@/pages/admin/crm/tasks"));
+const AdminCustomerProfile = lazy(() => import("@/pages/admin/crm/customer-profile"));
+const AdminReportsOperational = lazy(() => import("@/pages/admin/reports/operational"));
+const AdminSettingsIntegrations = lazy(() => import("@/pages/admin/settings/integrations"));
+
+const PortalDashboard = lazy(() => import("@/pages/portal/dashboard"));
+const PortalBookings = lazy(() => import("@/pages/portal/bookings"));
+const PortalSupport = lazy(() => import("@/pages/portal/support"));
+
+const PublicHome = lazy(() => import("@/pages/public/home"));
+const PublicPackages = lazy(() => import("@/pages/public/packages"));
+const PublicPackageDetail = lazy(() => import("@/pages/public/package-detail"));
+const PublicDestinations = lazy(() => import("@/pages/public/destinations"));
+const PublicDestinationDetail = lazy(() => import("@/pages/public/destination-detail"));
+const PublicEnquiry = lazy(() => import("@/pages/public/enquiry"));
+const PublicContact = lazy(() => import("@/pages/public/contact"));
+const PublicQuote = lazy(() => import("@/pages/public/quote"));
+const PublicTripEstimator = lazy(() => import("@/pages/public/trip-estimator"));
+const PublicReviews = lazy(() => import("@/pages/public/reviews"));
+const PublicBlog = lazy(() => import("@/pages/public/blog"));
+const PublicBlogDetail = lazy(() => import("@/pages/public/blog-detail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      // Treat fetched data as fresh for 60s so quickly navigating between pages
+      // doesn't refire the same requests — pages feel instant on return. Kept
+      // short so admin/ERP data (bookings, fleet) stays current.
+      staleTime: 60 * 1000,
     },
   },
 });
+
+function PageFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
+}
+
+// Catches failures from lazy() dynamic imports. When a new version is deployed,
+// the chunk hashes an already-open tab references no longer exist; loading one
+// throws. We reload once to pull the fresh assets instead of getting stuck.
+class ChunkErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    const isChunkError = /Loading chunk|dynamically imported module|Failed to fetch/i.test(String(error));
+    if (isChunkError && !sessionStorage.getItem("chunk-reloaded")) {
+      sessionStorage.setItem("chunk-reloaded", "1");
+      window.location.reload();
+    }
+  }
+
+  render() {
+    if (this.state.hasError) return <PageFallback />;
+    return this.props.children;
+  }
+}
 
 function ProtectedRoute({ component: Component, allowedRoles, ...rest }: any) {
   const { user, isLoading } = useAuth();
@@ -125,6 +168,7 @@ function ProtectedRoute({ component: Component, allowedRoles, ...rest }: any) {
 function MasterRoutes() {
   return (
     <MasterLayout>
+      <Suspense fallback={<PageFallback />}>
       <Switch>
         <Route path="/master/dashboard" component={MasterDashboard} />
         <Route path="/master/companies" component={MasterCompanies} />
@@ -134,6 +178,7 @@ function MasterRoutes() {
         <Route path="/master/themes" component={MasterThemes} />
         <Route component={NotFound} />
       </Switch>
+      </Suspense>
     </MasterLayout>
   );
 }
@@ -149,6 +194,7 @@ function AdminOnly({ component: Component }: { component: React.ComponentType })
 function AdminRoutes() {
   return (
     <AdminLayout>
+      <Suspense fallback={<PageFallback />}>
       <Switch>
         <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/bookings" component={AdminBookings} />
@@ -200,6 +246,7 @@ function AdminRoutes() {
         <Route path="/admin/support" component={AdminSupport} />
         <Route component={NotFound} />
       </Switch>
+      </Suspense>
     </AdminLayout>
   );
 }
@@ -207,12 +254,14 @@ function AdminRoutes() {
 function PortalRoutes() {
   return (
     <PortalLayout>
+      <Suspense fallback={<PageFallback />}>
       <Switch>
         <Route path="/portal/dashboard" component={PortalDashboard} />
         <Route path="/portal/bookings" component={PortalBookings} />
         <Route path="/portal/support" component={PortalSupport} />
         <Route component={NotFound} />
       </Switch>
+      </Suspense>
     </PortalLayout>
   );
 }
@@ -221,6 +270,7 @@ function PublicRoutes() {
   return (
     <LangProvider>
       <PublicLayout>
+        <Suspense fallback={<PageFallback />}>
         <Switch>
           <Route path="/" component={PublicHome} />
           <Route path="/packages" component={PublicPackages} />
@@ -235,6 +285,7 @@ function PublicRoutes() {
           <Route path="/contact" component={PublicContact} />
           <Route component={NotFound} />
         </Switch>
+        </Suspense>
       </PublicLayout>
     </LangProvider>
   );
@@ -243,8 +294,12 @@ function PublicRoutes() {
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/quote/:token" component={PublicQuote} />
+      <Route path="/login">
+        <Suspense fallback={<PageFallback />}><Login /></Suspense>
+      </Route>
+      <Route path="/quote/:token">
+        <Suspense fallback={<PageFallback />}><PublicQuote /></Suspense>
+      </Route>
 
       <Route path="/master/*">
         <ProtectedRoute component={MasterRoutes} allowedRoles={["master_admin"]} />
@@ -271,7 +326,9 @@ function App() {
       <TooltipProvider>
         <AuthProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
+            <ChunkErrorBoundary>
+              <Router />
+            </ChunkErrorBoundary>
           </WouterRouter>
         </AuthProvider>
         <Toaster />

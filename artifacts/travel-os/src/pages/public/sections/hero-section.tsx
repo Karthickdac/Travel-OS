@@ -21,11 +21,11 @@ interface HeroProps extends SectionCommon {
 }
 
 const DEFAULT_IMAGES = [
-  "/images/hero-1.png",
-  "/images/hero-2.png",
-  "/images/hero-3.png",
-  "/images/hero-4.png",
-  "/images/hero-5.png",
+  "/images/hero-1.webp",
+  "/images/hero-2.webp",
+  "/images/hero-3.webp",
+  "/images/hero-4.webp",
+  "/images/hero-5.webp",
 ];
 
 function HeroStats({ stats, light }: { stats: readonly { v: string; l: string }[]; light: boolean }) {
@@ -148,7 +148,7 @@ export default function HeroSection(props: HeroProps) {
             transition={{ duration: 0.8 }}
           >
             {images.length > 0 && (
-              <img src={images[currentIndex]} alt={heroTitle} className="w-full h-full object-cover animate-kenburns" />
+              <img src={images[currentIndex]} alt={heroTitle} fetchPriority="high" className="w-full h-full object-cover animate-kenburns" />
             )}
           </motion.div>
         </div>
@@ -191,6 +191,7 @@ export default function HeroSection(props: HeroProps) {
                     key={currentIndex}
                     src={images[currentIndex]}
                     alt={heroTitle}
+                    fetchPriority="high"
                     className="absolute inset-0 w-full h-full object-cover animate-kenburns"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -215,6 +216,7 @@ export default function HeroSection(props: HeroProps) {
             key={currentIndex}
             src={images[currentIndex]}
             alt={heroTitle}
+            fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover animate-kenburns"
             style={{ filter: tokens.heroImageFilter || 'brightness(0.4)' }}
             initial={{ opacity: 0 }}
