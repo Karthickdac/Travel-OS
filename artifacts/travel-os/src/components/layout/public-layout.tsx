@@ -25,7 +25,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const isHome = location === "/";
 
-  const { data: cms } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
+  const { data: cms, isLoading: cmsLoading } = useGetPublicCmsSettings({ domain: SITE_DOMAIN });
   // Until the tenant's CMS data loads, render nothing brand-specific rather
   // than a hardcoded placeholder — otherwise every site briefly flashes the
   // wrong company name/phone on first paint before its own data arrives.
@@ -125,6 +125,21 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const heroVariant = resolveSectionLayouts(cms?.homepageTemplate, cms?.sectionLayouts).hero;
   const darkHero = !!cms && heroVariant === "centered";
   const transparent = isHome && !scrolled && !mobileOpen && darkHero;
+
+  // Hold the whole public site until the tenant's CMS data has loaded. Without
+  // this, the page first paints with generic default content (default hero
+  // image, placeholder text/stats) and then visibly swaps to the real tenant
+  // content once CMS arrives — a jarring "flash of the default site". CMS is
+  // cached and served in a few ms, so this shows only a brief spinner instead.
+  // Only gate on the loading state — if the request errors we fall through and
+  // render with safe fallbacks so the site is never stuck on a spinner.
+  if (cmsLoading && !cms) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+        <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background font-sans">
